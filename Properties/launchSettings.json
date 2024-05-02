@@ -1,0 +1,25 @@
+{
+  "profiles": {
+    "KinoHannover": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development",
+        "TZ": "Europe/Berlin",
+        "LANG": "de_DE.UTF-8",
+        "LC_ALL": "de_DE.UTF-8",
+        "LANGUAGE": "de_DE.UTF-8"
+      },
+      "dotnetRunMessages": true
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker",
+      "environmentVariables": {
+        "TZ": "Europe/Berlin",
+        "LANG": "de_DE.UTF-8",
+        "LC_ALL": "de_DE.UTF-8",
+        "LANGUAGE": "de_DE.UTF-8"
+      }
+    }
+  },
+  "$schema": "http://json.schemastore.org/launchsettings.json"
+}
