@@ -1,4 +1,29 @@
-﻿html {
+﻿@font-face {
+    font-family: Poppins;
+    src: url(resources/Poppins-Regular.ttf);
+    font-weight: normal;
+}
+
+@font-face {
+    font-family: Poppins;
+    src: url(resources/Poppins-SemiBold.ttf);
+    font-weight: bold;
+}
+
+@font-face {
+    font-family: Poppins;
+    src: url(resources/Poppins-Italic.ttf);
+    font-style: italic;
+}
+
+@font-face {
+    font-family: Poppins;
+    src: url(resources/Poppins-SemiBoldItalic.ttf);
+    font-weight: bold;
+    font-style: italic;
+}
+
+html {
     box-sizing: border-box;
     font-size: 16px;
 }
@@ -23,7 +48,7 @@ img {
 }
 
 body {
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: Poppins, Inter, 'Open Sans', Helvetica, Arial, sans-serif;
 }
 
 a {
@@ -33,6 +58,24 @@ a {
     a:visited {
         color: inherit;
     }
+
+p {
+    margin: 0.5em 0;
+}
+
+.content {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 1em;
+}
+
+    .content h1, h2, h3, h4, h5, h6 {
+        margin: 0.5em 0;
+    }
+
+summary {
+    max-width: 300px;
+}
 
 #cinemaList {
     list-style-type: none;
