@@ -15,7 +15,7 @@ namespace kinohannover
             logger.LogInformation("Removing {MovieCount} movies", movies.Count());
             context.Movies.RemoveRange(movies);
 
-            var showTimes = context.ShowTime.Where(e => e.Time < DateTime.Now.AddHours(-1));
+            var showTimes = context.ShowTime.Where(e => e.StartTime < DateTime.Now.AddHours(-1));
             logger.LogInformation("Removing {ShowTimeCount} showtimes", showTimes.Count());
             context.ShowTime.RemoveRange(showTimes);
 

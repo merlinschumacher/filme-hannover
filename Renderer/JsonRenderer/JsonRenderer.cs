@@ -1,0 +1,58 @@
+﻿using kinohannover.Data;
+using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+
+namespace kinohannover.Renderer.JsonRenderer
+{
+    public class JsonRenderer(KinohannoverContext context)
+    {
+        public void Render(string path)
+        {
+            var cinemas = context.Cinema.Include(e => e.Movies).ThenInclude(e => e.ShowTimes);
+
+            var eventSources = new List<FcEventSource>();
+            foreach (var cinema in cinemas)
+            {
+                var events = new List<FcEventObject>();
+                foreach (var movie in cinema.Movies.Where(e => e.Cinemas.Contains(cinema)))
+                {
+                    foreach (var showTime in movie.ShowTimes.Where(e => e.Cinema == cinema))
+                    {
+                        events.Add(new FcEventObject()
+                        {
+                            Title = movie.DisplayName,
+                            Start = showTime.StartTime,
+                            End = showTime.StartTime.Add(movie.Duration),
+                            Url = new Uri(cinema.Website)
+                        }); ;
+                    }
+                }
+                eventSources.Add(new FcEventSource()
+                {
+                    Id = cinema.Id.ToString(),
+                    Title = cinema.DisplayName,
+                    Events = [.. events],
+                    BorderColor = cinema.Color
+                });
+            }
+
+            WriteJsonToFile(eventSources, Path.Combine(path, "events.json"));
+        }
+
+        private static void WriteJsonToFile(IEnumerable<FcEventSource> eventSources, string path)
+        {
+            DefaultContractResolver contractResolver = new()
+            {
+                NamingStrategy = new CamelCaseNamingStrategy()
+            };
+
+            var serializedEventSources = JsonConvert.SerializeObject(eventSources, new JsonSerializerSettings
+            {
+                ContractResolver = contractResolver,
+                Formatting = Formatting.Indented
+            });
+            File.WriteAllText(path, serializedEventSources);
+        }
+    }
+}

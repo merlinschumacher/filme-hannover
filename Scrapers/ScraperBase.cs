@@ -1,33 +1,37 @@
 ﻿using kinohannover.Data;
 using kinohannover.Models;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Globalization;
 
 namespace kinohannover.Scrapers
 {
-    public abstract class ScraperBase(KinohannoverContext context, ILogger<ScraperBase> logger)
+    public abstract class ScraperBase
     {
         internal CultureInfo culture = new("de-DE");
+        protected readonly KinohannoverContext Context;
+        private readonly ILogger<ScraperBase> _logger;
+        internal Cinema Cinema;
 
-        internal Cinema CreateCinema(string name, string website)
+        protected ScraperBase(KinohannoverContext context, ILogger<ScraperBase> logger)
         {
-            var cinema = context.Cinema.FirstOrDefault(c => c.DisplayName == name);
-            if (cinema != null)
+            ArgumentNullException.ThrowIfNull(Cinema);
+            Context = context;
+            _logger = logger;
+            CreateCinema();
+        }
+
+        private void CreateCinema()
+        {
+            ArgumentNullException.ThrowIfNull(Cinema);
+
+            var cinema = Context.Cinema.FirstOrDefault(c => c.DisplayName == Cinema.DisplayName);
+            if (cinema == null)
             {
-                return cinema;
+                _logger.LogInformation("Creating cinema {name}", Cinema.DisplayName);
+                cinema = Context.Cinema.Add(Cinema).Entity;
+                Context.SaveChanges();
             }
-
-            logger.LogInformation("Creating cinema {name}", name);
-
-            cinema = new Cinema
-            {
-                DisplayName = name,
-                Website = new Uri(website)
-            };
-            context.Cinema.Add(cinema);
-            context.SaveChanges();
-            return cinema;
+            Cinema = cinema;
         }
 
         internal Movie CreateMovie(string title, Cinema cinema)
@@ -35,29 +39,24 @@ namespace kinohannover.Scrapers
             // Create a normalized title
             title = culture.TextInfo.ToTitleCase(title.Trim().ToLower());
 
-            var movie = context.Movies.Include(e => e.Cinemas).FirstOrDefault(m => m.DisplayName == title);
-            if (movie != null && movie.Cinemas.Contains(cinema))
-            {
-                return movie;
-            }
+            var movie = Context.Movies.FirstOrDefault(m => m.DisplayName == title);
 
             if (movie == null)
             {
-                logger.LogInformation("Creating movie {title}", title);
+                _logger.LogInformation("Creating movie {title}", title);
                 movie = new Movie
                 {
                     DisplayName = title,
                 };
-                context.Movies.Add(movie);
-                context.SaveChanges();
+                Context.Movies.Add(movie);
+                Context.SaveChanges();
             }
 
             if (!movie.Cinemas.Contains(cinema))
             {
-                logger.LogInformation("Adding movie {title} to cinema {cinema}", title, cinema.DisplayName);
+                _logger.LogInformation("Adding movie {title} to cinema {cinema}", title, cinema.DisplayName);
                 movie.Cinemas.Add(cinema);
             }
-
             return movie;
         }
 
@@ -69,7 +68,7 @@ namespace kinohannover.Scrapers
                 return;
             }
 
-            var showTimeEntity = context.ShowTime.FirstOrDefault(s => s.Time == showTime && s.Movie == movie && s.Cinema == cinema);
+            var showTimeEntity = Context.ShowTime.FirstOrDefault(s => s.StartTime == showTime && s.Movie == movie && s.Cinema == cinema);
 
             if (showTimeEntity != null)
             {
@@ -78,7 +77,7 @@ namespace kinohannover.Scrapers
 
             showTimeEntity = new ShowTime
             {
-                Time = showTime,
+                StartTime = showTime,
                 Cinema = cinema
             };
             movie.ShowTimes.Add(showTimeEntity);

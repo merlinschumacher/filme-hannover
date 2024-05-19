@@ -1,26 +1,28 @@
-﻿@font-face {
-    font-family: Poppins;
-    src: url(resources/Poppins-Regular.ttf);
-    font-weight: normal;
+﻿:root {
+    font-family: "Inter", sans-serif;
+}
+
+@supports (font-variation-settings: normal) {
+    :root {
+        font-family: "InterVariable", sans-serif;
+        font-optical-sizing: auto;
+    }
 }
 
 @font-face {
-    font-family: Poppins;
-    src: url(resources/Poppins-SemiBold.ttf);
-    font-weight: bold;
+    font-family: InterVariable;
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url("resources/InterVariable.woff2") format("woff2");
 }
 
 @font-face {
-    font-family: Poppins;
-    src: url(resources/Poppins-Italic.ttf);
+    font-family: InterVariable;
     font-style: italic;
-}
-
-@font-face {
-    font-family: Poppins;
-    src: url(resources/Poppins-SemiBoldItalic.ttf);
-    font-weight: bold;
-    font-style: italic;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url("resources/InterVariable-Italic.woff2") format("woff2");
 }
 
 html {
@@ -48,7 +50,7 @@ img {
 }
 
 body {
-    font-family: Poppins, Inter, 'Open Sans', Helvetica, Arial, sans-serif;
+    font-family: Inter, 'Open Sans', Helvetica, Arial, sans-serif;
 }
 
 a {

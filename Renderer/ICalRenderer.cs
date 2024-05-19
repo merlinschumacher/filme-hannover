@@ -26,7 +26,7 @@ namespace kinohannover.Renderer
             WriteCalendarToFile(moviesAll, Path.Combine(path, "all.ics"));
         }
 
-        private void WriteCalendarToFile(IEnumerable<Movie> movies, string path)
+        private static void WriteCalendarToFile(IEnumerable<Movie> movies, string path)
         {
             var calendar = RenderCalendar(movies);
             var serializer = new CalendarSerializer();
@@ -43,11 +43,11 @@ namespace kinohannover.Renderer
                 {
                     var calendarEvent = new CalendarEvent
                     {
-                        Start = new CalDateTime(showTime.Time, "Europe/Berlin"),
+                        Start = new CalDateTime(showTime.StartTime, "Europe/Berlin"),
                         Summary = movie.DisplayName,
                         Location = showTime.Cinema.DisplayName,
-                        Organizer = new Organizer() { CommonName = showTime.Cinema.DisplayName, Value = showTime.Cinema.Website },
-                        Url = showTime.Cinema.Website,
+                        Organizer = new Organizer() { CommonName = showTime.Cinema.DisplayName, Value = new Uri(showTime.Cinema.Website) },
+                        Url = new Uri(showTime.Cinema.Website),
                     };
                     calendar.Events.Add(calendarEvent);
                 }

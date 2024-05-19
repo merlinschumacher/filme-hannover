@@ -110,8 +110,15 @@ function getUsableViews() {
     }
     return 'listWeek,dayGridWeek';
 }
-function initCalendar() {
+
+async function fetchJsonData() {
+    const response = await fetch('/events.json');
+    return await response.json();
+}
+
+async function initCalendar() {
     var calendarEl = document.getElementById('calendar');
+    jsonData = await fetchJsonData();
     var calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: window.innerWidth < 769 ? 'listWeek' : 'dayGridWeek',
         contentHeight: 'auto',
@@ -145,19 +152,19 @@ function initCalendar() {
             minute: '2-digit',
             hour12: false,
         },
+        eventSources: jsonData
     });
-    for (var i = 0; i < cinemas.length; i++) {
-        if (cinemas[i].skipSource) {
-            continue;
-        }
-        calendar.addEventSource(cinemas[i]);
-    }
+    //for (var i = 0; i < cinemas.length; i++) {
+    //    if (cinemas[i].skipSource) {
+    //        continue;
+    //    }
+    //    calendar.addEventSource(cinemas[i]);
+    //}
     calendar.render();
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-    window.addEventListener("resize", debounce(initCalendar));
-    CreateCinemaList();
+document.addEventListener('DOMContentLoaded', async function () {
+    //CreateCinemaList();
 
     initCalendar();
 });

@@ -1,7 +1,6 @@
 ﻿using HtmlAgilityPack;
 using Ical.Net;
 using kinohannover.Data;
-using kinohannover.Models;
 using Microsoft.Extensions.Logging;
 using System.Text;
 
@@ -9,25 +8,26 @@ namespace kinohannover.Scrapers
 {
     public class SprengelScraper : ScraperBase, IScraper
     {
-        private const string name = "Kino im Sprengel";
-        private const string website = "https://www.kino-im-sprengel.de/index.php";
-        private const string url = "https://www.kino-im-sprengel.de/eventLoader.php";
-        private readonly KinohannoverContext context;
-        private readonly Cinema cinema;
+        private const string dataUrl = "https://www.kino-im-sprengel.de/eventLoader.php";
+
         private readonly HttpClient _httpClient = new();
         private const string icalLinkSelector = "//a[contains(@href, 'merke')]";
         private const string postData = "t%5Badvice%5D=daterange&t%5Brange%5D=currentmonth";
 
         public SprengelScraper(KinohannoverContext context, ILogger<SprengelScraper> logger) : base(context, logger)
         {
-            this.context = context;
-            cinema = CreateCinema(name, website);
+            Cinema = new()
+            {
+                DisplayName = "Kino im Sprengel",
+                Website = "https://www.kino-im-sprengel.de/",
+                Color = "#ADD8E6",
+            };
         }
 
         public async Task ScrapeAsync()
         {
             var content = new StringContent(postData, Encoding.UTF8, "application/x-www-form-urlencoded");
-            var scrapedHtml = _httpClient.PostAsync(url, content);
+            var scrapedHtml = _httpClient.PostAsync(dataUrl, content);
             var html = await scrapedHtml.Result.Content.ReadAsStringAsync();
             var doc = new HtmlDocument();
             doc.LoadHtml(html);
@@ -36,21 +36,21 @@ namespace kinohannover.Scrapers
             foreach (var icalLinkNode in icalLinkNodes)
             {
                 var icalLink = icalLinkNode.GetAttributeValue("href", "");
-                var icalLinkUri = new Uri(new Uri(url), icalLink);
+                var icalLinkUri = new Uri(new Uri(dataUrl), icalLink);
                 var icalText = await _httpClient.GetStringAsync(icalLinkUri);
 
                 var calendar = Calendar.Load(icalText);
 
                 foreach (var calendarEvent in calendar.Events)
                 {
-                    var movie = CreateMovie(calendarEvent.Summary, cinema);
-                    movie.Cinemas.Add(cinema);
+                    var movie = CreateMovie(calendarEvent.Summary, Cinema);
+                    movie.Cinemas.Add(Cinema);
 
                     var showDateTime = calendarEvent.Start.AsSystemLocal;
-                    CreateShowTime(movie, showDateTime, cinema);
+                    CreateShowTime(movie, showDateTime, Cinema);
                 }
             }
-            await context.SaveChangesAsync();
+            await Context.SaveChangesAsync();
         }
     }
 }

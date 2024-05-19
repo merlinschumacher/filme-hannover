@@ -1,7 +1,6 @@
 ﻿using CsvHelper;
 using CsvHelper.Configuration;
 using kinohannover.Data;
-using kinohannover.Models;
 using Microsoft.Extensions.Logging;
 using System.Globalization;
 
@@ -9,11 +8,6 @@ namespace kinohannover.Scrapers
 {
     public class KoKiScraper : ScraperBase, IScraper
     {
-        private const string name = "Kino im Künstlerhaus";
-        private const string website = "https://www.koki-hannover.de";
-        private readonly KinohannoverContext context;
-        private readonly Cinema cinema;
-
         private readonly CsvConfiguration config = new(CultureInfo.InvariantCulture)
         {
             HasHeaderRecord = false,
@@ -22,8 +16,12 @@ namespace kinohannover.Scrapers
 
         public KoKiScraper(KinohannoverContext context, ILogger<KoKiScraper> logger) : base(context, logger)
         {
-            this.context = context;
-            cinema = CreateCinema(name, website);
+            Cinema = new()
+            {
+                DisplayName = "Kino im Künstlerhaus",
+                Website = "https://www.koki-hannover.de",
+                Color = "#2c2e35",
+            };
         }
 
         public async Task ScrapeAsync()
@@ -49,11 +47,11 @@ namespace kinohannover.Scrapers
                 {
                     var title = secondColumn.Split("(")[0].Trim();
                     var showDateTime = new DateTime(currentDate.Year, currentDate.Month, currentDate.Day, time.Hour, time.Minute, 0);
-                    var movie = CreateMovie(title, cinema);
-                    CreateShowTime(movie, showDateTime, cinema);
+                    var movie = CreateMovie(title, Cinema);
+                    CreateShowTime(movie, showDateTime, Cinema);
                 }
             }
-            await context.SaveChangesAsync();
+            await Context.SaveChangesAsync();
         }
     }
 }

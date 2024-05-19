@@ -10,16 +10,16 @@ namespace kinohannover.Scrapers
 
     {
         private const int cinemaId = 81;
-        private const string name = "Cinemaxx";
-        private const string website = "https://www.cinemaxx.de/kinoprogramm/hannover/";
         private readonly HttpClient _httpClient = new();
-        private readonly Cinema cinema;
-        private readonly KinohannoverContext context;
 
         public CinemaxxScraper(KinohannoverContext context, ILogger<CinemaxxScraper> logger) : base(context, logger)
         {
-            this.context = context;
-            cinema = CreateCinema(name, website);
+            Cinema = new Cinema
+            {
+                DisplayName = "Cinemaxx",
+                Website = "https://www.cinemaxx.de/kinoprogramm/hannover/",
+                Color = "#800080",
+            };
         }
 
         public async Task ScrapeAsync()
@@ -36,7 +36,7 @@ namespace kinohannover.Scrapers
 
             foreach (var film in myDeserializedClass.WhatsOnAlphabeticFilms)
             {
-                var movie = CreateMovie(film.Title, cinema);
+                var movie = CreateMovie(film.Title, Cinema);
 
                 foreach (var outerCinema in film.WhatsOnAlphabeticCinemas)
                 {
@@ -46,12 +46,12 @@ namespace kinohannover.Scrapers
                         {
                             if (!DateTime.TryParse(shedule.Time, out var time))
                                 continue;
-                            CreateShowTime(movie, time, cinema);
+                            CreateShowTime(movie, time, Cinema);
                         }
                     }
                 }
             }
-            context.SaveChanges();
+            Context.SaveChanges();
         }
 
         private static string GetScraperUrl(string listType)

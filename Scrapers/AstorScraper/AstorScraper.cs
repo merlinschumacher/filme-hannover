@@ -1,5 +1,4 @@
 ﻿using kinohannover.Data;
-using kinohannover.Models;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 
@@ -7,20 +6,20 @@ namespace kinohannover.Scrapers.AstorScraper
 {
     public class AstorScraper : ScraperBase, IScraper
     {
-        private const string name = "Astor";
         private readonly List<string> specialEventTitles = ["(Best of Cinema)", "(MET "];
-        private const string website = "https://hannover.premiumkino.de/programmwoche";
         private readonly string apiEndpointUrl = "https://hannover.premiumkino.de/api/v1/de/config";
         private readonly HttpClient _httpClient = new();
-        private readonly Cinema cinema;
         private readonly ILogger<AstorScraper> _logger;
-        private readonly KinohannoverContext context;
 
         public AstorScraper(KinohannoverContext context, ILogger<AstorScraper> logger) : base(context, logger)
         {
-            this.context = context;
-            cinema = CreateCinema(name, website);
             _logger = logger;
+            Cinema = new()
+            {
+                DisplayName = "Astor",
+                Website = "https://hannover.premiumkino.de/programmwoche",
+                Color = "#ceb07a",
+            };
         }
 
         private string SanitizeTitle(string title)
@@ -43,7 +42,7 @@ namespace kinohannover.Scrapers.AstorScraper
             foreach (var astorMovie in astorMovies)
             {
                 var title = SanitizeTitle(astorMovie.name);
-                var movie = CreateMovie(title, cinema);
+                var movie = CreateMovie(title, Cinema);
 
                 foreach (var performance in astorMovie.performances)
                 {
@@ -51,10 +50,10 @@ namespace kinohannover.Scrapers.AstorScraper
                         continue;
 
                     var showDateTime = performance.begin;
-                    CreateShowTime(movie, showDateTime, cinema);
+                    CreateShowTime(movie, showDateTime, Cinema);
                 }
             }
-            context.SaveChanges();
+            Context.SaveChanges();
         }
 
         private async Task<IEnumerable<AstorMovie>> GetMovieList()

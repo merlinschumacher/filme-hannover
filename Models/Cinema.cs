@@ -5,8 +5,10 @@
         public int Id { get; set; }
         public string DisplayName { get; set; } = string.Empty;
 
-        public Uri Website { get; set; } = default!;
+        public string Website { get; set; } = string.Empty;
 
         public ICollection<Movie> Movies { get; set; } = [];
+
+        public string Color { get; set; } = "#000000";
     }
 }

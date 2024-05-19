@@ -1,6 +1,5 @@
 ﻿using HtmlAgilityPack;
 using kinohannover.Data;
-using kinohannover.Models;
 using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
 
@@ -8,11 +7,7 @@ namespace kinohannover.Scrapers.FilmkunstKinos
 {
     public partial class ApolloScraper : ScraperBase, IScraper
     {
-        private readonly KinohannoverContext context;
-        private const string website = "https://www.apollokino.de/?v=&mp=Vorschau";
-        private const string name = "Apollo Kino";
         private readonly HttpClient _httpClient = new();
-        private readonly Cinema cinema;
         private readonly List<string> showsToIgnore = ["00010032", "spezialclub.de"];
         private readonly List<string> specialEventTitles = ["MonGay-Filmnacht", "WoMonGay"];
 
@@ -21,13 +16,17 @@ namespace kinohannover.Scrapers.FilmkunstKinos
 
         public ApolloScraper(KinohannoverContext context, ILogger<ApolloScraper> logger) : base(context, logger)
         {
-            this.context = context;
-            cinema = CreateCinema(name, website);
+            Cinema = new()
+            {
+                DisplayName = "Apollo Kino",
+                Website = "https://www.apollokino.de/?v=&mp=Vorschau",
+                Color = "#0000ff",
+            };
         }
 
         public async Task ScrapeAsync()
         {
-            var scrapedHtml = _httpClient.GetAsync(website);
+            var scrapedHtml = _httpClient.GetAsync(Cinema.Website);
             var html = await scrapedHtml.Result.Content.ReadAsStringAsync();
             var doc = new HtmlDocument();
             doc.LoadHtml(html);
@@ -66,12 +65,12 @@ namespace kinohannover.Scrapers.FilmkunstKinos
                     foreach (var specialEventTitle in specialEventTitles)
                         title = title.Replace(specialEventTitle, "");
 
-                    var movie = CreateMovie(titleNode.InnerText, cinema);
+                    var movie = CreateMovie(titleNode.InnerText, Cinema);
 
-                    CreateShowTime(movie, showDateTime, cinema);
+                    CreateShowTime(movie, showDateTime, Cinema);
                 }
             }
-            context.SaveChanges();
+            await Context.SaveChangesAsync();
         }
 
         [GeneratedRegex(ovRegexString, RegexOptions.IgnoreCase, "de-DE")]
