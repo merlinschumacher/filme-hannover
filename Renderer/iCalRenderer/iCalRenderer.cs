@@ -5,25 +5,36 @@ using Ical.Net.Serialization;
 using kinohannover.Data;
 using kinohannover.Models;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
-namespace kinohannover.Renderer
+namespace kinohannover.Renderer.iCalRenderer
 {
-    public class ICalRenderer(KinohannoverContext context)
+    public class iCalRenderer(KinohannoverContext context)
     {
+        private readonly List<CinemaInfo> cinemaInfos = [];
+
         public void Render(string path)
         {
             foreach (var cinema in context.Cinema)
             {
+                var cinemaInfo = new CinemaInfo(cinema);
+                cinemaInfos.Add(cinemaInfo);
+
                 var movies = context.Movies.Where(e => e.Cinemas.Contains(cinema)).Select(e => new Movie()
                 {
                     DisplayName = e.DisplayName,
                     ShowTimes = e.ShowTimes.Where(e => e.Cinema == cinema).ToList()
                 });
-                WriteCalendarToFile(movies, Path.Combine(path, $"{cinema.DisplayName}.ics"));
+                WriteCalendarToFile(movies, Path.Combine(path, cinemaInfo.CalendarFile));
             }
 
             var moviesAll = context.Movies.Include(e => e.Cinemas).Include(e => e.ShowTimes);
-            WriteCalendarToFile(moviesAll, Path.Combine(path, "all.ics"));
+            var allCinemas = new CinemaInfo("Alle Kinos", "#cccccc");
+            cinemaInfos.Insert(0, allCinemas);
+            WriteCalendarToFile(moviesAll, Path.Combine(path, allCinemas.CalendarFile));
+
+            WriteJsonToFile(cinemaInfos, Path.Combine(path, "cinemas.json"));
         }
 
         private static void WriteCalendarToFile(IEnumerable<Movie> movies, string path)
@@ -53,6 +64,21 @@ namespace kinohannover.Renderer
                 }
             }
             return calendar;
+        }
+
+        private static void WriteJsonToFile(IEnumerable<CinemaInfo> eventSources, string path)
+        {
+            DefaultContractResolver contractResolver = new()
+            {
+                NamingStrategy = new CamelCaseNamingStrategy()
+            };
+
+            var serializedEventSources = JsonConvert.SerializeObject(eventSources, new JsonSerializerSettings
+            {
+                ContractResolver = contractResolver,
+                Formatting = Formatting.None
+            });
+            File.WriteAllText(path, serializedEventSources);
         }
     }
 }

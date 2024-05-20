@@ -5,24 +5,18 @@ using System.Text.RegularExpressions;
 
 namespace kinohannover.Scrapers.FilmkunstKinos
 {
-    public partial class ApolloScraper : ScraperBase, IScraper
+    public partial class ApolloScraper(KinohannoverContext context, ILogger<ApolloScraper> logger) : ScraperBase(context, logger, new()
     {
-        private readonly HttpClient _httpClient = new();
+        DisplayName = "Apollo Kino",
+        Website = "https://www.apollokino.de/?v=&mp=Vorschau",
+        Color = "#0000ff",
+    }), IScraper
+    {
         private readonly List<string> showsToIgnore = ["00010032", "spezialclub.de"];
         private readonly List<string> specialEventTitles = ["MonGay-Filmnacht", "WoMonGay"];
 
         private const string omuRegexString = @"\b(?:(?:\([^\)]+\)|[a-z]+)\.(?:\s*))?OmU\b";
         private const string ovRegexString = @"\(\s?ov\s?\)";
-
-        public ApolloScraper(KinohannoverContext context, ILogger<ApolloScraper> logger) : base(context, logger)
-        {
-            Cinema = new()
-            {
-                DisplayName = "Apollo Kino",
-                Website = "https://www.apollokino.de/?v=&mp=Vorschau",
-                Color = "#0000ff",
-            };
-        }
 
         public async Task ScrapeAsync()
         {

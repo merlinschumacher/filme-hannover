@@ -3,21 +3,20 @@
 <head>
     <meta charset='utf-8' />
     <link rel="preload" href="index.css" as="style">
-    <link rel="preload" href="fullcalendar.min.js" as="script">
-    <link rel="preload" href="ical.js" as="script">
-    <link rel="preload" href="de.js" as="script">
-    <link rel="preload" href="fullcalendar-ics.min.js" as="script">
-    <!--<link rel="preload" href="events.json" as="fetch">-->
-    <script src='fullcalendar.min.js'></script>
-    <script src='ical.js'></script>
-    <script src='de.js'></script>
-    <script src='fullcalendar-ics.min.js'></script>
-    <title>Das aktuelle Kinoprogramm in Hannover</title>
+    <link rel="preload" href="resources/fullcalendar.min.js" as="script">
+    <link rel="preload" href="resources/de.js" as="script">
     <link rel="stylesheet" type="text/css" href="index.css">
+    <script src='resources/fullcalendar.min.js'></script>
+    <script src='resources/de.js'></script>
+    <script src='index.js' defer></script>
+    <title>Das aktuelle Kinoprogramm in Hannover</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📽️</text></svg>">
 </head>
 <body>
+    <noscript>
+        <p>Bitte aktivieren Sie JavaScript, um den Kalender zu sehen.</p>
+    </noscript>
     <div class="content">
         <h1>Das aktuelle Kinoprogramm in Hannover</h1>
         <p>Willkommen auf www.filme-hannover.de. Hier finden sie eine Übersicht aller Kinovorstellungen, Filme und Kinos in Hannover.</p>
@@ -27,15 +26,11 @@
                     Kinoliste anzeigen
                 </summary>
                 <p>Folgende Kinos werden gelistet:</p>
-                <div id="cinemaList"></div>
+                <ul id="cinemaList"></ul>
+                <div id="snackbar"></div>
             </details>
         </p>
-        <div id="cinemaList"></div>
-        <noscript>
-            <p>Bitte aktivieren Sie JavaScript, um den Kalender zu sehen.</p>
-        </noscript>
-        <div id='calendar'></div>
+        <div id="calendar"></div>
     </div>
-    <script src='index.js' defer></script>
 </body>
 </html>

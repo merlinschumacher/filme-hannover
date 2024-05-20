@@ -1,15 +1,6 @@
 ﻿namespace kinohannover.Renderer.JsonRenderer
 {
-    public class FcEventSource
-    {
-        public string Id { get; set; } = string.Empty;
-        public string Title { get; set; } = string.Empty;
-        public bool Editable { get; } = false;
-        public FcEventObject[] Events { get; set; } = [];
-        public string BorderColor { get; set; } = "#000000";
-    }
-
-    public class FcEventObject
+    public class FullCalendarObject
     {
         public Guid Id { get; set; } = Guid.NewGuid();
         public string Title { get; set; } = string.Empty;

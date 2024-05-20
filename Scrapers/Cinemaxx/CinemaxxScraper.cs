@@ -1,26 +1,19 @@
 ﻿using kinohannover.Data;
-using kinohannover.Models;
 using kinohannover.Scrapers.Cinemaxx;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace kinohannover.Scrapers
 {
-    public class CinemaxxScraper : ScraperBase, IScraper
+    public class CinemaxxScraper(KinohannoverContext context, ILogger<CinemaxxScraper> logger) : ScraperBase(context, logger, new()
+    {
+        DisplayName = "Cinemaxx",
+        Website = "https://www.cinemaxx.de/kinoprogramm/hannover/",
+        Color = "#800080",
+    }), IScraper
 
     {
         private const int cinemaId = 81;
-        private readonly HttpClient _httpClient = new();
-
-        public CinemaxxScraper(KinohannoverContext context, ILogger<CinemaxxScraper> logger) : base(context, logger)
-        {
-            Cinema = new Cinema
-            {
-                DisplayName = "Cinemaxx",
-                Website = "https://www.cinemaxx.de/kinoprogramm/hannover/",
-                Color = "#800080",
-            };
-        }
 
         public async Task ScrapeAsync()
         {

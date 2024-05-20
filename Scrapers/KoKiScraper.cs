@@ -6,23 +6,18 @@ using System.Globalization;
 
 namespace kinohannover.Scrapers
 {
-    public class KoKiScraper : ScraperBase, IScraper
+    public class KoKiScraper(KinohannoverContext context, ILogger<KoKiScraper> logger) : ScraperBase(context, logger, new()
+    {
+        DisplayName = "Kino im Künstlerhaus",
+        Website = "https://www.koki-hannover.de",
+        Color = "#2c2e35",
+    }), IScraper
     {
         private readonly CsvConfiguration config = new(CultureInfo.InvariantCulture)
         {
             HasHeaderRecord = false,
             ShouldSkipRecord = (args) => string.IsNullOrWhiteSpace(args.Row[0])
         };
-
-        public KoKiScraper(KinohannoverContext context, ILogger<KoKiScraper> logger) : base(context, logger)
-        {
-            Cinema = new()
-            {
-                DisplayName = "Kino im Künstlerhaus",
-                Website = "https://www.koki-hannover.de",
-                Color = "#2c2e35",
-            };
-        }
 
         public async Task ScrapeAsync()
         {

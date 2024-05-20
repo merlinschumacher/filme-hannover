@@ -4,23 +4,15 @@ using Newtonsoft.Json.Linq;
 
 namespace kinohannover.Scrapers.AstorScraper
 {
-    public class AstorScraper : ScraperBase, IScraper
+    public class AstorScraper(KinohannoverContext context, ILogger<AstorScraper> logger) : ScraperBase(context, logger, new()
+    {
+        DisplayName = "Astor",
+        Website = "https://hannover.premiumkino.de/programmwoche",
+        Color = "#ceb07a",
+    }), IScraper
     {
         private readonly List<string> specialEventTitles = ["(Best of Cinema)", "(MET "];
         private readonly string apiEndpointUrl = "https://hannover.premiumkino.de/api/v1/de/config";
-        private readonly HttpClient _httpClient = new();
-        private readonly ILogger<AstorScraper> _logger;
-
-        public AstorScraper(KinohannoverContext context, ILogger<AstorScraper> logger) : base(context, logger)
-        {
-            _logger = logger;
-            Cinema = new()
-            {
-                DisplayName = "Astor",
-                Website = "https://hannover.premiumkino.de/programmwoche",
-                Color = "#ceb07a",
-            };
-        }
 
         private string SanitizeTitle(string title)
         {
@@ -80,7 +72,7 @@ namespace kinohannover.Scrapers.AstorScraper
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Failed to scrape Astor");
+                logger.LogError(e, "Failed to scrape Astor");
                 return astorMovies;
             }
         }

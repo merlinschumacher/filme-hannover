@@ -14,12 +14,12 @@ namespace kinohannover.Renderer.JsonRenderer
             var eventSources = new List<FcEventSource>();
             foreach (var cinema in cinemas)
             {
-                var events = new List<FcEventObject>();
+                var events = new List<FullCalendarObject>();
                 foreach (var movie in cinema.Movies.Where(e => e.Cinemas.Contains(cinema)))
                 {
                     foreach (var showTime in movie.ShowTimes.Where(e => e.Cinema == cinema))
                     {
-                        events.Add(new FcEventObject()
+                        events.Add(new FullCalendarObject()
                         {
                             Title = movie.DisplayName,
                             Start = showTime.StartTime,
@@ -50,7 +50,7 @@ namespace kinohannover.Renderer.JsonRenderer
             var serializedEventSources = JsonConvert.SerializeObject(eventSources, new JsonSerializerSettings
             {
                 ContractResolver = contractResolver,
-                Formatting = Formatting.Indented
+                Formatting = Formatting.None
             });
             File.WriteAllText(path, serializedEventSources);
         }

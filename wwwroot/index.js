@@ -1,149 +1,158 @@
-﻿function debounce(func, time) {
-    var time = time || 100; // 100 by default if no param
-    var timer;
-    return function (event) {
-        if (timer) clearTimeout(timer);
-        timer = setTimeout(func, time, event);
-    };
+﻿let eventSourcesData = [];
+let calendar = null;
+let widthDayNumBreakpoints = {
+    600: 2,
+    720: 3,
+    1000: 5,
+    1200: 7,
 }
-var getFormatedDate = function (date = new Date()) {
-    var year = date.getFullYear();
-    var month = date.getMonth() + 1;
-    var day = date.getDate();
-    return year + '-' + (month < 10 ? '0' : '') + month + '-' + (day < 10 ? '0' : '') + day;
-};
-var cinemas = [
-    {
-        title: 'Alle Kinos',
-        url: '/all.ics',
-        format: 'ics',
-        color: 'grey',
-        skipSource: true,
-    },
-    {
-        title: 'Astor',
-        url: '/Astor.ics',
-        format: 'ics',
-        color: '#ceb07a',
-        textColor: '#000000',
-    },
-    {
-        title: 'Cinemaxx',
-        url: '/Cinemaxx.ics',
-        format: 'ics',
-        color: 'purple',
-    },
-    {
-        title: 'Apollo Kino',
-        url: '/Apollo Kino.ics',
-        format: 'ics',
-        color: 'blue',
-        textColor: 'white',
-    },
-    {
-        title: 'Kino im Sprengel',
-        url: '/Kino im Sprengel.ics',
-        format: 'ics',
-        color: 'lightblue',
-        textColor: '#000000',
-    },
-    {
-        title: 'Kino im Künstlerhaus',
-        url: '/Kino im Künstlerhaus.ics',
-        format: 'ics',
-        color: '#2c2e35',
-    },
-    {
-        title: 'Kino am Raschplatz',
-        url: '/Kino am Raschplatz.ics',
-        format: 'ics',
-        color: '#ac001f',
-    },
-    {
-        title: 'Hochhaus Lichtspiele',
-        url: '/Hochhaus Lichtspiele.ics',
-        format: 'ics',
-        color: '#ffd45c',
-        textColor: '#000000',
-    }
-];
 
-var CreateCinemaList = function () {
-    var list = document.getElementById('cinemaList');
-    for (var i = 0; i < cinemas.length; i++) {
-        var cinema = cinemas[i];
-        var listItem = document.createElement('li');
-        var listItemDot = document.createElement('span');
+function getCurrentDate() {
+    return { start: new Date() }
+};
+
+function showSnackbar(text) {
+    // Get the snackbar DIV
+    let snackBar = document.getElementById("snackbar");
+    snackBar.textContent = text;
+
+    // Add the "show" class to DIV
+    snackBar.className = "show";
+
+    // After 3 seconds, remove the show class from DIV
+    setTimeout(function () { snackBar.className = snackBar.className.replace("show", ""); snackBar.textContent = "" }, 3000);
+}
+
+function copyURI(evt) {
+    evt.preventDefault();
+    navigator.clipboard.writeText(evt.target.getAttribute('href')).then(() => {
+        showSnackbar('Kalenderlink kopiert');
+    }, () => {
+        showSnackbar('Fehler beim Kopieren des Kalenderlinks');
+    });
+}
+
+function selectCinema(evt) {
+    evt.preventDefault();
+    let cinemaName = evt.target.textContent;
+    let cinemaEventSources = [];
+    calendar.removeAllEventSources();
+    if (cinemaName === 'Alle Kinos') {
+        cinemaEventSources = eventSourcesData;
+    } else {
+        cinemaEventSources.push(eventSourcesData.find(e => e.title === cinemaName));
+    }
+    for (let cinemaEventSource of cinemaEventSources) {
+        calendar.addEventSource(cinemaEventSource);
+    }
+    calendar.refetchEvents();
+}
+
+async function CreateCinemaList() {
+    let cinemas = await fetchJsonData('/cinemas.json');
+    let list = document.getElementById('cinemaList');
+    for (let i = 0; i < cinemas.length; i++) {
+        let cinema = cinemas[i];
+        let listItem = document.createElement('li');
+        let listItemDot = document.createElement('span');
+
         listItemDot.style.backgroundColor = cinema.color;
+        listItemDot.classList.add('dot');
         listItem.appendChild(listItemDot);
         listItem.classList.add('list-group-item');
-        listItem.appendChild(document.createTextNode(cinema.title));
 
-        var listItemIcalLink = document.createElement('a');
-        listItemIcalLink.href = cinema.url;
-        listItemIcalLink.textContent = '📅';
+        let cinemaName = document.createElement('a');
+        cinemaName.href = "#";
+        cinemaName.textContent = cinema.displayName;
+        cinemaName.classList.add('cinemaName');
+        cinemaName.addEventListener('click', selectCinema);
+        listItem.appendChild(cinemaName);
+
+        let listItemIcalLink = document.createElement('a');
+        let href = new URL(cinema.calendarFile, document.baseURI).href;
+        listItemIcalLink.href = href;
+        listItemIcalLink.textContent = '📅 iCal';
+        listItemIcalLink.addEventListener('click', copyURI);
         listItem.appendChild(listItemIcalLink);
+
         list.appendChild(listItem);
     }
 }
 
-var widthDayNumBreakpoints = {
-    769: 2,
-    1025: 3,
-    1367: 5,
+function getHeaderToolbar() {
+    let headerToolbar = {
+        left: 'prev,next',
+        center: 'title',
+        right: 'listWeek,dayGridWeek'
+    }
+
+    return headerToolbar;
 }
 
+function getDefaultView() {
+    let width = window.innerWidth;
+    if (width < 600) {
+        return 'listWeek';
+    }
+    return 'dayGridWeek';
+}
 function getDayNumBreakpoint() {
-    var width = window.innerWidth;
-    for (var breakpoint in widthDayNumBreakpoints) {
-        if (width < breakpoint) {
-            return widthDayNumBreakpoints[breakpoint];
+    let width = window.innerWidth;
+    let duration = 7;
+    if (getDefaultView() === 'dayGridWeek') {
+        for (let breakpoint in widthDayNumBreakpoints) {
+            if (width > breakpoint) {
+                duration = widthDayNumBreakpoints[breakpoint];
+            }
         }
     }
-    return 7;
+    return { days: duration };
 }
 
-function getUsableViews() {
-    var width = window.innerWidth;
-    if (width < 769) {
-        return '';
-    }
-    return 'listWeek,dayGridWeek';
-}
-
-async function fetchJsonData() {
-    const response = await fetch('/events.json');
+async function fetchJsonData(url) {
+    const response = await fetch(url);
     return await response.json();
 }
 
+async function updateCalendarView(arg) {
+    let view = getDefaultView();
+    let daysduration = getDayNumBreakpoint();
+
+    calendar.changeView(view, {
+        duration: daysduration
+    });
+}
+
+async function getEventSources() {
+    eventSourcesData = await fetchJsonData('/events.json');
+    return eventSourcesData;
+}
+
+function eventClickHandler(info) {
+    info.jsEvent.preventDefault();
+    window.open(info.event.url);
+}
+
 async function initCalendar() {
-    var calendarEl = document.getElementById('calendar');
-    jsonData = await fetchJsonData();
-    var calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: window.innerWidth < 769 ? 'listWeek' : 'dayGridWeek',
-        contentHeight: 'auto',
+    let calendarEl = document.getElementById('calendar');
+    await getEventSources();
+    calendar = new FullCalendar.Calendar(calendarEl, {
         height: 'auto',
-        visibleRange: {
-            start: getFormatedDate()
-        },
-        validRange: {
-            start: getFormatedDate()
-        },
-        headerToolbar: {
-            left: 'prev,today,next',
-            center: '',
-            right: getUsableViews()
-        },
+        contentHeight: 'auto',
+        initialView: getDefaultView(),
+        visibleRange: getCurrentDate(),
+        validRange: getCurrentDate(),
+        headerToolbar: getHeaderToolbar(),
         locale: 'de',
         views: {
             listWeek: {
+                type: 'list',
                 buttonText: 'Liste',
             },
             dayGridWeek: {
+                type: 'dayGrid',
                 buttonText: 'Woche',
-                duration: {
-                    days: getDayNumBreakpoint()
-                }
+                duration: getDayNumBreakpoint()
             },
         },
         nextDayThreshold: '05:00:00',
@@ -152,19 +161,16 @@ async function initCalendar() {
             minute: '2-digit',
             hour12: false,
         },
-        eventSources: jsonData
+        displayEventEnd: false,
+        eventSources: eventSourcesData,
+        windowResize: updateCalendarView,
+        eventClick: eventClickHandler,
     });
-    //for (var i = 0; i < cinemas.length; i++) {
-    //    if (cinemas[i].skipSource) {
-    //        continue;
-    //    }
-    //    calendar.addEventSource(cinemas[i]);
-    //}
     calendar.render();
 }
 
 document.addEventListener('DOMContentLoaded', async function () {
-    //CreateCinemaList();
+    CreateCinemaList();
 
     initCalendar();
 });

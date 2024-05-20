@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace kinohannover.Scrapers.FilmkunstKinos
 {
-    public abstract class FilmkunstKinosScraper : ScraperBase, IScraper
+    public abstract class FilmkunstKinosScraper(KinohannoverContext context, ILogger<FilmkunstKinosScraper> logger, Cinema cinema) : ScraperBase(context, logger, cinema), IScraper
     {
         private const string contentBoxSelector = "//div[contains(concat(' ', normalize-space(@class), ' '), ' contentbox ')]";
         private const string movieSelector = ".//table";
@@ -14,12 +14,6 @@ namespace kinohannover.Scrapers.FilmkunstKinos
         private const string dateSelector = ".//span[contains(concat(' ', normalize-space(@class), ' '), ' filmtagdatum ')]/text()[preceding-sibling::br]";
         private const string timeSelector = ".//a";
         private const string dateFormat = "dd.MM.";
-        private readonly HttpClient _httpClient = new();
-
-        public FilmkunstKinosScraper(KinohannoverContext context, ILogger<FilmkunstKinosScraper> logger, Cinema cinema) : base(context, logger)
-        {
-            Cinema = cinema;
-        }
 
         public async Task ScrapeAsync()
         {

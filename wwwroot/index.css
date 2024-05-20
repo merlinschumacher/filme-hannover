@@ -4,13 +4,13 @@
 
 @supports (font-variation-settings: normal) {
     :root {
-        font-family: "InterVariable", sans-serif;
+        font-family: "Inter", sans-serif;
         font-optical-sizing: auto;
     }
 }
 
 @font-face {
-    font-family: InterVariable;
+    font-family: Inter;
     font-style: normal;
     font-weight: 100 900;
     font-display: swap;
@@ -18,11 +18,60 @@
 }
 
 @font-face {
-    font-family: InterVariable;
+    font-family: Inter;
     font-style: italic;
     font-weight: 100 900;
     font-display: swap;
     src: url("resources/InterVariable-Italic.woff2") format("woff2");
+}
+
+/* Animations to fade the snackbar in and out */
+@-webkit-keyframes fadein {
+    from {
+        bottom: 0;
+        opacity: 0;
+    }
+
+    to {
+        bottom: 30px;
+        opacity: 1;
+    }
+}
+
+@keyframes fadein {
+    from {
+        bottom: 0;
+        opacity: 0;
+    }
+
+    to {
+        bottom: 30px;
+        opacity: 1;
+    }
+}
+
+@-webkit-keyframes fadeout {
+    from {
+        bottom: 30px;
+        opacity: 1;
+    }
+
+    to {
+        bottom: 0;
+        opacity: 0;
+    }
+}
+
+@keyframes fadeout {
+    from {
+        bottom: 30px;
+        opacity: 1;
+    }
+
+    to {
+        bottom: 0;
+        opacity: 0;
+    }
 }
 
 html {
@@ -71,26 +120,96 @@ p {
     padding: 1em;
 }
 
-    .content h1, h2, h3, h4, h5, h6 {
-        margin: 0.5em 0;
-    }
-
-summary {
-    max-width: 300px;
+details {
+    max-width: 100%;
 }
 
 #cinemaList {
     list-style-type: none;
 }
 
-    #cinemaList .list-group-item > span {
-        height: 1em;
-        width: 1em;
-        display: inline-block;
-        border-radius: 50%;
-        margin-right: 0.5em;
+    #cinemaList .list-group-item {
+        display: flex;
+        flex-wrap: wrap;
+        width: 100%;
+        border: var(--fbc-borders);
+        border-collapse: collapse;
     }
 
-    #cinemaList .list-group-item > a {
-        text-decoration: inherit;
+        #cinemaList .list-group-item > .dot {
+            height: 1em;
+            width: 1em;
+            display: inline-block;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+            margin-top: 0.6rem;
+            margin-left: 0.5rem;
+        }
+
+        #cinemaList .list-group-item > a {
+            padding: 0.5em;
+            text-decoration: none;
+        }
+
+            #cinemaList .list-group-item > a:hover {
+                text-decoration: underline;
+            }
+
+        #cinemaList .list-group-item .cinemaName {
+            flex-grow: 1;
+        }
+
+        #cinemaList .list-group-item:hover {
+            background-color: var(--fc-list-event-hover-bg-color);
+        }
+
+            #cinemaList .list-group-item:hover a {
+                color: var(--fc-primary-text);
+                border-radius: 0.25em;
+            }
+
+.fc-header-toolbar .fc-toolbar-title {
+    font-size: 1.3em;
+}
+
+.fc-list-event-time {
+    font-variant-numeric: tabular-nums;
+}
+
+/* The snackbar - position it at the bottom and in the middle of the screen */
+#snackbar {
+    visibility: hidden; /* Hidden by default. Visible on click */
+    min-width: 250px; /* Set a default minimum width */
+    margin-left: -125px; /* Divide value of min-width by 2 */
+    position: fixed; /* Sit on top of the screen */
+    z-index: 1; /* Add a z-index if needed */
+    left: 50%; /* Center the snackbar */
+    bottom: 30px; /* 30px from the bottom */
+    background-color: var(--fc-button-hover-bg-color);
+    border-color: var(--fc-button-hover-border-color);
+    color: var(--fc-button-text-color);
+    border-radius: 0.25em;
+    display: inline-block;
+    font-size: 1em;
+    font-weight: 400;
+    line-height: 1.5;
+    padding: 0.4em 0.65em;
+    text-align: center;
+    user-select: none;
+    vertical-align: middle;
+}
+
+    /* Show the snackbar when clicking on a button (class added with JavaScript) */
+    #snackbar.show {
+        visibility: visible; /* Show the snackbar */
+        /* Add animation: Take 0.5 seconds to fade in and out the snackbar.
+  However, delay the fade out process for 2.5 seconds */
+        -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+        animation: fadein 0.5s, fadeout 0.5s 2.5s;
     }
+
+@media (min-width: 768px) {
+    details {
+        max-width: 320px;
+    }
+}
