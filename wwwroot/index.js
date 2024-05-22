@@ -1,10 +1,18 @@
 ﻿let eventSourcesData = [];
+let selectedEventSources = [];
 let calendar = null;
-let widthDayNumBreakpoints = {
-    600: 2,
-    720: 3,
-    1000: 5,
-    1200: 7,
+const widthDayNumBreakpoints = {
+    600: 1,
+    720: 2,
+    900: 3,
+    1040: 4,
+    1200: 5,
+    1366: 7,
+};
+
+async function fetchJsonData(url) {
+    const response = await fetch(url);
+    return await response.json();
 }
 
 function getCurrentDate() {
@@ -42,6 +50,7 @@ function selectCinema(evt) {
     } else {
         cinemaEventSources.push(eventSourcesData.find(e => e.title === cinemaName));
     }
+    selectedEventSources = cinemaEventSources;
     for (let cinemaEventSource of cinemaEventSources) {
         calendar.addEventSource(cinemaEventSource);
     }
@@ -85,7 +94,6 @@ function getHeaderToolbar() {
         center: 'title',
         right: 'listWeek,dayGridWeek'
     }
-
     return headerToolbar;
 }
 
@@ -100,32 +108,53 @@ function getDayNumBreakpoint() {
     let width = window.innerWidth;
     let duration = 7;
     if (getDefaultView() === 'dayGridWeek') {
-        for (let breakpoint in widthDayNumBreakpoints) {
-            if (width > breakpoint) {
-                duration = widthDayNumBreakpoints[breakpoint];
+        var lastBreakpointSize = 0;
+        Object.keys(widthDayNumBreakpoints).reverse().forEach(key => {
+            if (width > lastBreakpointSize && width < key) {
+                duration = widthDayNumBreakpoints[key];
+                return;
             }
-        }
+            lastBreakpointSize = key;
+        })
     }
-    return { days: duration };
+    return duration;
 }
 
-async function fetchJsonData(url) {
-    const response = await fetch(url);
-    return await response.json();
-}
-
-async function updateCalendarView(arg) {
+async function handleWindowResize(arg) {
     let view = getDefaultView();
-    let daysduration = getDayNumBreakpoint();
-
-    calendar.changeView(view, {
-        duration: daysduration
-    });
+    if (arg.view.type == 'listWeek') {
+        calendar.changeView(view);
+        return;
+    }
+    let currentDuration = arg.view.getOption('duration');
+    let duration = getDayNumBreakpoint();
+    if (currentDuration.days != duration) {
+        calendar.destroy();
+        initCalendar();
+    }
 }
 
 async function getEventSources() {
-    eventSourcesData = await fetchJsonData('/events.json');
+    var eventSources = await fetchJsonData('/events.json');
+    for (let eventSource of eventSources) {
+        eventSource.events = eventSource.events.filter(e => {
+            let startDate = new Date(e.start);
+            let now = new Date();
+            return startDate >= now;
+        })
+        eventSourcesData.push(eventSource);
+    }
+    selectedEventSources = eventSourcesData;
     return eventSourcesData;
+}
+
+function showTooltip(info) {
+    let tooltip = new Tooltip(info, el, {
+        title: info.event.title,
+        placement: 'top',
+        trigger: 'click',
+        container: 'body'
+    });
 }
 
 function eventClickHandler(info) {
@@ -133,14 +162,11 @@ function eventClickHandler(info) {
     window.open(info.event.url);
 }
 
-async function initCalendar() {
-    let calendarEl = document.getElementById('calendar');
-    await getEventSources();
-    calendar = new FullCalendar.Calendar(calendarEl, {
+function getCalendarOptions() {
+    return {
         height: 'auto',
         contentHeight: 'auto',
         initialView: getDefaultView(),
-        visibleRange: getCurrentDate(),
         validRange: getCurrentDate(),
         headerToolbar: getHeaderToolbar(),
         locale: 'de',
@@ -152,7 +178,8 @@ async function initCalendar() {
             dayGridWeek: {
                 type: 'dayGrid',
                 buttonText: 'Woche',
-                duration: getDayNumBreakpoint()
+                duration: { days: getDayNumBreakpoint() },
+                visibleRange: getCurrentDate(),
             },
         },
         nextDayThreshold: '05:00:00',
@@ -162,15 +189,21 @@ async function initCalendar() {
             hour12: false,
         },
         displayEventEnd: false,
-        eventSources: eventSourcesData,
-        windowResize: updateCalendarView,
+        eventSources: selectedEventSources,
+        windowResize: handleWindowResize,
         eventClick: eventClickHandler,
-    });
+        //eventDidMount: showTooltip,
+    }
+}
+async function initCalendar() {
+    let calendarEl = document.getElementById('calendar');
+    var calendarOptions = getCalendarOptions();
+    calendar = new FullCalendar.Calendar(calendarEl, calendarOptions);
     calendar.render();
 }
 
 document.addEventListener('DOMContentLoaded', async function () {
     CreateCinemaList();
-
+    await getEventSources();
     initCalendar();
 });

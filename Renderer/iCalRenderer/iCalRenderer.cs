@@ -16,7 +16,12 @@ namespace kinohannover.Renderer.iCalRenderer
 
         public void Render(string path)
         {
-            foreach (var cinema in context.Cinema)
+            var moviesAll = context.Movies.Include(e => e.Cinemas).Include(e => e.ShowTimes);
+            var allCinemas = new CinemaInfo("Alle Kinos", "#cccccc");
+            cinemaInfos.Add(allCinemas);
+            WriteCalendarToFile(moviesAll, Path.Combine(path, allCinemas.CalendarFile));
+
+            foreach (var cinema in context.Cinema.OrderBy(e => e.DisplayName))
             {
                 var cinemaInfo = new CinemaInfo(cinema);
                 cinemaInfos.Add(cinemaInfo);
@@ -28,11 +33,6 @@ namespace kinohannover.Renderer.iCalRenderer
                 });
                 WriteCalendarToFile(movies, Path.Combine(path, cinemaInfo.CalendarFile));
             }
-
-            var moviesAll = context.Movies.Include(e => e.Cinemas).Include(e => e.ShowTimes);
-            var allCinemas = new CinemaInfo("Alle Kinos", "#cccccc");
-            cinemaInfos.Insert(0, allCinemas);
-            WriteCalendarToFile(moviesAll, Path.Combine(path, allCinemas.CalendarFile));
 
             WriteJsonToFile(cinemaInfos, Path.Combine(path, "cinemas.json"));
         }
