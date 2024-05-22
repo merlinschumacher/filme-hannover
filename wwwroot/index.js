@@ -107,7 +107,7 @@ function getDefaultView() {
 function getDayNumBreakpoint() {
     let width = window.innerWidth;
     let duration = 7;
-    if (getDefaultView() === 'dayGridWeek') {
+    
         var lastBreakpointSize = 0;
         Object.keys(widthDayNumBreakpoints).reverse().forEach(key => {
             if (width > lastBreakpointSize && width < key) {
@@ -116,7 +116,7 @@ function getDayNumBreakpoint() {
             }
             lastBreakpointSize = key;
         })
-    }
+    
     return duration;
 }
 
