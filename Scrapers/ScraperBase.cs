@@ -49,16 +49,18 @@ namespace kinohannover.Scrapers
             return movie;
         }
 
-        internal void CreateShowTime(Movie movie, DateTime showTime, Cinema cinema)
+        internal void CreateShowTime(Movie movie, DateTime dateTime, ShowTimeType type = ShowTimeType.Regular, ShowTimeLanguage lang = ShowTimeLanguage.German, string url = "", string shopUrl = "")
         {
+            url = GetUrl(url);
+            url = GetUrl(shopUrl);
+
             // Don't add showtimes that have already passed more than an hour ago
-            if (showTime < DateTime.Now.AddHours(-1))
+            if (dateTime < DateTime.Now.AddHours(-1))
             {
                 return;
             }
 
-            var showTimeEntity = Context.ShowTime.FirstOrDefault(s => s.StartTime == showTime && s.Movie == movie && s.Cinema == cinema);
-
+            var showTimeEntity = Context.ShowTime.FirstOrDefault(s => s.StartTime == dateTime && s.Movie == movie && s.Cinema == Cinema && s.Type == type && s.Language == lang);
             if (showTimeEntity != null)
             {
                 return;
@@ -66,11 +68,41 @@ namespace kinohannover.Scrapers
 
             showTimeEntity = new ShowTime
             {
-                StartTime = showTime,
-                Cinema = cinema
+                StartTime = dateTime,
+                Cinema = Cinema,
+                Type = type,
+                Language = lang,
+                Url = url,
+                ShopUrl = shopUrl,
             };
 
             movie.ShowTimes.Add(showTimeEntity);
+        }
+
+        internal string GetUrl(string url, string baseUrl = "")
+        {
+            if (string.IsNullOrWhiteSpace(baseUrl))
+            {
+                baseUrl = new Uri(Cinema.Website).GetLeftPart(UriPartial.Authority);
+            }
+            var result = Uri.TryCreate(url, UriKind.RelativeOrAbsolute, out var uri);
+            if (string.IsNullOrWhiteSpace(url) || !result || uri == null)
+            {
+                return Cinema.Website;
+            }
+
+            if (!uri.IsAbsoluteUri)
+            {
+                try
+                {
+                    return new Uri(new Uri(baseUrl), uri).ToString();
+                }
+                catch
+                {
+                    return Cinema.Website;
+                }
+            }
+            return url;
         }
 
         private void CreateCinema()

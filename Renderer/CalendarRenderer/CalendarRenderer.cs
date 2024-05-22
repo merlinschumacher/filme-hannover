@@ -8,9 +8,9 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace kinohannover.Renderer.iCalRenderer
+namespace kinohannover.Renderer.CalendarRenderer
 {
-    public class iCalRenderer(KinohannoverContext context)
+    public class CalendarRenderer(KinohannoverContext context)
     {
         private readonly List<CinemaInfo> cinemaInfos = [];
 
@@ -55,11 +55,15 @@ namespace kinohannover.Renderer.iCalRenderer
                     var calendarEvent = new CalendarEvent
                     {
                         Start = new CalDateTime(showTime.StartTime, "Europe/Berlin"),
-                        Summary = movie.DisplayName,
+                        Summary = $"{movie.DisplayName} {showTime.GetShowTimeSuffix()}",
                         Location = showTime.Cinema.DisplayName,
                         Organizer = new Organizer() { CommonName = showTime.Cinema.DisplayName, Value = new Uri(showTime.Cinema.Website) },
-                        Url = new Uri(showTime.Cinema.Website),
+                        Name = $"{movie.DisplayName} {showTime.GetShowTimeSuffix()}",
                     };
+                    if (!string.IsNullOrWhiteSpace(showTime.Url))
+                    {
+                        calendarEvent.Url = new Uri(showTime.Url);
+                    }
                     calendar.Events.Add(calendarEvent);
                 }
             }

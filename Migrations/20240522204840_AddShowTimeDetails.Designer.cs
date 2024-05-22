@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using kinohannover.Data;
 
@@ -10,9 +11,11 @@ using kinohannover.Data;
 namespace kinohannover.Migrations
 {
     [DbContext(typeof(KinohannoverContext))]
-    partial class KinohannoverContextModelSnapshot : ModelSnapshot
+    [Migration("20240522204840_AddShowTimeDetails")]
+    partial class AddShowTimeDetails
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.4");
@@ -82,24 +85,16 @@ namespace kinohannover.Migrations
                     b.Property<int>("CinemaId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("Language")
-                        .HasColumnType("INTEGER");
-
                     b.Property<int>("MovieId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("ShopUrl")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("StartTime")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("Type")
+                    b.Property<int>("ShowTimeLanguage")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Url")
-                        .IsRequired()
+                    b.Property<int>("ShowTimeType")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("StartTime")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");

@@ -13,5 +13,7 @@
         public int GroupId { get; set; } = 0;
 
         public Uri Url { get; set; } = new Uri("https://filme-hannover.de");
+
+        public Dictionary<string, object> ExtendedProps { get; set; } = [];
     }
 }

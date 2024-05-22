@@ -166,22 +166,23 @@ function getCalendarOptions() {
     return {
         height: 'auto',
         contentHeight: 'auto',
-        initialView: getDefaultView(),
+        initialView: 'dayGrid',
+        duration: { days: getDayNumBreakpoint() },
         validRange: getCurrentDate(),
         headerToolbar: getHeaderToolbar(),
         locale: 'de',
-        views: {
-            listWeek: {
-                type: 'list',
-                buttonText: 'Liste',
-            },
-            dayGridWeek: {
-                type: 'dayGrid',
-                buttonText: 'Woche',
-                duration: { days: getDayNumBreakpoint() },
-                visibleRange: getCurrentDate(),
-            },
-        },
+        //views: {
+        //    listWeek: {
+        //        type: 'list',
+        //        buttonText: 'Liste',
+        //    },
+        //    dayGridWeek: {
+        //        type: 'dayGrid',
+        //        buttonText: 'Woche',
+        //        duration: { days: getDayNumBreakpoint() },
+        //        visibleRange: getCurrentDate(),
+        //    },
+        //},
         nextDayThreshold: '05:00:00',
         eventTimeFormat: {
             hour: '2-digit',
@@ -192,7 +193,6 @@ function getCalendarOptions() {
         eventSources: selectedEventSources,
         windowResize: handleWindowResize,
         eventClick: eventClickHandler,
-        //eventDidMount: showTooltip,
     }
 }
 async function initCalendar() {

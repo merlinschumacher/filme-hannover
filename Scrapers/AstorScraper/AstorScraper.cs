@@ -1,4 +1,5 @@
 ﻿using kinohannover.Data;
+using kinohannover.Models;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 
@@ -38,14 +39,35 @@ namespace kinohannover.Scrapers.AstorScraper
 
                 foreach (var performance in astorMovie.performances)
                 {
-                    if (DateTime.Now > performance.begin)
+                    if (DateTime.Now > performance.begin || (!performance.bookable && !performance.reservable))
                         continue;
 
-                    var showDateTime = performance.begin;
-                    CreateShowTime(movie, showDateTime, Cinema);
+                    var dateTime = performance.begin;
+                    ShowTimeType type = GetShowTimeType(performance);
+
+                    var language = ShowTimeHelper.GetLanguage(performance.language);
+                    var shopUrl = GetShopUrl(performance);
+                    var movieUrl = GetMovieUrl(performance);
+
+                    CreateShowTime(movie, dateTime, type, language, movieUrl, shopUrl);
                 }
             }
             Context.SaveChanges();
+        }
+
+        private static ShowTimeType GetShowTimeType(Performance? performance)
+        {
+            var type = ShowTimeType.Regular;
+            if (performance?.is_ov == true)
+            {
+                type = ShowTimeType.OriginalVersion;
+            }
+            else if (performance?.is_omu == true)
+            {
+                type = ShowTimeType.Subtitled;
+            }
+
+            return type;
         }
 
         private async Task<IEnumerable<AstorMovie>> GetMovieList()
@@ -63,7 +85,7 @@ namespace kinohannover.Scrapers.AstorScraper
                 foreach (JToken result in json.Children().ToList())
                 {
                     var movie = result.ToObject<AstorMovie>();
-                    if (movie == null)
+                    if (movie == null || !movie.show)
                         continue;
 
                     astorMovies.Add(movie);
@@ -75,6 +97,22 @@ namespace kinohannover.Scrapers.AstorScraper
                 logger.LogError(e, "Failed to scrape Astor");
                 return astorMovies;
             }
+        }
+
+        private static string GetShopUrl(Performance performance)
+        {
+            var shopBaseUrl = "https://hannover.premiumkino.de/vorstellung";
+
+            var shopUrl = $"{shopBaseUrl}/{performance.slug}/0/0/{performance.crypt_id}";
+            return shopUrl;
+        }
+
+        private static string GetMovieUrl(Performance performance)
+        {
+            var movieBaseUrl = "https://hannover.premiumkino.de/film";
+
+            var movieUrl = $"{movieBaseUrl}/{performance.slug}";
+            return movieUrl;
         }
     }
 }

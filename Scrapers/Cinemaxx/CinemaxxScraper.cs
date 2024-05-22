@@ -1,9 +1,9 @@
 ﻿using kinohannover.Data;
-using kinohannover.Scrapers.Cinemaxx;
+using kinohannover.Models;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
-namespace kinohannover.Scrapers
+namespace kinohannover.Scrapers.Cinemaxx
 {
     public class CinemaxxScraper(KinohannoverContext context, ILogger<CinemaxxScraper> logger) : ScraperBase(context, logger, new()
     {
@@ -39,7 +39,12 @@ namespace kinohannover.Scrapers
                         {
                             if (!DateTime.TryParse(shedule.Time, out var time))
                                 continue;
-                            CreateShowTime(movie, time, Cinema);
+
+                            var language = ShowTimeHelper.GetLanguage(shedule.VersionTitle);
+                            var type = ShowTimeHelper.GetType(shedule.VersionTitle);
+                            var movieUrl = GetUrl(film.FilmUrl);
+                            var shopUrl = GetUrl(shedule.BookingLink);
+                            CreateShowTime(movie, time, type, language, movieUrl, shopUrl);
                         }
                     }
                 }
@@ -50,7 +55,7 @@ namespace kinohannover.Scrapers
         private static string GetScraperUrl(string listType)
         {
             var startDate = DateOnly.FromDateTime(DateTime.Now).ToString("dd-MM-yyyy");
-            var endDate = DateOnly.FromDateTime(DateTime.Now.AddDays(7)).ToString("dd-MM-yyyy");
+            var endDate = DateOnly.FromDateTime(DateTime.Now.AddDays(28)).ToString("dd-MM-yyyy");
             return string.Format("https://www.cinemaxx.de/api/sitecore/WhatsOn/WhatsOnV2Alphabetic?cinemaId={0}&Datum={1},{2}&type={3}", cinemaId, startDate, endDate, listType);
         }
     }

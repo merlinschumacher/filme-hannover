@@ -1,9 +1,10 @@
 using kinohannover;
 using kinohannover.Data;
-using kinohannover.Renderer.iCalRenderer;
+using kinohannover.Renderer.CalendarRenderer;
 using kinohannover.Renderer.JsonRenderer;
 using kinohannover.Scrapers;
 using kinohannover.Scrapers.AstorScraper;
+using kinohannover.Scrapers.Cinemaxx;
 using kinohannover.Scrapers.FilmkunstKinos;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -27,7 +28,7 @@ builder.Services.AddScoped<ApolloScraper>();
 builder.Services.AddScoped<SprengelScraper>();
 builder.Services.AddScoped<KoKiScraper>();
 builder.Services.AddScoped<CleanupService>();
-builder.Services.AddScoped<iCalRenderer>();
+builder.Services.AddScoped<CalendarRenderer>();
 builder.Services.AddScoped<JsonRenderer>();
 var app = builder.Build();
 
@@ -56,7 +57,7 @@ static void ExecuteScrapingProcess(IServiceProvider serviceProvider)
     var kokiScraper = scope.ServiceProvider.GetRequiredService<KoKiScraper>();
     kokiScraper.ScrapeAsync().Wait();
 
-    var iCalRenderer = scope.ServiceProvider.GetRequiredService<iCalRenderer>();
+    var iCalRenderer = scope.ServiceProvider.GetRequiredService<CalendarRenderer>();
     iCalRenderer.Render("wwwroot");
     var jsonRenderer = scope.ServiceProvider.GetRequiredService<JsonRenderer>();
     jsonRenderer.Render("wwwroot");

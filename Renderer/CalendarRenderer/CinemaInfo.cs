@@ -1,7 +1,7 @@
 ﻿using Ical.Net.DataTypes;
 using kinohannover.Models;
 
-namespace kinohannover.Renderer.iCalRenderer
+namespace kinohannover.Renderer.CalendarRenderer
 {
     public class CinemaInfo
     {

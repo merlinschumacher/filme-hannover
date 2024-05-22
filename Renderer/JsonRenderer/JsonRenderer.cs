@@ -19,13 +19,25 @@ namespace kinohannover.Renderer.JsonRenderer
                 {
                     foreach (var showTime in movie.ShowTimes.Where(e => e.Cinema == cinema))
                     {
-                        events.Add(new FullCalendarObject()
+                        var newEvent = new FullCalendarObject()
                         {
                             Title = movie.DisplayName,
                             Start = showTime.StartTime,
                             End = showTime.StartTime.Add(movie.Duration),
-                            Url = new Uri(cinema.Website)
-                        }); ;
+                            ExtendedProps = new Dictionary<string, object>()
+                            {
+                                { "cinema", cinema.DisplayName },
+                                { "showTimeType", showTime.Type },
+                                { "showTimeLanguage", showTime.Language },
+                                { "shopUrl", showTime.ShopUrl },
+                                { "movieUrl", showTime.Url }
+                            }
+                        };
+                        if (!string.IsNullOrWhiteSpace(showTime.ShopUrl))
+                        {
+                            newEvent.Url = new Uri(showTime.ShopUrl);
+                        }
+                        events.Add(newEvent);
                     }
                 }
                 eventSources.Add(new FcEventSource()

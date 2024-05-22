@@ -14,24 +14,25 @@ namespace kinohannover.Scrapers
         Color = "#ADD8E6",
     }), IScraper
     {
-        private const string dataUrl = "https://www.kino-im-sprengel.de/eventLoader.php";
+        private const string _dataUrl = "https://www.kino-im-sprengel.de/eventLoader.php";
+        private const string _shopUrl = "https://www.kino-im-sprengel.de/kontakt.php";
 
-        private const string icalLinkSelector = "//a[contains(@href, 'merke')]";
-        private const string postData = "t%5Badvice%5D=daterange&t%5Brange%5D=currentmonth";
+        private const string _icalLinkSelector = "//a[contains(@href, 'merke')]";
+        private const string _postData = "t%5Badvice%5D=daterange&t%5Brange%5D=currentmonth";
 
         public async Task ScrapeAsync()
         {
-            var content = new StringContent(postData, Encoding.UTF8, "application/x-www-form-urlencoded");
-            var scrapedHtml = _httpClient.PostAsync(dataUrl, content);
+            var content = new StringContent(_postData, Encoding.UTF8, "application/x-www-form-urlencoded");
+            var scrapedHtml = _httpClient.PostAsync(_dataUrl, content);
             var html = await scrapedHtml.Result.Content.ReadAsStringAsync();
             var doc = new HtmlDocument();
             doc.LoadHtml(html);
 
-            var icalLinkNodes = doc.DocumentNode.SelectNodes(icalLinkSelector);
+            var icalLinkNodes = doc.DocumentNode.SelectNodes(_icalLinkSelector);
             foreach (var icalLinkNode in icalLinkNodes)
             {
                 var icalLink = icalLinkNode.GetAttributeValue("href", "");
-                var icalLinkUri = new Uri(new Uri(dataUrl), icalLink);
+                var icalLinkUri = new Uri(new Uri(_dataUrl), icalLink);
                 var icalText = await _httpClient.GetStringAsync(icalLinkUri);
 
                 var calendar = Calendar.Load(icalText);
@@ -42,7 +43,9 @@ namespace kinohannover.Scrapers
                     movie.Cinemas.Add(Cinema);
 
                     var showDateTime = calendarEvent.Start.AsSystemLocal;
-                    CreateShowTime(movie, showDateTime, Cinema);
+                    var movieUrl = GetUrl(calendarEvent.Url.ToString());
+
+                    CreateShowTime(movie, showDateTime, url: movieUrl, shopUrl: _shopUrl);
                 }
             }
             await Context.SaveChangesAsync();

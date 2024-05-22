@@ -2,6 +2,7 @@
 using kinohannover.Data;
 using kinohannover.Models;
 using Microsoft.Extensions.Logging;
+using System.Text.RegularExpressions;
 
 namespace kinohannover.Scrapers.FilmkunstKinos
 {
@@ -14,6 +15,7 @@ namespace kinohannover.Scrapers.FilmkunstKinos
         private const string dateSelector = ".//span[contains(concat(' ', normalize-space(@class), ' '), ' filmtagdatum ')]/text()[preceding-sibling::br]";
         private const string timeSelector = ".//a";
         private const string dateFormat = "dd.MM.";
+        private const string titleRegex = @"(.*)(?>.*\s+[-–]\s+)(.*\.?)?\s(OmU|OV)";
 
         public async Task ScrapeAsync()
         {
@@ -26,8 +28,20 @@ namespace kinohannover.Scrapers.FilmkunstKinos
             var movieNodes = contentBox.SelectNodes(movieSelector);
             foreach (var movieNode in movieNodes)
             {
-                var title = movieNode.SelectSingleNode(titleSelector).InnerText;
-                var movie = CreateMovie(title, Cinema);
+                var titleString = movieNode.SelectSingleNode(titleSelector).InnerText;
+                var movieUrl = GetUrl(movieNode.SelectSingleNode(titleSelector).GetAttributeValue("href", ""));
+                var title = new Regex(titleString);
+                var match = title.Match(titleRegex);
+                var type = ShowTimeType.Regular;
+                var language = ShowTimeLanguage.German;
+                if (match.Success)
+                {
+                    titleString = match.Groups[1].Value;
+                    language = ShowTimeHelper.GetLanguage(match.Groups[2].Value);
+                    type = ShowTimeHelper.GetType(match.Groups[3].Value);
+                }
+
+                var movie = CreateMovie(titleString, Cinema);
                 movie.Cinemas.Add(Cinema);
 
                 var filmTagNodes = movieNode.SelectNodes(filmTagSelector);
@@ -41,8 +55,9 @@ namespace kinohannover.Scrapers.FilmkunstKinos
                     foreach (var timeNode in timeNodes)
                     {
                         if (!TimeOnly.TryParse(timeNode.InnerText, culture, out var timeOnly)) continue;
+                        var shopUrl = timeNode.GetAttributeValue("href", "");
                         var showDateTime = new DateTime(dateTime.Year, dateTime.Month, dateTime.Day, timeOnly.Hour, timeOnly.Minute, 0);
-                        CreateShowTime(movie, showDateTime, Cinema);
+                        CreateShowTime(movie, showDateTime, type, language, movieUrl, shopUrl);
                     }
                 }
             }

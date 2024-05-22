@@ -1,5 +1,6 @@
 ﻿using HtmlAgilityPack;
 using kinohannover.Data;
+using kinohannover.Models;
 using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
 
@@ -12,11 +13,11 @@ namespace kinohannover.Scrapers.FilmkunstKinos
         Color = "#0000ff",
     }), IScraper
     {
+        private const string _shopUrl = "https://www.apollokino.de/?v=&mp=Tickets";
         private readonly List<string> showsToIgnore = ["00010032", "spezialclub.de"];
         private readonly List<string> specialEventTitles = ["MonGay-Filmnacht", "WoMonGay"];
 
-        private const string omuRegexString = @"\b(?:(?:\([^\)]+\)|[a-z]+)\.(?:\s*))?OmU\b";
-        private const string ovRegexString = @"\(\s?ov\s?\)";
+        private const string titleRegexString = @"^(.*) [-–] (.*\.?) (OmU|OV).*$";
 
         public async Task ScrapeAsync()
         {
@@ -43,6 +44,7 @@ namespace kinohannover.Scrapers.FilmkunstKinos
                     var showDateTime = new DateTime(date.Year, date.Month, date.Day, time.Hour, time.Minute, 0);
 
                     var titleNode = movieNode.SelectSingleNode(".//a");
+                    var showTimeUrl = GetUrl(titleNode.GetAttributeValue("href", ""), "https://www.apollokino.de/");
 
                     // The title is sometimes in the last child node, if it's a special event
                     if (specialEventTitles.Any(e => titleNode.InnerText.Contains(e, StringComparison.CurrentCultureIgnoreCase)))
@@ -52,25 +54,29 @@ namespace kinohannover.Scrapers.FilmkunstKinos
 
                     // Skip the movie if it's in the ignore list
                     if (showsToIgnore.Any(e => titleNode.OuterHtml.Contains(e))) continue;
-                    var title = titleNode.InnerText;
-                    title = OmURegex().Replace(title, " OmU ").Trim();
-                    title = OvRegex().Replace(title, "OV").Trim();
+                    var titleRegex = TitleRegex().Match(titleNode.InnerHtml);
+                    string title = titleNode.InnerText;
+                    var language = ShowTimeLanguage.German;
+                    var type = ShowTimeType.Regular;
 
+                    if (titleRegex.Success)
+                    {
+                        title = titleRegex.Groups[0].Value;
+                        language = ShowTimeHelper.GetLanguage(titleRegex.Groups[1].Value);
+                        type = ShowTimeHelper.GetType(titleRegex.Groups[2].Value);
+                    }
                     foreach (var specialEventTitle in specialEventTitles)
                         title = title.Replace(specialEventTitle, "");
 
                     var movie = CreateMovie(titleNode.InnerText, Cinema);
 
-                    CreateShowTime(movie, showDateTime, Cinema);
+                    CreateShowTime(movie, showDateTime, type, language, showTimeUrl, _shopUrl);
                 }
             }
             await Context.SaveChangesAsync();
         }
 
-        [GeneratedRegex(ovRegexString, RegexOptions.IgnoreCase, "de-DE")]
-        private static partial Regex OvRegex();
-
-        [GeneratedRegex(omuRegexString, RegexOptions.IgnoreCase, "de-DE")]
-        private static partial Regex OmURegex();
+        [GeneratedRegex(titleRegexString)]
+        private static partial Regex TitleRegex();
     }
 }
