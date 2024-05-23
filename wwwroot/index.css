@@ -1,15 +1,4 @@
-﻿:root {
-    font-family: "Inter", sans-serif;
-}
-
-@supports (font-variation-settings: normal) {
-    :root {
-        font-family: "Inter", sans-serif;
-        font-optical-sizing: auto;
-    }
-}
-
-@font-face {
+﻿@font-face {
     font-family: Inter;
     font-style: normal;
     font-weight: 100 900;
@@ -25,52 +14,14 @@
     src: url("resources/InterVariable-Italic.woff2") format("woff2");
 }
 
-/* Animations to fade the snackbar in and out */
-@-webkit-keyframes fadein {
-    from {
-        bottom: 0;
-        opacity: 0;
-    }
-
-    to {
-        bottom: 30px;
-        opacity: 1;
-    }
+:root {
+    font-family: "Inter", sans-serif;
 }
 
-@keyframes fadein {
-    from {
-        bottom: 0;
-        opacity: 0;
-    }
-
-    to {
-        bottom: 30px;
-        opacity: 1;
-    }
-}
-
-@-webkit-keyframes fadeout {
-    from {
-        bottom: 30px;
-        opacity: 1;
-    }
-
-    to {
-        bottom: 0;
-        opacity: 0;
-    }
-}
-
-@keyframes fadeout {
-    from {
-        bottom: 30px;
-        opacity: 1;
-    }
-
-    to {
-        bottom: 0;
-        opacity: 0;
+@supports (font-variation-settings: normal) {
+    :root {
+        font-family: "Inter", sans-serif;
+        font-optical-sizing: auto;
     }
 }
 
@@ -168,53 +119,83 @@ details {
                 border-radius: 0.25em;
             }
 
-.fc-header-toolbar .fc-toolbar-title {
-    font-size: 1.3em;
-}
-
-.fc-list-event-time, .fc-event-time {
+.fc .fc-list-event-time, .fc-event-time {
     font-variant-numeric: tabular-nums;
 }
 
-.fc-daygrid-event-harness {
+.fc .fc-toolbar .fc-toolbar-title {
+    font-size: 1.25em;
+}
+
+.fc .fc-daygrid-dot-event {
+    align-items: start;
+}
+
+    .fc .fc-daygrid-dot-event .fc-daygrid-event-dot {
+        margin-top: 0.35em;
+    }
+
+    .fc .fc-daygrid-dot-event .fc-event-title {
+        text-overflow: ellipsis;
+    }
+
+.fc .fc-daygrid-event-harness {
     font-size: 1.1em;
     padding: 0.1em;
 }
 
-/* The snackbar - position it at the bottom and in the middle of the screen */
-#snackbar {
-    visibility: hidden; /* Hidden by default. Visible on click */
-    min-width: 250px; /* Set a default minimum width */
-    margin-left: -125px; /* Divide value of min-width by 2 */
-    position: fixed; /* Sit on top of the screen */
-    z-index: 1; /* Add a z-index if needed */
-    left: 50%; /* Center the snackbar */
-    bottom: 30px; /* 30px from the bottom */
-    background-color: var(--fc-button-hover-bg-color);
-    border-color: var(--fc-button-hover-border-color);
-    color: var(--fc-button-text-color);
-    border-radius: 0.25em;
-    display: inline-block;
-    font-size: 1em;
-    font-weight: 400;
-    line-height: 1.5;
-    padding: 0.4em 0.65em;
-    text-align: center;
-    user-select: none;
-    vertical-align: middle;
-}
-
-    /* Show the snackbar when clicking on a button (class added with JavaScript) */
-    #snackbar.show {
-        visibility: visible; /* Show the snackbar */
-        /* Add animation: Take 0.5 seconds to fade in and out the snackbar.
-  However, delay the fade out process for 2.5 seconds */
-        -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
-        animation: fadein 0.5s, fadeout 0.5s 2.5s;
-    }
-
 @media (min-width: 768px) {
     details {
         max-width: 320px;
+    }
+}
+
+.icsModal .body {
+    display: flex;
+    flex-direction: unset;
+    flex-wrap: wrap;
+    gap: 0.5em;
+}
+
+.icsModal .copyLinkInput {
+    flex-grow: 1;
+    border-color: var(--fc-button-hover-border-color);
+    border-radius: 0.25em;
+    font-size: 1em;
+    padding: 1em 0.5em;
+}
+
+.icsModal .copyLinkButton {
+    flex-grow: 1;
+    padding: 1em 0.5em;
+}
+
+@keyframes buttonPulse {
+    0% {
+        background-color: var(--fc-button-bg-color);
+    }
+
+    50% {
+        background-color: var(--fc-event-bg-color);
+    }
+
+    100% {
+        background-color: var(--fc-button-bg-color);
+    }
+}
+
+.icsModal .copyLinkButtonAnimate {
+    animation-name: buttonPulse;
+    animation-duration: 1s;
+    animation-iteration-count: 1;
+}
+
+@media (max-width: 1000px) {
+    .icsModal .body {
+        flex-direction: column;
+    }
+
+    .icsModal .copyLinkButton {
+        flex-grow: unset;
     }
 }

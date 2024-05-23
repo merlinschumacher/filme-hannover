@@ -1,6 +1,9 @@
 ﻿let eventSourcesData = [];
 let selectedEventSources = [];
 let calendar = null;
+let modal = null;
+let cinemas = [];
+let cinemaList = null;
 const widthDayNumBreakpoints = {
     600: 1,
     720: 2,
@@ -15,29 +18,37 @@ async function fetchJsonData(url) {
     return await response.json();
 }
 
-function getCurrentDate() {
-    return { start: new Date() }
-};
-
-function showSnackbar(text) {
-    // Get the snackbar DIV
-    let snackBar = document.getElementById("snackbar");
-    snackBar.textContent = text;
-
-    // Add the "show" class to DIV
-    snackBar.className = "show";
-
-    // After 3 seconds, remove the show class from DIV
-    setTimeout(function () { snackBar.className = snackBar.className.replace("show", ""); snackBar.textContent = "" }, 3000);
+function buildIcsCopyModal(cinemaName, icsLink) {
+    const template = document.querySelector('#icsCopyModalTemplate');
+    const clone = template.content.cloneNode(true);
+    var nameElements = clone.querySelectorAll('.cinemaName');
+    for (var i = 0; i < nameElements.length; i++) {
+        nameElements[i].textContent = cinemaName;
+    }
+    clone.querySelector('.copyLinkInput').value = icsLink;
+    var btn = modal.addFooterBtn('Link kopieren', 'fc-button fc-button-primary', function (e) {
+        navigator.clipboard.writeText(e.target.href);
+        e.target.classList.remove('copyLinkButtonAnimate');
+        e.target.innerText = 'Link kopiert!';
+        e.target.classList.add('copyLinkButtonAnimate');
+    });
+    btn.href = icsLink;
+    return clone;
 }
 
-function copyURI(evt) {
+function showIcsCopyModal(evt) {
     evt.preventDefault();
-    navigator.clipboard.writeText(evt.target.getAttribute('href')).then(() => {
-        showSnackbar('Kalenderlink kopiert');
-    }, () => {
-        showSnackbar('Fehler beim Kopieren des Kalenderlinks');
-    });
+    const content = buildIcsCopyModal(evt.target.cinemaName, decodeURI(evt.target.href));
+    modal.setContent(content);
+    modal.open();
+}
+function showCinemaListModal(evt) {
+    const template = document.querySelector('#cinemaListTemplate');
+    const clone = template.content.cloneNode(true);
+    clone.querySelector('#cinemaList').replaceWith(cinemaList);
+    evt.preventDefault();
+    modal.setContent(clone);
+    modal.open();
 }
 
 function selectCinema(evt) {
@@ -55,11 +66,13 @@ function selectCinema(evt) {
         calendar.addEventSource(cinemaEventSource);
     }
     calendar.refetchEvents();
+    modal.close();
 }
 
 async function CreateCinemaList() {
-    let cinemas = await fetchJsonData('/cinemas.json');
-    let list = document.getElementById('cinemaList');
+    cinemas = await fetchJsonData('/cinemas.json');
+    cinemaList = document.createElement('ul');
+    cinemaList.id = 'cinemaList';
     for (let i = 0; i < cinemas.length; i++) {
         let cinema = cinemas[i];
         let listItem = document.createElement('li');
@@ -81,10 +94,16 @@ async function CreateCinemaList() {
         let href = new URL(cinema.calendarFile, document.baseURI).href;
         listItemIcalLink.href = href;
         listItemIcalLink.textContent = '📅 iCal';
-        listItemIcalLink.addEventListener('click', copyURI);
+
+        listItemIcalLink.addEventListener('click', showIcsCopyModal);
+        if (cinema.displayName === 'Alle Kinos') {
+            listItemIcalLink.cinemaName = 'aller Kinos';
+        } else {
+            listItemIcalLink.cinemaName = 'des ' + cinema.displayName;
+        }
         listItem.appendChild(listItemIcalLink);
 
-        list.appendChild(listItem);
+        cinemaList.appendChild(listItem);
     }
 }
 
@@ -92,7 +111,7 @@ function getHeaderToolbar() {
     let headerToolbar = {
         left: 'prev,next',
         center: 'title',
-        right: 'today'
+        right: 'filter'
     }
     return headerToolbar;
 }
@@ -144,15 +163,6 @@ async function getEventSources() {
     return eventSourcesData;
 }
 
-function showTooltip(info) {
-    let tooltip = new Tooltip(info, el, {
-        title: info.event.title,
-        placement: 'top',
-        trigger: 'click',
-        container: 'body'
-    });
-}
-
 function eventClickHandler(info) {
     info.jsEvent.preventDefault();
     window.open(info.event.url);
@@ -164,7 +174,13 @@ function getCalendarOptions() {
         contentHeight: 'auto',
         initialView: 'dayGrid',
         duration: { days: getDayNumBreakpoint() },
-        validRange: getCurrentDate(),
+        validRange: { start: new Date() },
+        customButtons: {
+            filter: {
+                text: 'Filter',
+                click: showCinemaListModal
+            }
+        },
         headerToolbar: getHeaderToolbar(),
         locale: 'de',
         views: {
@@ -182,12 +198,7 @@ function getCalendarOptions() {
         eventSources: selectedEventSources,
         windowResize: handleWindowResize,
         eventClick: eventClickHandler,
-        customButtons: {
-            filterButton: {
-                text: 'Filter',
-                click: function () { }
-            }
-        }
+        eventDisplay: 'list-item',
     }
 }
 async function initCalendar() {
@@ -198,8 +209,20 @@ async function initCalendar() {
     toggleTodayBgColor(getDayNumBreakpoint());
 }
 
+async function initModal() {
+    modal = new tingle.modal({
+        footer: true,
+        closeMethods: ['overlay', 'button', 'escape'],
+        closeLabel: "Schließen",
+        onClose: function () {
+            modal.setContent('');
+            modal.setFooterContent('');
+        }
+    });
+}
 document.addEventListener('DOMContentLoaded', async function () {
     CreateCinemaList();
     await getEventSources();
     initCalendar();
+    initModal();
 });

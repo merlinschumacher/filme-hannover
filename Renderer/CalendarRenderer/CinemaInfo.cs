@@ -9,7 +9,6 @@ namespace kinohannover.Renderer.CalendarRenderer
         {
             DisplayName = displayName;
             Color = color;
-            CalendarFile = $"{DisplayName}.ics";
         }
 
         public CinemaInfo(Cinema cinema)
@@ -18,8 +17,6 @@ namespace kinohannover.Renderer.CalendarRenderer
             DisplayName = cinema.DisplayName;
             Website = new Uri(cinema.Website);
             Color = cinema.Color;
-
-            CalendarFile = $"{DisplayName}.ics";
         }
 
         public int Id { get; set; }
@@ -28,7 +25,7 @@ namespace kinohannover.Renderer.CalendarRenderer
 
         Uri? Website { get; set; }
 
-        public string CalendarFile { get; set; }
+        public string CalendarFile => DisplayName.Replace(" ", "_").Replace(":", "_").Replace("/", "_") + ".ics";
 
         public string Color { get; set; }
 
