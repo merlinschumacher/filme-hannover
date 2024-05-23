@@ -92,46 +92,42 @@ function getHeaderToolbar() {
     let headerToolbar = {
         left: 'prev,next',
         center: 'title',
-        right: 'listWeek,dayGridWeek'
+        right: 'today'
     }
     return headerToolbar;
 }
 
-function getDefaultView() {
-    let width = window.innerWidth;
-    if (width < 600) {
-        return 'listWeek';
-    }
-    return 'dayGridWeek';
-}
 function getDayNumBreakpoint() {
     let width = window.innerWidth;
     let duration = 7;
-    
-        var lastBreakpointSize = 0;
-        Object.keys(widthDayNumBreakpoints).reverse().forEach(key => {
-            if (width > lastBreakpointSize && width < key) {
-                duration = widthDayNumBreakpoints[key];
-                return;
-            }
-            lastBreakpointSize = key;
-        })
-    
+
+    var lastBreakpointSize = 0;
+    Object.keys(widthDayNumBreakpoints).reverse().forEach(key => {
+        if (width > lastBreakpointSize && width < key) {
+            duration = widthDayNumBreakpoints[key];
+            return;
+        }
+        lastBreakpointSize = key;
+    })
+
     return duration;
 }
 
+function toggleTodayBgColor(dayNum) {
+    // Get the root element
+    if (dayNum === 1) {
+        var r = document.querySelector(':root');
+        r.style.setProperty('--fc-today-bg-color', 'transparent');
+    } else {
+        var r = document.querySelector(':root');
+        r.style.setProperty('--fc-today-bg-color', 'rgba(255, 220, 40, 0.15)');
+    }
+}
+
 async function handleWindowResize(arg) {
-    let view = getDefaultView();
-    if (arg.view.type == 'listWeek') {
-        calendar.changeView(view);
-        return;
-    }
-    let currentDuration = arg.view.getOption('duration');
     let duration = getDayNumBreakpoint();
-    if (currentDuration.days != duration) {
-        calendar.destroy();
-        initCalendar();
-    }
+    toggleTodayBgColor(duration);
+    calendar.setOption('duration', { days: duration });
 }
 
 async function getEventSources() {
@@ -171,18 +167,11 @@ function getCalendarOptions() {
         validRange: getCurrentDate(),
         headerToolbar: getHeaderToolbar(),
         locale: 'de',
-        //views: {
-        //    listWeek: {
-        //        type: 'list',
-        //        buttonText: 'Liste',
-        //    },
-        //    dayGridWeek: {
-        //        type: 'dayGrid',
-        //        buttonText: 'Woche',
-        //        duration: { days: getDayNumBreakpoint() },
-        //        visibleRange: getCurrentDate(),
-        //    },
-        //},
+        views: {
+            dayGrid: {
+                type: 'dayGrid',
+            }
+        },
         nextDayThreshold: '05:00:00',
         eventTimeFormat: {
             hour: '2-digit',
@@ -193,6 +182,12 @@ function getCalendarOptions() {
         eventSources: selectedEventSources,
         windowResize: handleWindowResize,
         eventClick: eventClickHandler,
+        customButtons: {
+            filterButton: {
+                text: 'Filter',
+                click: function () { }
+            }
+        }
     }
 }
 async function initCalendar() {
@@ -200,6 +195,7 @@ async function initCalendar() {
     var calendarOptions = getCalendarOptions();
     calendar = new FullCalendar.Calendar(calendarEl, calendarOptions);
     calendar.render();
+    toggleTodayBgColor(getDayNumBreakpoint());
 }
 
 document.addEventListener('DOMContentLoaded', async function () {

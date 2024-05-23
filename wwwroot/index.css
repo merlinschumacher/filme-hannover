@@ -172,8 +172,13 @@ details {
     font-size: 1.3em;
 }
 
-.fc-list-event-time {
+.fc-list-event-time, .fc-event-time {
     font-variant-numeric: tabular-nums;
+}
+
+.fc-daygrid-event-harness {
+    font-size: 1.1em;
+    padding: 0.1em;
 }
 
 /* The snackbar - position it at the bottom and in the middle of the screen */

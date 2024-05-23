@@ -37,6 +37,10 @@ namespace kinohannover.Renderer.JsonRenderer
                         {
                             newEvent.Url = new Uri(showTime.ShopUrl);
                         }
+                        else if (!string.IsNullOrWhiteSpace(showTime.Url))
+                        {
+                            newEvent.Url = new Uri(showTime.Url);
+                        }
                         events.Add(newEvent);
                     }
                 }

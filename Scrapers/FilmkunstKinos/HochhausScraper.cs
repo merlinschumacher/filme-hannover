@@ -10,7 +10,7 @@ namespace kinohannover.Scrapers.FilmkunstKinos
         {
             DisplayName = "Hochhaus Lichtspiele",
             Website = "https://www.hochhaus-lichtspiele.de/pages/programm.php",
-            Color = "#FFD45C",
+            Color = "#ffc112",
         };
     }
 }

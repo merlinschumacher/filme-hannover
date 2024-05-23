@@ -17,7 +17,7 @@ namespace kinohannover.Renderer.CalendarRenderer
         public void Render(string path)
         {
             var moviesAll = context.Movies.Include(e => e.Cinemas).Include(e => e.ShowTimes);
-            var allCinemas = new CinemaInfo("Alle Kinos", "#cccccc");
+            var allCinemas = new CinemaInfo("Alle Kinos", "#ffffff");
             cinemaInfos.Add(allCinemas);
             WriteCalendarToFile(moviesAll, Path.Combine(path, allCinemas.CalendarFile));
 
