@@ -18,6 +18,7 @@
         Russian,
         Turkish,
         Mayalam,
+        Japanese,
         Miscellaneous,
         Other,
     }
@@ -31,9 +32,12 @@
             { "deu", ShowTimeLanguage.German },
             { "eng", ShowTimeLanguage.English },
             { "engl", ShowTimeLanguage.English },
+            { "franz", ShowTimeLanguage.French },
+            { "frnz", ShowTimeLanguage.French },
             { "frz", ShowTimeLanguage.French },
             { "span", ShowTimeLanguage.Spanish },
             { "ital", ShowTimeLanguage.Italian},
+            { "jap", ShowTimeLanguage.Japanese},
             { "georg", ShowTimeLanguage.Georgian },
             { "russ", ShowTimeLanguage.Russian },
             { "türk", ShowTimeLanguage.Turkish },
@@ -51,25 +55,20 @@
             { "Russisch", ShowTimeLanguage.Russian },
             { "Türkisch", ShowTimeLanguage.Turkish },
             { "Mayalam", ShowTimeLanguage.Mayalam },
+            { "Japanisch", ShowTimeLanguage.Japanese},
             { "Verschiedene", ShowTimeLanguage.Miscellaneous },
             { "Sonstige", ShowTimeLanguage.Other },
         };
 
         public static ShowTimeLanguage GetLanguage(string language)
         {
-            if (ShowTimeLanguageMap.TryGetValue(language, out var showTimeLanguage))
-            {
-                return showTimeLanguage;
-            }
-            return ShowTimeLanguage.German;
+            return GetMatchingDictionaryVaue(language, ShowTimeLanguageMap, ShowTimeLanguage.German);
         }
 
         private static readonly Dictionary<string, ShowTimeType> ShowTimeTypeMap = new(StringComparer.OrdinalIgnoreCase)
         {
             { "OV", ShowTimeType.OriginalVersion },
-            { "(OV)", ShowTimeType.OriginalVersion },
             { "OmU", ShowTimeType.Subtitled },
-            { "(OmU)", ShowTimeType.Subtitled },
             { "Original Version", ShowTimeType.OriginalVersion },
             { "Originalversion", ShowTimeType.OriginalVersion },
             { "Untertitel", ShowTimeType.Subtitled },
@@ -77,11 +76,25 @@
 
         public static ShowTimeType GetType(string type)
         {
-            if (ShowTimeTypeMap.TryGetValue(type, out var showTimeType))
+            return GetMatchingDictionaryVaue(type, ShowTimeTypeMap, ShowTimeType.Regular);
+        }
+
+        private static T GetMatchingDictionaryVaue<T>(string needle, Dictionary<string, T> dictionary, T defaultValue)
+        {
+            needle = needle.Trim().Replace(".", null).Replace("(", null).Replace(")", null);
+            if (dictionary.TryGetValue(needle, out var result))
             {
-                return showTimeType;
-            };
-            return ShowTimeType.Regular;
+                return result;
+            }
+
+            foreach (var (key, value) in dictionary)
+            {
+                if (needle.Contains(key, StringComparison.OrdinalIgnoreCase))
+                {
+                    return value;
+                }
+            }
+            return defaultValue;
         }
     }
 }

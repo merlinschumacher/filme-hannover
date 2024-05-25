@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace kinohannover.Scrapers.FilmkunstKinos
 {
-    public abstract class FilmkunstKinosScraper(KinohannoverContext context, ILogger<FilmkunstKinosScraper> logger, Cinema cinema) : ScraperBase(context, logger, cinema), IScraper
+    public abstract partial class FilmkunstKinosScraper(KinohannoverContext context, ILogger<FilmkunstKinosScraper> logger, Cinema cinema) : ScraperBase(context, logger, cinema), IScraper
     {
         private const string contentBoxSelector = "//div[contains(concat(' ', normalize-space(@class), ' '), ' contentbox ')]";
         private const string movieSelector = ".//table";
@@ -30,8 +30,8 @@ namespace kinohannover.Scrapers.FilmkunstKinos
             {
                 var titleString = movieNode.SelectSingleNode(titleSelector).InnerText;
                 var movieUrl = GetUrl(movieNode.SelectSingleNode(titleSelector).GetAttributeValue("href", ""));
-                var title = new Regex(titleString);
-                var match = title.Match(titleRegex);
+                var title = TitleRegex();
+                var match = title.Match(titleString);
                 var type = ShowTimeType.Regular;
                 var language = ShowTimeLanguage.German;
                 if (match.Success)
@@ -63,5 +63,8 @@ namespace kinohannover.Scrapers.FilmkunstKinos
             }
             Context.SaveChanges();
         }
+
+        [GeneratedRegex(titleRegex)]
+        private static partial Regex TitleRegex();
     }
 }
