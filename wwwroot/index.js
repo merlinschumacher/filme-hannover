@@ -7,10 +7,9 @@ let cinemaList = null;
 const widthDayNumBreakpoints = {
     600: 1,
     720: 2,
-    900: 3,
-    1040: 4,
-    1200: 5,
-    1366: 7,
+    1040: 3,
+    1200: 4,
+    1366: 5,
 };
 
 async function fetchJsonData(url) {

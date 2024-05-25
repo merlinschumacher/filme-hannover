@@ -29,6 +29,8 @@ namespace kinohannover.Scrapers.Cinemaxx
 
             foreach (var film in myDeserializedClass.WhatsOnAlphabeticFilms)
             {
+                var (title, eventTitle) = SanitizeTitle(film.Title);
+                
                 var movie = CreateMovie(film.Title, Cinema);
 
                 foreach (var outerCinema in film.WhatsOnAlphabeticCinemas)
@@ -50,6 +52,20 @@ namespace kinohannover.Scrapers.Cinemaxx
                 }
             }
             Context.SaveChanges();
+        }
+
+        private (string title, string? eventTitle) SanitizeTitle(string title)
+        {
+            string? eventTitle = null;
+            foreach (var specialEventTitle in specialEventTitles)
+            {
+                if (title.Contains(specialEventTitle, StringComparison.OrdinalIgnoreCase))
+                {
+                    title = title.Replace(specialEventTitle, "", StringComparison.OrdinalIgnoreCase);
+                    eventTitle = specialEventTitle.Replace(":", "");
+                }
+            }
+            return (title.Trim(), eventTitle);
         }
 
         private static string GetScraperUrl(string listType)

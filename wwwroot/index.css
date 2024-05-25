@@ -27,7 +27,7 @@
 
 html {
     box-sizing: border-box;
-    font-size: 16px;
+    font-size: 12px;
 }
 
 *, *:before, *:after {
@@ -66,7 +66,7 @@ p {
 }
 
 .content {
-    max-width: 1600px;
+    max-width: 1800px;
     margin: 0 auto;
     padding: 1em;
 }
@@ -142,12 +142,6 @@ details {
 .fc .fc-daygrid-event-harness {
     font-size: 1.1em;
     padding: 0.1em;
-}
-
-@media (min-width: 768px) {
-    details {
-        max-width: 320px;
-    }
 }
 
 .icsModal .body {
