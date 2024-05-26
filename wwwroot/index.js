@@ -230,6 +230,8 @@ async function loadUpdatedData() {
         data = await eventRequest.text();
         localStorage.setItem('eventData', data);
     }
+    let lastUpdate = document.getElementById('lastUpdate');
+    lastUpdate.textContent = currentUpdate.toLocaleString();
     getEventSources(JSON.parse(data));
 }
 
