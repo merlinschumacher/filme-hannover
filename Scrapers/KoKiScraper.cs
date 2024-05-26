@@ -3,10 +3,11 @@ using kinohannover.Data;
 using kinohannover.Models;
 using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
+using TMDbLib.Client;
 
 namespace kinohannover.Scrapers
 {
-    public partial class KoKiScraper(KinohannoverContext context, ILogger<KoKiScraper> logger) : ScraperBase(context, logger, new()
+    public partial class KoKiScraper(KinohannoverContext context, ILogger<KoKiScraper> logger, TMDbClient tmdbClient) : ScraperBase(context, logger, tmdbClient, new()
     {
         DisplayName = "Kino im Künstlerhaus",
         Website = "https://www.koki-hannover.de",
@@ -57,7 +58,7 @@ namespace kinohannover.Scrapers
                         if (!showTimeLink.Contains("Filme"))
                             continue;
 
-                        showTimeLink = GetUrl(showTimeLink, "https://www.hannover.de/");
+                        showTimeLink = BuildAbsoluteUrl(showTimeLink, "https://www.hannover.de/");
 
                         var titleMatches = MovieTitleRegex().Match(movieElement.NextSibling.InnerText);
                         if (titleMatches.Success)
@@ -65,7 +66,7 @@ namespace kinohannover.Scrapers
                             var title = titleMatches.Groups[1].Value;
                             var (showTimeType, showTimeLanguage) = GetShowTimeType(titleMatches.Groups[2].Value);
 
-                            var movie = CreateMovie(title, Cinema);
+                            var movie = await CreateMovieAsync(title, Cinema);
                             var dateTime = new DateTime(date.Year, date.Month, date.Day, time.Hour, time.Minute, 0);
                             CreateShowTime(movie, dateTime, showTimeType, showTimeLanguage, showTimeLink, _shopLink);
                         }

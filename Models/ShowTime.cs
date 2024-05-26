@@ -7,12 +7,15 @@
         public Movie Movie { get; set; } = default!;
 
         public Cinema Cinema { get; set; } = default!;
+        public int MovieId { get; set; }
+        public int CinemaId { get; set; }
 
         public ShowTimeType Type { get; set; } = ShowTimeType.Regular;
 
         public ShowTimeLanguage Language { get; set; } = ShowTimeLanguage.German;
         public string Url { get; set; } = string.Empty;
-        public string ShopUrl { get; set; } = string.Empty;
+        public string? ShopUrl { get; set; }
+        public string? SpecialEvent { get; set; }
 
         public string GetShowTimeSuffix()
         {

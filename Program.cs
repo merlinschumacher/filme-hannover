@@ -11,14 +11,27 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Globalization;
+using TMDbLib.Client;
+
+const string defaultOutputDirectory = "wwwroot/data/";
 
 CultureInfo.CurrentCulture = new CultureInfo("de-DE", true);
 CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("de-DE", true);
 
 var builder = Host.CreateApplicationBuilder(args);
 // Add services to the container.
+builder.Configuration.AddUserSecrets<Program>();
 builder.Services.AddDbContext<KinohannoverContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("kinohannoverContext") ?? throw new InvalidOperationException("Connection string 'kinohannoverContext' not found.")));
+
+var apiKey = builder.Configuration.GetConnectionString("TMDB");
+if (string.IsNullOrWhiteSpace(apiKey))
+{
+    throw new InvalidOperationException("No TMDB API key found.");
+}
+
+var tmdbClient = new TMDbClient(apiKey);
+builder.Services.AddSingleton(tmdbClient);
 
 builder.Services.AddScoped<AstorScraper>();
 builder.Services.AddScoped<CinemaxxScraper>();
@@ -29,7 +42,8 @@ builder.Services.AddScoped<SprengelScraper>();
 builder.Services.AddScoped<KoKiScraper>();
 builder.Services.AddScoped<CleanupService>();
 builder.Services.AddScoped<CalendarRenderer>();
-builder.Services.AddScoped<JsonRenderer>();
+builder.Services.AddScoped<FcJsonRenderer>();
+builder.Services.AddScoped<JsonDataRenderer>();
 var app = builder.Build();
 
 ExecuteScrapingProcess(app.Services);
@@ -58,7 +72,9 @@ static void ExecuteScrapingProcess(IServiceProvider serviceProvider)
     kokiScraper.ScrapeAsync().Wait();
 
     var iCalRenderer = scope.ServiceProvider.GetRequiredService<CalendarRenderer>();
-    iCalRenderer.Render("wwwroot");
-    var jsonRenderer = scope.ServiceProvider.GetRequiredService<JsonRenderer>();
-    jsonRenderer.Render("wwwroot");
+    iCalRenderer.Render(defaultOutputDirectory);
+    var fcJsonRenderer = scope.ServiceProvider.GetRequiredService<FcJsonRenderer>();
+    fcJsonRenderer.Render(defaultOutputDirectory);
+    var jsonRenderer = scope.ServiceProvider.GetRequiredService<JsonDataRenderer>();
+    jsonRenderer.Render(Path.Combine(defaultOutputDirectory, "data.json"));
 }

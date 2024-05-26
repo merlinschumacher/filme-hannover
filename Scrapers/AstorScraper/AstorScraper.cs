@@ -2,10 +2,11 @@
 using kinohannover.Models;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
+using TMDbLib.Client;
 
 namespace kinohannover.Scrapers.AstorScraper
 {
-    public class AstorScraper(KinohannoverContext context, ILogger<AstorScraper> logger) : ScraperBase(context, logger, new()
+    public class AstorScraper(KinohannoverContext context, ILogger<AstorScraper> logger, TMDbClient tmdbClient) : ScraperBase(context, logger, tmdbClient, new()
     {
         DisplayName = "Astor",
         Website = "https://hannover.premiumkino.de/programmwoche",
@@ -35,7 +36,8 @@ namespace kinohannover.Scrapers.AstorScraper
             foreach (var astorMovie in astorMovies)
             {
                 var title = SanitizeTitle(astorMovie.name);
-                var movie = CreateMovie(title, Cinema);
+                var releaseYear = astorMovie.year;
+                var movie = await CreateMovieAsync(title, Cinema);
 
                 foreach (var performance in astorMovie.performances)
                 {
@@ -52,7 +54,7 @@ namespace kinohannover.Scrapers.AstorScraper
                     CreateShowTime(movie, dateTime, type, language, movieUrl, shopUrl);
                 }
             }
-            Context.SaveChanges();
+            await Context.SaveChangesAsync();
         }
 
         private static ShowTimeType GetShowTimeType(Performance? performance)

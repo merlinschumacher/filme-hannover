@@ -5,7 +5,7 @@ using Newtonsoft.Json.Serialization;
 
 namespace kinohannover.Renderer.JsonRenderer
 {
-    public class JsonRenderer(KinohannoverContext context)
+    public class FcJsonRenderer(KinohannoverContext context)
     {
         public void Render(string path)
         {
@@ -29,7 +29,7 @@ namespace kinohannover.Renderer.JsonRenderer
                                 { "cinema", cinema.DisplayName },
                                 { "showTimeType", showTime.Type },
                                 { "showTimeLanguage", showTime.Language },
-                                { "shopUrl", showTime.ShopUrl },
+                                { "shopUrl", showTime.ShopUrl ?? "" },
                                 { "movieUrl", showTime.Url }
                             }
                         };

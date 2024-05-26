@@ -3,10 +3,11 @@ using kinohannover.Data;
 using kinohannover.Models;
 using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
+using TMDbLib.Client;
 
 namespace kinohannover.Scrapers.FilmkunstKinos
 {
-    public abstract partial class FilmkunstKinosScraper(KinohannoverContext context, ILogger<FilmkunstKinosScraper> logger, Cinema cinema) : ScraperBase(context, logger, cinema), IScraper
+    public abstract partial class FilmkunstKinosScraper(KinohannoverContext context, ILogger<FilmkunstKinosScraper> logger, Cinema cinema, TMDbClient tmdbClient) : ScraperBase(context, logger, tmdbClient, cinema), IScraper
     {
         private const string contentBoxSelector = "//div[contains(concat(' ', normalize-space(@class), ' '), ' contentbox ')]";
         private const string movieSelector = ".//table";
@@ -29,7 +30,7 @@ namespace kinohannover.Scrapers.FilmkunstKinos
             foreach (var movieNode in movieNodes)
             {
                 var titleString = movieNode.SelectSingleNode(titleSelector).InnerText;
-                var movieUrl = GetUrl(movieNode.SelectSingleNode(titleSelector).GetAttributeValue("href", ""));
+                var movieUrl = BuildAbsoluteUrl(movieNode.SelectSingleNode(titleSelector).GetAttributeValue("href", ""));
                 var title = TitleRegex();
                 var match = title.Match(titleString);
                 var type = ShowTimeType.Regular;
@@ -41,7 +42,7 @@ namespace kinohannover.Scrapers.FilmkunstKinos
                     type = ShowTimeHelper.GetType(match.Groups[3].Value);
                 }
 
-                var movie = CreateMovie(titleString, Cinema);
+                var movie = await CreateMovieAsync(titleString, Cinema);
                 movie.Cinemas.Add(Cinema);
 
                 var filmTagNodes = movieNode.SelectNodes(filmTagSelector);
@@ -61,7 +62,7 @@ namespace kinohannover.Scrapers.FilmkunstKinos
                     }
                 }
             }
-            Context.SaveChanges();
+            await Context.SaveChangesAsync();
         }
 
         [GeneratedRegex(titleRegex)]

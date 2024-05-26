@@ -9,6 +9,8 @@
 
         public ICollection<Movie> Movies { get; set; } = [];
 
+        public ICollection<ShowTime> ShowTimes { get; set; } = [];
+
         public string Color { get; set; } = "#000000";
     }
 }

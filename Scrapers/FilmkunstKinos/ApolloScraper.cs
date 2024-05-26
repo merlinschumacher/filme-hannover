@@ -3,10 +3,11 @@ using kinohannover.Data;
 using kinohannover.Models;
 using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
+using TMDbLib.Client;
 
 namespace kinohannover.Scrapers.FilmkunstKinos
 {
-    public partial class ApolloScraper(KinohannoverContext context, ILogger<ApolloScraper> logger) : ScraperBase(context, logger, new()
+    public partial class ApolloScraper(KinohannoverContext context, ILogger<ApolloScraper> logger, TMDbClient tmdbClient) : ScraperBase(context, logger, tmdbClient, new()
     {
         DisplayName = "Apollo Kino",
         Website = "https://www.apollokino.de/?v=&mp=Vorschau",
@@ -44,7 +45,7 @@ namespace kinohannover.Scrapers.FilmkunstKinos
                     var showDateTime = new DateTime(date.Year, date.Month, date.Day, time.Hour, time.Minute, 0);
 
                     var titleNode = movieNode.SelectSingleNode(".//a");
-                    var showTimeUrl = GetUrl(titleNode.GetAttributeValue("href", ""), "https://www.apollokino.de/");
+                    var showTimeUrl = BuildAbsoluteUrl(titleNode.GetAttributeValue("href", ""), "https://www.apollokino.de/");
 
                     // The title is sometimes in the last child node, if it's a special event
                     if (specialEventTitles.Any(e => titleNode.InnerText.Contains(e, StringComparison.CurrentCultureIgnoreCase)))
@@ -68,7 +69,7 @@ namespace kinohannover.Scrapers.FilmkunstKinos
                     foreach (var specialEventTitle in specialEventTitles)
                         title = title.Replace(specialEventTitle, "");
 
-                    var movie = CreateMovie(titleNode.InnerText, Cinema);
+                    var movie = await CreateMovieAsync(titleNode.InnerText, Cinema);
 
                     CreateShowTime(movie, showDateTime, type, language, showTimeUrl, _shopUrl);
                 }

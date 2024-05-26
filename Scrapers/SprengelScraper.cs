@@ -4,10 +4,11 @@ using kinohannover.Data;
 using kinohannover.Models;
 using Microsoft.Extensions.Logging;
 using System.Text;
+using TMDbLib.Client;
 
 namespace kinohannover.Scrapers
 {
-    public class SprengelScraper(KinohannoverContext context, ILogger<SprengelScraper> logger) : ScraperBase(context, logger, new Cinema()
+    public class SprengelScraper(KinohannoverContext context, ILogger<SprengelScraper> logger, TMDbClient tmdbClient) : ScraperBase(context, logger, tmdbClient, new Cinema()
     {
         DisplayName = "Kino im Sprengel",
         Website = "https://www.kino-im-sprengel.de/",
@@ -39,11 +40,11 @@ namespace kinohannover.Scrapers
 
                 foreach (var calendarEvent in calendar.Events)
                 {
-                    var movie = CreateMovie(calendarEvent.Summary, Cinema);
+                    var movie = await CreateMovieAsync(calendarEvent.Summary, Cinema);
                     movie.Cinemas.Add(Cinema);
 
                     var showDateTime = calendarEvent.Start.AsSystemLocal;
-                    var movieUrl = GetUrl(calendarEvent.Url.ToString());
+                    var movieUrl = BuildAbsoluteUrl(calendarEvent.Url.ToString());
 
                     CreateShowTime(movie, showDateTime, url: movieUrl, shopUrl: _shopUrl);
                 }

@@ -10,10 +10,10 @@ namespace kinohannover.Data
 
         public DbSet<Models.ShowTime> ShowTime { get; set; } = default!;
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
         {
-            modelBuilder.Entity<Models.Movie>().HasMany(m => m.ShowTimes).WithOne(s => s.Movie).OnDelete(DeleteBehavior.Cascade);
-            modelBuilder.Entity<Models.Cinema>().HasMany(c => c.Movies).WithMany(m => m.Cinemas);
+            configurationBuilder.Properties<string>().UseCollation("NOCASE");
+            base.ConfigureConventions(configurationBuilder);
         }
     }
 }

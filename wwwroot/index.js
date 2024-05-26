@@ -69,7 +69,7 @@ function selectCinema(evt) {
 }
 
 async function CreateCinemaList() {
-    cinemas = await fetchJsonData('/cinemas.json');
+    cinemas = await fetchJsonData('/data/cinemas.json');
     cinemaList = document.createElement('ul');
     cinemaList.id = 'cinemaList';
     for (let i = 0; i < cinemas.length; i++) {
@@ -148,8 +148,7 @@ async function handleWindowResize(arg) {
     calendar.setOption('duration', { days: duration });
 }
 
-async function getEventSources() {
-    var eventSources = await fetchJsonData('/events.json');
+async function getEventSources(eventSources) {
     for (let eventSource of eventSources) {
         eventSource.events = eventSource.events.filter(e => {
             let startDate = new Date(e.start);
@@ -219,9 +218,24 @@ async function initModal() {
         }
     });
 }
+
+async function loadUpdatedData() {
+    const updateRequest = await fetch('/data/data.json.update');
+    const currentUpdate = new Date(await updateRequest.text());
+    const lastKnownUpdate = new Date(localStorage.getItem('updateTime'));
+    var data = localStorage.getItem('eventData');
+    if (currentUpdate < lastKnownUpdate || data == null) {
+        localStorage.setItem('updateTime', currentUpdate);
+        eventRequest = await fetch('/data/events.json');
+        data = await eventRequest.text();
+        localStorage.setItem('eventData', data);
+    }
+    getEventSources(JSON.parse(data));
+}
+
 document.addEventListener('DOMContentLoaded', async function () {
     CreateCinemaList();
-    await getEventSources();
+    await loadUpdatedData();
     initCalendar();
     initModal();
 });

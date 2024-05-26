@@ -2,10 +2,11 @@
 using kinohannover.Models;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using TMDbLib.Client;
 
 namespace kinohannover.Scrapers.Cinemaxx
 {
-    public class CinemaxxScraper(KinohannoverContext context, ILogger<CinemaxxScraper> logger) : ScraperBase(context, logger, new()
+    public class CinemaxxScraper(KinohannoverContext context, ILogger<CinemaxxScraper> logger, TMDbClient tmdbClient) : ScraperBase(context, logger, tmdbClient, new()
     {
         DisplayName = "Cinemaxx",
         Website = "https://www.cinemaxx.de/kinoprogramm/hannover/",
@@ -31,8 +32,7 @@ namespace kinohannover.Scrapers.Cinemaxx
             foreach (var film in myDeserializedClass.WhatsOnAlphabeticFilms)
             {
                 var (title, eventTitle) = SanitizeTitle(film.Title);
-                
-                var movie = CreateMovie(film.Title, Cinema);
+                var movie = await CreateMovieAsync(title, Cinema);
 
                 foreach (var outerCinema in film.WhatsOnAlphabeticCinemas)
                 {
@@ -45,14 +45,14 @@ namespace kinohannover.Scrapers.Cinemaxx
 
                             var language = ShowTimeHelper.GetLanguage(shedule.VersionTitle);
                             var type = ShowTimeHelper.GetType(shedule.VersionTitle);
-                            var movieUrl = GetUrl(film.FilmUrl);
-                            var shopUrl = GetUrl(shedule.BookingLink);
+                            var movieUrl = BuildAbsoluteUrl(film.FilmUrl);
+                            var shopUrl = BuildAbsoluteUrl(shedule.BookingLink);
                             CreateShowTime(movie, time, type, language, movieUrl, shopUrl);
                         }
                     }
                 }
             }
-            Context.SaveChanges();
+            await Context.SaveChangesAsync();
         }
 
         private (string title, string? eventTitle) SanitizeTitle(string title)
@@ -63,7 +63,7 @@ namespace kinohannover.Scrapers.Cinemaxx
                 if (title.Contains(specialEventTitle, StringComparison.OrdinalIgnoreCase))
                 {
                     title = title.Replace(specialEventTitle, "", StringComparison.OrdinalIgnoreCase);
-                    eventTitle = specialEventTitle.Replace(":", "");
+                    eventTitle = specialEventTitle.Replace(":", "").Trim();
                 }
             }
             return (title.Trim(), eventTitle);

@@ -1,10 +1,11 @@
 ﻿using kinohannover.Data;
 using kinohannover.Models;
 using Microsoft.Extensions.Logging;
+using TMDbLib.Client;
 
 namespace kinohannover.Scrapers.FilmkunstKinos
 {
-    public class HochhausScraper(KinohannoverContext context, ILogger<HochhausScraper> logger) : FilmkunstKinosScraper(context, logger, cinema)
+    public class HochhausScraper(KinohannoverContext context, ILogger<HochhausScraper> logger, TMDbClient tmdbClient) : FilmkunstKinosScraper(context, logger, cinema, tmdbClient)
     {
         private static readonly Cinema cinema = new()
         {

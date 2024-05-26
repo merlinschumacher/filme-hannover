@@ -193,3 +193,10 @@ details {
         flex-grow: unset;
     }
 }
+
+footer {
+    margin-top: 1em;
+    padding: 1em;
+    background-color: var(--fc-footer-bg-color);
+    color: var(--fc-footer-text-color);
+}
