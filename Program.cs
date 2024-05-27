@@ -13,8 +13,6 @@ using Microsoft.Extensions.Hosting;
 using System.Globalization;
 using TMDbLib.Client;
 
-const string defaultOutputDirectory = "wwwroot/data/";
-
 CultureInfo.CurrentCulture = new CultureInfo("de-DE", true);
 CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("de-DE", true);
 
@@ -46,10 +44,15 @@ builder.Services.AddScoped<FcJsonRenderer>();
 builder.Services.AddScoped<JsonDataRenderer>();
 var app = builder.Build();
 
+// Create the output directory if needed. 
+
 ExecuteScrapingProcess(app.Services);
+
 
 static void ExecuteScrapingProcess(IServiceProvider serviceProvider)
 {
+    var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+    var defaultOutputDirectory = CreateOutputDirectory(configuration);
     using var scope = serviceProvider.CreateScope();
     var context = scope.ServiceProvider.GetRequiredService<KinohannoverContext>();
     context.Database.Migrate();
@@ -77,4 +80,25 @@ static void ExecuteScrapingProcess(IServiceProvider serviceProvider)
     fcJsonRenderer.Render(defaultOutputDirectory);
     var jsonRenderer = scope.ServiceProvider.GetRequiredService<JsonDataRenderer>();
     jsonRenderer.Render(Path.Combine(defaultOutputDirectory, "data.json"));
+}
+
+
+static string CreateOutputDirectory(IConfiguration config)
+{
+    var defaultOutputDirectory = config["DataOutputPath"];
+    if (string.IsNullOrWhiteSpace(defaultOutputDirectory))
+    {
+        throw new InvalidOperationException("No output directory found.");
+    }
+    if (!Directory.Exists(defaultOutputDirectory))
+    {
+        var info = Directory.CreateDirectory(defaultOutputDirectory);
+        defaultOutputDirectory = info.FullName;
+    }
+    else
+    {
+        Path.GetFullPath(defaultOutputDirectory);
+    }
+
+    return defaultOutputDirectory;
 }
