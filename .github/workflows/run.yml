@@ -24,6 +24,8 @@ jobs:
       run: dotnet restore
     - name: Execute
       run: dotnet run --no-restore
+      env:
+        CONNECTIONSTRINGS__TMDB: ${{ secrets.CONNECTIONSTRINGS__TMDB }}
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
       with:
