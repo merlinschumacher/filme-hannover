@@ -206,8 +206,11 @@ namespace kinohannover.Scrapers
                 {
                     movieMetaData.Title = tmdbMovieDetails.AlternativeTitles.Titles.First(e => e.Type == "Translation").Title;
                 }
+                else
+                {
+                    movieMetaData.Title = tmdbMovieDetails.Title.Trim();
+                }
 
-                movieMetaData.Title = tmdbMovieDetails.Title.Trim();
                 movieMetaData.PosterUrl = tmdbPosterBaseUrl + tmdbResult.PosterPath;
                 movieMetaData.ReleaseDate = tmdbMovieDetails.ReleaseDate;
                 movieMetaData.Duration = TimeSpan.FromMinutes(tmdbMovieDetails.Runtime ?? assumedDefaultMovieLength);
