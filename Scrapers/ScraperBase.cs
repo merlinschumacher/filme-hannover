@@ -183,7 +183,30 @@ namespace kinohannover.Scrapers
 
             if (tmdbResult is not null)
             {
-                var tmdbMovieDetails = (await tmdbClient.GetMovieAsync(tmdbResult.Id, extraMethods: TMDbLib.Objects.Movies.MovieMethods.Videos, language: tmdbSearchLanguage));
+                var tmdbMovieDetails = (await tmdbClient.GetMovieAsync(tmdbResult.Id, extraMethods: TMDbLib.Objects.Movies.MovieMethods.Videos | TMDbLib.Objects.Movies.MovieMethods.AlternativeTitles, language: tmdbSearchLanguage));
+
+                // Try to get the correct title in German, English or some translation
+                if (tmdbMovieDetails.AlternativeTitles.Titles.Any(e => e.Iso_3166_1 == "de"))
+                {
+                    movieMetaData.Title = tmdbMovieDetails.AlternativeTitles.Titles.First(e => e.Iso_3166_1 == "de").Title;
+                }
+                else if (tmdbMovieDetails.AlternativeTitles.Titles.Any(e => e.Type == "Translation" && e.Iso_3166_1 == "de"))
+                {
+                    movieMetaData.Title = tmdbMovieDetails.AlternativeTitles.Titles.First(e => e.Type == "Translation" && e.Iso_3166_1 == "de").Title;
+                }
+                else if (tmdbMovieDetails.AlternativeTitles.Titles.Any(e => e.Iso_3166_1 == "en"))
+                {
+                    movieMetaData.Title = tmdbMovieDetails.AlternativeTitles.Titles.First(e => e.Iso_3166_1 == "en").Title;
+                }
+                else if (tmdbMovieDetails.AlternativeTitles.Titles.Any(e => e.Type == "Translation" && e.Iso_3166_1 == "en"))
+                {
+                    movieMetaData.Title = tmdbMovieDetails.AlternativeTitles.Titles.First(e => e.Type == "Translation" && e.Iso_3166_1 == "en").Title;
+                }
+                else if (tmdbMovieDetails.AlternativeTitles.Titles.Any(e => e.Type == "Translation"))
+                {
+                    movieMetaData.Title = tmdbMovieDetails.AlternativeTitles.Titles.First(e => e.Type == "Translation").Title;
+                }
+
                 movieMetaData.Title = tmdbMovieDetails.Title.Trim();
                 movieMetaData.PosterUrl = tmdbPosterBaseUrl + tmdbResult.PosterPath;
                 movieMetaData.ReleaseDate = tmdbMovieDetails.ReleaseDate;

@@ -196,7 +196,7 @@ details {
 
 footer {
     margin-top: 1em;
-    padding: 1em;
+    padding: 1em 0;
     background-color: var(--fc-footer-bg-color);
     color: var(--fc-footer-text-color);
 }

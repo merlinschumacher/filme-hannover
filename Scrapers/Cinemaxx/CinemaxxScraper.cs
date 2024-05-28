@@ -15,7 +15,7 @@ namespace kinohannover.Scrapers.Cinemaxx
 
     {
         private const int cinemaId = 81;
-        private readonly List<string> specialEventTitles = ["Maxxi Mornings:", "Mini Mornings:"];
+        private readonly List<string> specialEventTitles = ["Maxxi Mornings:", "Mini Mornings:", "Sharkweek:", "Shark Week:"];
 
         public async Task ScrapeAsync()
         {
