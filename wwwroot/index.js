@@ -224,14 +224,14 @@ async function loadUpdatedData() {
     const currentUpdate = new Date(await updateRequest.text());
     const lastKnownUpdate = new Date(localStorage.getItem('updateTime'));
     var data = localStorage.getItem('eventData');
-    if (currentUpdate < lastKnownUpdate || data == null) {
+    if (currentUpdate > lastKnownUpdate || data == null) {
         localStorage.setItem('updateTime', currentUpdate);
         eventRequest = await fetch('/data/events.json');
         data = await eventRequest.text();
         localStorage.setItem('eventData', data);
     }
     let lastUpdate = document.getElementById('lastUpdate');
-    lastUpdate.textContent = currentUpdate.toLocaleString();
+    lastUpdate.textContent = new Date(localStorage.getItem('updateTime')).ToLocaleString();
     getEventSources(JSON.parse(data));
 }
 
