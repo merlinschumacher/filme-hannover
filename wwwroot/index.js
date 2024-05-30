@@ -231,7 +231,7 @@ async function loadUpdatedData() {
         localStorage.setItem('eventData', data);
     }
     let lastUpdate = document.getElementById('lastUpdate');
-    lastUpdate.textContent = new Date(localStorage.getItem('updateTime')).ToLocaleString();
+    lastUpdate.textContent = new Date(localStorage.getItem('updateTime')).toLocaleString();
     getEventSources(JSON.parse(data));
 }
 
