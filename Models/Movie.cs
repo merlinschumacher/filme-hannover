@@ -18,5 +18,7 @@
         public IList<string> Aliases { get; set; } = [];
 
         public string? Description { get; set; }
+
+        public int? TmdbId { get; set; }
     }
 }

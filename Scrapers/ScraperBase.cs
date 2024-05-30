@@ -15,13 +15,20 @@ namespace kinohannover.Scrapers
         protected readonly KinohannoverContext Context;
         private const int assumedDefaultMovieLength = 120;
         private const string tmdbPosterBaseUrl = "https://image.tmdb.org/t/p/w500";
-        private const string tmdbSearchLanguage = "de";
+        private const string tmdbSearchLanguageDE = "de-DE";
+        private const string tmdbTranslationConst = "Translation";
         private const string youtubeVideoBaseUrl = "https://www.youtube.com/watch?v=";
+        private const string tmdbSearchLanguageEN = "en-US";
+        private const string tmdbVideoTypeConst = "Trailer";
+        private const string tmdbVideoPlatformConst = "YouTube";
         private readonly ILogger<ScraperBase> _logger;
         private readonly TMDbClient tmdbClient;
 
         protected ScraperBase(KinohannoverContext context, ILogger<ScraperBase> logger, TMDbClient tmdbClient, Cinema cinema)
         {
+            Thread.CurrentThread.CurrentCulture = culture;
+            Thread.CurrentThread.CurrentUICulture = culture;
+
             Context = context;
             Cinema = cinema;
             _logger = logger;
@@ -61,13 +68,13 @@ namespace kinohannover.Scrapers
             title = title.Trim();
             var alias = title;
 
-            Movie? movie = await QueryMovieAsync(title, releaseYear, alias);
+            Movie? movie = await CheckKnownMovies(title, releaseYear, alias);
 
             if (movie == null)
             {
                 var movieMetaData = await QueryTmdb(title, releaseYear);
 
-                movie = await QueryMovieAsync(movieMetaData.Title, releaseYear, alias);
+                movie = await CheckKnownMovies(movieMetaData.Title, releaseYear, alias, movieMetaData.TmdbId);
 
                 movie ??= BuildAndAddMovie(title, movieMetaData);
             }
@@ -78,7 +85,7 @@ namespace kinohannover.Scrapers
                 movie.Cinemas.Add(cinema);
             }
 
-            if (!movie.Aliases.Any(e => e.Equals(alias, StringComparison.OrdinalIgnoreCase) || e.Equals(title, StringComparison.OrdinalIgnoreCase)))
+            if (!movie.Aliases.Any(e => e.Equals(alias, StringComparison.CurrentCultureIgnoreCase) || e.Equals(title, StringComparison.CurrentCultureIgnoreCase)))
             {
                 _logger.LogInformation("Add {title}", title);
                 movie.Aliases.Add(alias);
@@ -88,20 +95,46 @@ namespace kinohannover.Scrapers
             return movie;
         }
 
-        private async Task<Movie?> QueryMovieAsync(string title, int? releaseYear, string alias)
+        private async Task<Movie?> CheckKnownMovies(string title, int? releaseYear, string alias, int? tmbdId = null)
         {
-            var movie = Context.Movies.Include(m => m.Cinemas).Where(m => m.Aliases.Any(e => e == alias) || m.Aliases.Any(e => e == title));
-            if (releaseYear.HasValue)
+            if (tmbdId.HasValue)
             {
-                movie.Where(m => m.ReleaseDate.HasValue && m.ReleaseDate.Value.Year == releaseYear);
+                return await Context.Movies.Include(m => m.Cinemas).FirstOrDefaultAsync(m => m.TmdbId == tmbdId);
             }
 
-            return await movie.FirstOrDefaultAsync();
+            var query = Context.Movies.Include(m => m.Cinemas).Where(m => m.Aliases.Any(e => EF.Functions.Collate(e, "NOCASE") == alias || EF.Functions.Collate(e, "NOCASE") == title));
+
+            if (releaseYear.HasValue)
+            {
+                query.Where(m => m.ReleaseDate.HasValue && m.ReleaseDate.Value.Year == releaseYear);
+            }
+
+            var movie = await query.FirstOrDefaultAsync();
+
+            if (movie is null)
+            {
+                var titles = Context.Movies.ToList().SelectMany(e => e.Aliases.ToList()).ToList();
+                var matchingTitle = GetMostSimilarTitle(titles, title);
+                if (matchingTitle is not null)
+                {
+                    movie = await Context.Movies.Include(m => m.Cinemas).FirstOrDefaultAsync(m => m.Aliases.Any(e => e == matchingTitle));
+                }
+            }
+
+            return movie;
         }
 
-        private Movie BuildAndAddMovie(string alias, MovieMetaData movieMetaData)
+        private Movie BuildAndAddMovie(string alias, TmdbMovieMetaData movieMetaData)
         {
+            // Avoid adding movies with only uppercase letters, as this is usually a sign of a bad title. Make them title case instead.
+            if (movieMetaData.Title.Where(c => char.IsLetter(c)).All(char.IsUpper))
+            {
+                TextInfo textInfo = culture.TextInfo;
+                movieMetaData.Title = textInfo.ToTitleCase(movieMetaData.Title.ToLower());
+            }
+
             _logger.LogInformation("Creating movie {title} from {alias}", movieMetaData.Title, alias);
+
             var movie = new Movie
             {
                 DisplayName = movieMetaData.Title,
@@ -169,60 +202,118 @@ namespace kinohannover.Scrapers
             Cinema = cinema;
         }
 
-        private async Task<MovieMetaData> QueryTmdb(string title, int? releaseYear = null)
+        private async Task<TmdbMovieMetaData> QueryTmdb(string title, int? releaseYear = null)
         {
             DateTime? releaseDate = null;
-            if (releaseYear.HasValue)
+            if (releaseYear.HasValue && releaseYear.Value > 0)
             {
                 releaseDate = new DateTime(releaseYear.Value, 1, 1);
             }
 
-            var tmdbResult = (await tmdbClient.SearchMovieAsync(title, language: tmdbSearchLanguage, primaryReleaseYear: releaseYear ?? 0)).Results.FirstOrDefault();
+            var tmdbResult = (await tmdbClient.SearchMovieAsync(title, language: tmdbSearchLanguageDE, primaryReleaseYear: releaseYear ?? 0)).Results.FirstOrDefault();
 
-            var movieMetaData = new MovieMetaData(title, releaseDate);
+            var movieMetaData = new TmdbMovieMetaData(title, releaseDate);
 
             if (tmdbResult is not null)
             {
-                var tmdbMovieDetails = (await tmdbClient.GetMovieAsync(tmdbResult.Id, extraMethods: TMDbLib.Objects.Movies.MovieMethods.Videos | TMDbLib.Objects.Movies.MovieMethods.AlternativeTitles, language: tmdbSearchLanguage));
+                var tmdbMovieDetails = (await tmdbClient.GetMovieAsync(tmdbResult.Id, extraMethods: TMDbLib.Objects.Movies.MovieMethods.Videos | TMDbLib.Objects.Movies.MovieMethods.AlternativeTitles, language: tmdbSearchLanguageDE));
 
-                // Try to get the correct title in German, English or some translation
-                if (tmdbMovieDetails.AlternativeTitles.Titles.Any(e => e.Iso_3166_1 == "de"))
-                {
-                    movieMetaData.Title = tmdbMovieDetails.AlternativeTitles.Titles.First(e => e.Iso_3166_1 == "de").Title;
-                }
-                else if (tmdbMovieDetails.AlternativeTitles.Titles.Any(e => e.Type == "Translation" && e.Iso_3166_1 == "de"))
-                {
-                    movieMetaData.Title = tmdbMovieDetails.AlternativeTitles.Titles.First(e => e.Type == "Translation" && e.Iso_3166_1 == "de").Title;
-                }
-                else if (tmdbMovieDetails.AlternativeTitles.Titles.Any(e => e.Iso_3166_1 == "en"))
-                {
-                    movieMetaData.Title = tmdbMovieDetails.AlternativeTitles.Titles.First(e => e.Iso_3166_1 == "en").Title;
-                }
-                else if (tmdbMovieDetails.AlternativeTitles.Titles.Any(e => e.Type == "Translation" && e.Iso_3166_1 == "en"))
-                {
-                    movieMetaData.Title = tmdbMovieDetails.AlternativeTitles.Titles.First(e => e.Type == "Translation" && e.Iso_3166_1 == "en").Title;
-                }
-                else if (tmdbMovieDetails.AlternativeTitles.Titles.Any(e => e.Type == "Translation"))
-                {
-                    movieMetaData.Title = tmdbMovieDetails.AlternativeTitles.Titles.First(e => e.Type == "Translation").Title;
-                }
-                else
-                {
-                    movieMetaData.Title = tmdbMovieDetails.Title.Trim();
-                }
+                movieMetaData.TmdbId = tmdbResult.Id;
+                movieMetaData.Title = GetMovieTitle(title, tmdbMovieDetails);
 
                 movieMetaData.PosterUrl = tmdbPosterBaseUrl + tmdbResult.PosterPath;
                 movieMetaData.ReleaseDate = tmdbMovieDetails.ReleaseDate;
                 movieMetaData.Duration = TimeSpan.FromMinutes(tmdbMovieDetails.Runtime ?? assumedDefaultMovieLength);
                 movieMetaData.TrailerUrl = await GetTrailer(tmdbMovieDetails);
-            };
+            }
 
             return movieMetaData;
         }
 
+        private string GetMovieTitle(string title, TMDbLib.Objects.Movies.Movie tmdbMovieDetails)
+        {
+            if (tmdbMovieDetails.Title.Equals(title, StringComparison.CurrentCultureIgnoreCase))
+            {
+                return tmdbMovieDetails.Title;
+            }
+
+            if (tmdbMovieDetails.OriginalTitle.Equals(title, StringComparison.CurrentCultureIgnoreCase))
+            {
+                return tmdbMovieDetails.OriginalTitle;
+            }
+
+            if (tmdbMovieDetails.OriginalLanguage.Equals("DE", StringComparison.OrdinalIgnoreCase))
+            {
+                return tmdbMovieDetails.OriginalTitle;
+            }
+
+            var matchingAltTitle = tmdbMovieDetails.AlternativeTitles.Titles.FirstOrDefault(e => e.Title.Equals(title, StringComparison.CurrentCultureIgnoreCase))?.Title;
+            if (matchingAltTitle is not null)
+            {
+                return matchingAltTitle;
+            }
+            matchingAltTitle = GetAlternativeTitle(tmdbMovieDetails, "DE");
+            if (matchingAltTitle is not null)
+            {
+                return matchingAltTitle;
+            }
+            matchingAltTitle = GetAlternativeTitle(tmdbMovieDetails, "EN");
+            if (matchingAltTitle is not null)
+            {
+                return matchingAltTitle;
+            }
+
+            //If the cinema is known to have reliable movie titles, return the original title.
+            // Otherwise we try more desperate measures to find a matching title.
+            if (Cinema.ReliableMovieTitles)
+            {
+                return title;
+            }
+
+            var altTitles = tmdbMovieDetails.AlternativeTitles.Titles.Select(e => e.Title);
+            matchingAltTitle = GetMostSimilarTitle(altTitles, title);
+
+            if (tmdbMovieDetails.AlternativeTitles.Titles.Any(e => e.Type == tmdbTranslationConst))
+            {
+                return tmdbMovieDetails.AlternativeTitles.Titles.First(e => e.Type == tmdbTranslationConst).Title;
+            }
+
+            return title;
+        }
+
+        private static string? GetMostSimilarTitle(IEnumerable<string> haystack, string needle)
+        {
+            Fastenshtein.Levenshtein lev = new(needle);
+            var needleLength = needle.Length;
+
+            var longestCommonSubstring = haystack.Select(e => (altTitle: e, index: lev.DistanceFrom(e))).OrderByDescending(t => t.index).FirstOrDefault().altTitle;
+            var mostSimilarList = haystack.Select(e =>
+            {
+                var dist = lev.DistanceFrom(e);
+                var bigger = Math.Max(needleLength, e.Length);
+                var distPercent = (double)(bigger - dist) / bigger;
+                return (altTitle: e, index: distPercent);
+            });
+            var mostSimilar = mostSimilarList.FirstOrDefault(e => e.index > 0.7).altTitle;
+            return mostSimilar;
+        }
+
+        private static string? GetAlternativeTitle(TMDbLib.Objects.Movies.Movie tmdbMovieDetails, string language)
+        {
+            if (tmdbMovieDetails.AlternativeTitles.Titles.Any(e => e.Iso_3166_1.Equals(language, StringComparison.OrdinalIgnoreCase)))
+            {
+                return tmdbMovieDetails.AlternativeTitles.Titles.First(e => e.Iso_3166_1.Equals(language, StringComparison.OrdinalIgnoreCase)).Title;
+            }
+            else if (tmdbMovieDetails.AlternativeTitles.Titles.Any(e => e.Type == tmdbTranslationConst && e.Iso_3166_1.Equals(language, StringComparison.OrdinalIgnoreCase)))
+            {
+                return tmdbMovieDetails.AlternativeTitles.Titles.First(e => e.Type == tmdbTranslationConst && e.Iso_3166_1.Equals(language, StringComparison.OrdinalIgnoreCase)).Title;
+            }
+            return null;
+        }
+
         private async Task<string?> GetTrailer(TMDbLib.Objects.Movies.Movie tmdbResult)
         {
-            var tmdbTrailer = (await tmdbClient.GetMovieVideosAsync(tmdbResult.Id)).Results.FirstOrDefault(v => v.Type.Equals("Trailer", StringComparison.OrdinalIgnoreCase) && v.Site.Equals("YouTube", StringComparison.OrdinalIgnoreCase));
+            var tmdbTrailer = (await tmdbClient.GetMovieVideosAsync(tmdbResult.Id)).Results.FirstOrDefault(v => v.Type.Equals(tmdbVideoTypeConst, StringComparison.OrdinalIgnoreCase) && v.Site.Equals(tmdbVideoPlatformConst, StringComparison.OrdinalIgnoreCase));
             if (tmdbTrailer is not null)
             {
                 return youtubeVideoBaseUrl + tmdbTrailer.Key;
@@ -230,8 +321,9 @@ namespace kinohannover.Scrapers
             return null;
         }
 
-        private class MovieMetaData(string title, DateTime? releaseDate = null)
+        private class TmdbMovieMetaData(string title, DateTime? releaseDate = null)
         {
+            public int TmdbId { get; set; }
             public string? Description { get; set; }
             public TimeSpan Duration { get; set; } = TimeSpan.FromMinutes(assumedDefaultMovieLength);
             public string? PosterUrl { get; set; }

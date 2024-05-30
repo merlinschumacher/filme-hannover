@@ -10,10 +10,16 @@ namespace kinohannover.Data
 
         public DbSet<Models.ShowTime> ShowTime { get; set; } = default!;
 
-        protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            configurationBuilder.Properties<string>().UseCollation("NOCASE");
-            base.ConfigureConventions(configurationBuilder);
+            modelBuilder.UseCollation("NOCASE");
+
+            modelBuilder.Entity<Models.Movie>(m =>
+            {
+                m.Property(x => x.DisplayName).UseCollation("NOCASE");
+            });
+
+            base.OnModelCreating(modelBuilder);
         }
     }
 }

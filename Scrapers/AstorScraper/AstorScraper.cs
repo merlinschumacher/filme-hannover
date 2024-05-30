@@ -11,9 +11,13 @@ namespace kinohannover.Scrapers.AstorScraper
         DisplayName = "Astor",
         Website = "https://hannover.premiumkino.de/programmwoche",
         Color = "#ceb07a",
+        ReliableMovieTitles = true,
+        LinkToShop = true,
     }), IScraper
     {
-        private readonly List<string> specialEventTitles = ["(Best of Cinema)", "(MET "];
+        private readonly List<string> specialEventTitles = ["(Best of Cinema)"];
+
+        private readonly List<string> ignoreEventTitles = ["(MET "];
         private readonly string apiEndpointUrl = "https://hannover.premiumkino.de/api/v1/de/config";
 
         private string SanitizeTitle(string title)
@@ -35,9 +39,12 @@ namespace kinohannover.Scrapers.AstorScraper
 
             foreach (var astorMovie in astorMovies)
             {
+                if (ignoreEventTitles.Any(e => astorMovie.name.Contains(e)))
+                    continue;
+
                 var title = SanitizeTitle(astorMovie.name);
                 var releaseYear = astorMovie.year;
-                var movie = await CreateMovieAsync(title, Cinema);
+                var movie = await CreateMovieAsync(title, Cinema, releaseYear);
 
                 foreach (var performance in astorMovie.performances)
                 {
