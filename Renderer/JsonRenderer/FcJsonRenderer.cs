@@ -33,11 +33,11 @@ namespace kinohannover.Renderer.JsonRenderer
                                 { "movieUrl", showTime.Url }
                             }
                         };
-                        if (!string.IsNullOrWhiteSpace(showTime.ShopUrl))
+                        if (cinema.LinkToShop && !string.IsNullOrWhiteSpace(showTime.ShopUrl))
                         {
                             newEvent.Url = new Uri(showTime.ShopUrl);
                         }
-                        else if (!string.IsNullOrWhiteSpace(showTime.Url))
+                        else
                         {
                             newEvent.Url = new Uri(showTime.Url);
                         }

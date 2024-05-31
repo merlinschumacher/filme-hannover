@@ -157,15 +157,7 @@ namespace kinohannover.Scrapers
         internal void CreateShowTime(Movie movie, DateTime dateTime, ShowTimeType type = ShowTimeType.Regular, ShowTimeLanguage lang = ShowTimeLanguage.German, string url = "", string? shopUrl = null, string? specialEvent = null)
         {
             url = BuildAbsoluteUrl(url);
-
-            if (Cinema.LinkToShop)
-            {
-                shopUrl = BuildAbsoluteUrl(shopUrl);
-            }
-            else
-            {
-                shopUrl = url;
-            }
+            shopUrl = BuildAbsoluteUrl(shopUrl);
 
             // Don't add showtimes that have already passed more than an hour ago
             if (dateTime < DateTime.Now.AddHours(-1))
