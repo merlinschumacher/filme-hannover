@@ -16,7 +16,7 @@
         /// <summary>
         /// Gets or sets a value indicating whether the showtime entries should link to the shop
         /// </summary>
-        public bool LinkToShop { get; set; } = true;
+        public bool LinkToShop { get; set; } = false;
 
         /// <summary>
         /// Gets or sets a value indicating whether this cinema has reliable movie titles.
