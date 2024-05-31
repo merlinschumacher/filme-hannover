@@ -3,6 +3,7 @@ using kinohannover.Data;
 using kinohannover.Models;
 using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
+using System.Web;
 using TMDbLib.Client;
 
 namespace kinohannover.Scrapers
@@ -40,7 +41,18 @@ namespace kinohannover.Scrapers
                 foreach (var hr in hrs)
                 {
                     var paragraphs = hr.SelectNodes(_paragraphSelection);
-                    var date = DateOnly.Parse(paragraphs.First().InnerText);
+                    DateOnly date;
+                    string dateText = string.Empty;
+                    try
+                    {
+                        dateText = HttpUtility.HtmlDecode(paragraphs.First().InnerText).Trim();
+                        date = DateOnly.Parse(dateText, culture.DateTimeFormat);
+                    }
+                    catch (Exception)
+                    {
+                        logger.LogError("Failed to parse date {dateText}", dateText);
+                        continue;
+                    }
 
                     var movieParagraph = paragraphs.Skip(1).First();
                     var movieElements = movieParagraph.SelectNodes(_immediateTextChildren).Where(e => e.InnerText.Contains("Uhr"));
@@ -49,7 +61,18 @@ namespace kinohannover.Scrapers
                         var timeMatches = ShowTimeRegex().Match(movieElement.InnerText);
                         if (!timeMatches.Success)
                             continue;
-                        var time = TimeOnly.Parse(timeMatches.Groups[1].Value);
+                        TimeOnly time;
+                        string timeText = string.Empty;
+                        try
+                        {
+                            timeText = HttpUtility.HtmlDecode(timeMatches.Groups[1].Value).Trim();
+                            time = TimeOnly.Parse(timeMatches.Groups[1].Value);
+                        }
+                        catch (Exception)
+                        {
+                            logger.LogError("Failed to parse time {timeText}", timeMatches.Groups[1].Value);
+                            continue;
+                        }
                         if (movieElement.NextSibling == null || movieElement.NextSibling.Name != "a")
                             continue;
                         var showTimeLink = movieElement.NextSibling.Attributes["href"].Value;
