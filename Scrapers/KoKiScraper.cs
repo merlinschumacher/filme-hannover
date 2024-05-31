@@ -76,7 +76,7 @@ namespace kinohannover.Scrapers
                         }
                         if (movieElement.NextSibling == null || movieElement.NextSibling.Name != "a")
                             continue;
-                        var showTimeLink = movieElement.NextSibling.Attributes["href"].Value;
+                        var showTimeLink = HttpUtility.HtmlDecode(movieElement.NextSibling.Attributes["href"].Value);
 
                         // Skip if the link doesn't contain Filem. Most likely it's a concert or other event
                         if (!showTimeLink.Contains("Filme"))
