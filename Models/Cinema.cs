@@ -21,6 +21,6 @@
         /// <summary>
         /// Gets or sets a value indicating whether this cinema has reliable movie titles.
         /// </summary>
-        public bool ReliableMovieTitles { get; set; } = false;
+        public bool ReliableMetadata { get; set; } = false;
     }
 }

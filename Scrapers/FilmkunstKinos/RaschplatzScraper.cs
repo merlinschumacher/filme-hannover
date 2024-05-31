@@ -12,6 +12,7 @@ namespace kinohannover.Scrapers.FilmkunstKinos
             DisplayName = "Kino am Raschplatz",
             Website = "https://www.kinoamraschplatz.de/de/programm.php",
             Color = "#7e0f23",
+            LinkToShop = true,
         };
     }
 }

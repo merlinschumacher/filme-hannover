@@ -11,6 +11,7 @@ namespace kinohannover.Scrapers.Cinemaxx
         DisplayName = "Cinemaxx",
         Website = "https://www.cinemaxx.de/kinoprogramm/hannover/",
         Color = "#ca01ca",
+        LinkToShop = true,
     }), IScraper
 
     {

@@ -21,6 +21,7 @@ namespace kinohannover.Scrapers
         private const string _hrSelector = ".//hr";
         private const string _paragraphSelection = "./following-sibling::p[position() <= 2]";
         private const string _immediateTextChildren = "./text()";
+        private readonly List<string> specialEventTitles = ["Kino & Konzert:"];
 
         public async Task ScrapeAsync()
         {
@@ -86,7 +87,16 @@ namespace kinohannover.Scrapers
                         var titleMatches = MovieTitleRegex().Match(movieElement.NextSibling.InnerText);
                         if (titleMatches.Success)
                         {
-                            var title = titleMatches.Groups[1].Value;
+                            var title = HttpUtility.HtmlDecode(titleMatches.Groups[1].Value).Trim();
+                            var eventTitle = string.Empty;
+                            foreach (var specialEventTitle in specialEventTitles)
+                            {
+                                if (title.Contains(specialEventTitle, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    title = title.Replace(specialEventTitle, "", StringComparison.OrdinalIgnoreCase);
+                                    eventTitle = specialEventTitle.Replace(":", "").Trim();
+                                }
+                            }
                             var (showTimeType, showTimeLanguage) = GetShowTimeType(titleMatches.Groups[2].Value);
 
                             var movie = await CreateMovieAsync(title, Cinema);

@@ -18,7 +18,6 @@ namespace kinohannover.Scrapers
         private const string tmdbSearchLanguageDE = "de-DE";
         private const string tmdbTranslationConst = "Translation";
         private const string youtubeVideoBaseUrl = "https://www.youtube.com/watch?v=";
-        private const string tmdbSearchLanguageEN = "en-US";
         private const string tmdbVideoTypeConst = "Trailer";
         private const string tmdbVideoPlatformConst = "YouTube";
         private readonly ILogger<ScraperBase> _logger;
@@ -158,7 +157,15 @@ namespace kinohannover.Scrapers
         internal void CreateShowTime(Movie movie, DateTime dateTime, ShowTimeType type = ShowTimeType.Regular, ShowTimeLanguage lang = ShowTimeLanguage.German, string url = "", string? shopUrl = null, string? specialEvent = null)
         {
             url = BuildAbsoluteUrl(url);
-            shopUrl = BuildAbsoluteUrl(shopUrl);
+
+            if (Cinema.LinkToShop)
+            {
+                shopUrl = BuildAbsoluteUrl(shopUrl);
+            }
+            else
+            {
+                shopUrl = url;
+            }
 
             // Don't add showtimes that have already passed more than an hour ago
             if (dateTime < DateTime.Now.AddHours(-1))
@@ -265,7 +272,7 @@ namespace kinohannover.Scrapers
 
             //If the cinema is known to have reliable movie titles, return the original title.
             // Otherwise we try more desperate measures to find a matching title.
-            if (Cinema.ReliableMovieTitles)
+            if (Cinema.ReliableMetadata)
             {
                 return title;
             }

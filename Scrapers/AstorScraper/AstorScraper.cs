@@ -11,7 +11,7 @@ namespace kinohannover.Scrapers.AstorScraper
         DisplayName = "Astor",
         Website = "https://hannover.premiumkino.de/programmwoche",
         Color = "#ceb07a",
-        ReliableMovieTitles = true,
+        ReliableMetadata = true,
         LinkToShop = true,
     }), IScraper
     {
