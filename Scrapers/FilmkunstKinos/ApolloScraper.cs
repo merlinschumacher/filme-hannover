@@ -18,7 +18,37 @@ namespace kinohannover.Scrapers.FilmkunstKinos
         private readonly List<string> showsToIgnore = ["00010032", "spezialclub.de"];
         private readonly List<string> specialEventTitles = ["MonGay-Filmnacht", "WoMonGay"];
 
-        private const string titleRegexString = @"^(.*) [-–] (.*\.?) (OmU|OV).*$";
+        private const string titleRegexString = @"^(.*) [-––\u0096] (.*\.?) (OmU|OV).*$";
+
+        private (HtmlNode, string?) GetTitleNode(HtmlNode movieNode)
+        {
+            var titleNode = movieNode.SelectSingleNode(".//a");
+            var specialEventTitle = specialEventTitles.FirstOrDefault(e => movieNode.InnerText.Contains(e, StringComparison.CurrentCultureIgnoreCase));
+
+            if (specialEventTitle == null)
+            {
+                return (titleNode, null);
+            }
+            // The title is sometimes in the last child node, if it's a special event
+            titleNode = movieNode.ChildNodes[^1];
+            return (titleNode, specialEventTitle);
+        }
+
+        private static (string, ShowTimeType, ShowTimeLanguage) GetTitleTypeLanguage(HtmlNode titleNode)
+        {
+            var title = titleNode.InnerText;
+            var titleRegex = TitleRegex().Match(title);
+            var language = ShowTimeLanguage.German;
+            var type = ShowTimeType.Regular;
+
+            if (titleRegex.Success)
+            {
+                title = titleRegex.Groups[1].Value;
+                language = ShowTimeHelper.GetLanguage(titleRegex.Groups[2].Value);
+                type = ShowTimeHelper.GetType(titleRegex.Groups[3].Value);
+            }
+            return (title, type, language);
+        }
 
         public async Task ScrapeAsync()
         {
@@ -34,47 +64,36 @@ namespace kinohannover.Scrapers.FilmkunstKinos
                 var cells = day.SelectNodes(".//td");
                 if (cells == null || cells.Count == 0) continue;
                 var date = DateOnly.ParseExact(cells[0].InnerText.Split(" ")[1], "dd.MM.yyyy");
-
                 var movieNodes = cells.Skip(1).Where(e => !string.IsNullOrWhiteSpace(e.InnerText));
 
                 foreach (var movieNode in movieNodes)
                 {
-                    var timeNode = movieNode.ChildNodes[0];
-                    if (!TimeOnly.TryParse(timeNode.InnerText, culture, out var time))
-                        continue;
-                    var showDateTime = new DateTime(date.Year, date.Month, date.Day, time.Hour, time.Minute, 0);
+                    // Skip the movie if it's in the ignore list
+                    if (showsToIgnore.Any(e => movieNode.InnerHtml.Contains(e))) continue;
 
-                    var titleNode = movieNode.SelectSingleNode(".//a");
+                    var showDateTime = GetShowDateTime(date, movieNode);
+                    if (showDateTime == null) continue;
+
+                    var (titleNode, specialEventTitle) = GetTitleNode(movieNode);
+
                     var showTimeUrl = BuildAbsoluteUrl(titleNode.GetAttributeValue("href", ""), "https://www.apollokino.de/");
 
-                    // The title is sometimes in the last child node, if it's a special event
-                    if (specialEventTitles.Any(e => titleNode.InnerText.Contains(e, StringComparison.CurrentCultureIgnoreCase)))
-                    {
-                        titleNode = movieNode.ChildNodes[^1];
-                    }
+                    var (title, type, language) = GetTitleTypeLanguage(titleNode);
 
-                    // Skip the movie if it's in the ignore list
-                    if (showsToIgnore.Any(e => titleNode.OuterHtml.Contains(e))) continue;
-                    var titleRegex = TitleRegex().Match(titleNode.InnerHtml);
-                    string title = titleNode.InnerText;
-                    var language = ShowTimeLanguage.German;
-                    var type = ShowTimeType.Regular;
+                    var movie = await CreateMovieAsync(title, Cinema);
 
-                    if (titleRegex.Success)
-                    {
-                        title = titleRegex.Groups[0].Value;
-                        language = ShowTimeHelper.GetLanguage(titleRegex.Groups[1].Value);
-                        type = ShowTimeHelper.GetType(titleRegex.Groups[2].Value);
-                    }
-                    foreach (var specialEventTitle in specialEventTitles)
-                        title = title.Replace(specialEventTitle, "");
-
-                    var movie = await CreateMovieAsync(titleNode.InnerText, Cinema);
-
-                    CreateShowTime(movie, showDateTime, type, language, showTimeUrl, _shopUrl);
+                    CreateShowTime(movie, showDateTime.Value, type, language, showTimeUrl, _shopUrl);
                 }
             }
             await Context.SaveChangesAsync();
+        }
+
+        private DateTime? GetShowDateTime(DateOnly date, HtmlNode? movieNode)
+        {
+            var timeNode = movieNode.ChildNodes[0];
+            if (!TimeOnly.TryParse(timeNode.InnerText, culture, out var time))
+                return null;
+            return new DateTime(date.Year, date.Month, date.Day, time.Hour, time.Minute, 0);
         }
 
         [GeneratedRegex(titleRegexString)]

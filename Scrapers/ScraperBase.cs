@@ -1,4 +1,5 @@
-﻿using kinohannover.Data;
+﻿using HtmlAgilityPack;
+using kinohannover.Data;
 using kinohannover.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -33,6 +34,14 @@ namespace kinohannover.Scrapers
             _logger = logger;
             this.tmdbClient = tmdbClient;
             CreateCinema();
+        }
+
+        internal async Task<HtmlDocument> GetHtmlDocumentAsync(string url)
+        {
+            var html = await _httpClient.GetStringAsync(url);
+            var doc = new HtmlDocument();
+            doc.LoadHtml(html);
+            return doc;
         }
 
         internal string BuildAbsoluteUrl(string? url, string baseUrl = "")

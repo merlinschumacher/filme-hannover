@@ -9,6 +9,7 @@
 
     public enum ShowTimeLanguage
     {
+        Danish,
         German,
         English,
         French,
@@ -28,19 +29,33 @@
         private static readonly Dictionary<string, ShowTimeLanguage> ShowTimeLanguageMap = new(StringComparer.OrdinalIgnoreCase)
 
         {
+            { "Dänisch", ShowTimeLanguage.Danish },
+            { "DK", ShowTimeLanguage.Danish },
+            { "dän", ShowTimeLanguage.Danish },
             { "dt", ShowTimeLanguage.German },
+            { "de", ShowTimeLanguage.German },
             { "deu", ShowTimeLanguage.German },
             { "eng", ShowTimeLanguage.English },
+            { "EN", ShowTimeLanguage.English },
+            { "GB", ShowTimeLanguage.English },
+            { "UK", ShowTimeLanguage.English },
+            { "US", ShowTimeLanguage.English },
             { "engl", ShowTimeLanguage.English },
             { "franz", ShowTimeLanguage.French },
             { "frnz", ShowTimeLanguage.French },
             { "frz", ShowTimeLanguage.French },
+            { "FR", ShowTimeLanguage.French },
             { "span", ShowTimeLanguage.Spanish },
+            { "SP", ShowTimeLanguage.Spanish },
+            { "ES", ShowTimeLanguage.Spanish },
             { "ital", ShowTimeLanguage.Italian},
+            { "IT", ShowTimeLanguage.Italian},
             { "jap", ShowTimeLanguage.Japanese},
+            { "JP", ShowTimeLanguage.Japanese},
             { "georg", ShowTimeLanguage.Georgian },
             { "russ", ShowTimeLanguage.Russian },
             { "türk", ShowTimeLanguage.Turkish },
+            { "TR", ShowTimeLanguage.Turkish },
             { "div", ShowTimeLanguage.Miscellaneous },
             { "versch", ShowTimeLanguage.Miscellaneous },
             { "sonst", ShowTimeLanguage.Other },
