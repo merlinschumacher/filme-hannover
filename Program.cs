@@ -13,8 +13,9 @@ using Microsoft.Extensions.Hosting;
 using System.Globalization;
 using TMDbLib.Client;
 
-CultureInfo.CurrentCulture = new CultureInfo("de-DE", true);
-CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("de-DE", true);
+var culture = new CultureInfo("de-DE", true);
+CultureInfo.CurrentCulture = culture;
+CultureInfo.DefaultThreadCurrentCulture = culture;
 
 var builder = Host.CreateApplicationBuilder(args);
 // Add services to the container.
@@ -44,10 +45,9 @@ builder.Services.AddScoped<FcJsonRenderer>();
 builder.Services.AddScoped<JsonDataRenderer>();
 var app = builder.Build();
 
-// Create the output directory if needed. 
+// Create the output directory if needed.
 
 ExecuteScrapingProcess(app.Services);
-
 
 static void ExecuteScrapingProcess(IServiceProvider serviceProvider)
 {
@@ -81,7 +81,6 @@ static void ExecuteScrapingProcess(IServiceProvider serviceProvider)
     var jsonRenderer = scope.ServiceProvider.GetRequiredService<JsonDataRenderer>();
     jsonRenderer.Render(Path.Combine(defaultOutputDirectory, "data.json"));
 }
-
 
 static string CreateOutputDirectory(IConfiguration config)
 {

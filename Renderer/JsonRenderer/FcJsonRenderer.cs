@@ -23,7 +23,6 @@ namespace kinohannover.Renderer.JsonRenderer
                         {
                             Title = movie.DisplayName,
                             Start = showTime.StartTime,
-                            End = showTime.StartTime.Add(movie.Duration),
                             ExtendedProps = new Dictionary<string, object>()
                             {
                                 { "cinema", cinema.DisplayName },
@@ -33,6 +32,11 @@ namespace kinohannover.Renderer.JsonRenderer
                                 { "movieUrl", showTime.Url }
                             }
                         };
+                        if (movie.Runtime.HasValue)
+                        {
+                            newEvent.End = showTime.StartTime.Add(movie.Runtime.Value);
+                        }
+
                         if (cinema.LinkToShop && !string.IsNullOrWhiteSpace(showTime.ShopUrl))
                         {
                             newEvent.Url = new Uri(showTime.ShopUrl);

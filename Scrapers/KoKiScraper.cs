@@ -1,5 +1,6 @@
 ﻿using HtmlAgilityPack;
 using kinohannover.Data;
+using kinohannover.Helpers;
 using kinohannover.Models;
 using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
@@ -29,7 +30,7 @@ namespace kinohannover.Scrapers
 
         public async Task ScrapeAsync()
         {
-            var doc = await GetHtmlDocumentAsync(_dataUrl);
+            var doc = await HttpHelper.GetHtmlDocumentAsync(_dataUrl);
 
             var eventDetailsElements = doc.DocumentNode.SelectNodes(_eventSelector);
             foreach (var eventDetailElement in eventDetailsElements)
@@ -43,6 +44,7 @@ namespace kinohannover.Scrapers
                 var shopLink = _shopUrlBase + stringEventId;
                 var (type, language) = GetShowTimeTypeLanguage(eventDetailElement);
                 var showDateTimes = GetShowDateTimes(eventDetailElement);
+                var runtime = GetRuntime(eventDetailElement);
 
                 var movie = await CreateMovieAsync(title, Cinema);
                 foreach (var showDateTime in showDateTimes)
@@ -94,6 +96,20 @@ namespace kinohannover.Scrapers
             return (type, ShowTimeLanguage.German);
         }
 
+        private static TimeSpan? GetRuntime(HtmlNode eventDetailElement)
+        {
+            var eventDetails = eventDetailElement.SelectSingleNode(_eventDetailsSelector);
+            var spans = eventDetails.SelectNodes(".//span");
+            var runtimeSpan = spans.FirstOrDefault(s => s.InnerText.Contains("Länge:"));
+            var runtimeRegex = RuntimeRegex().Match(runtimeSpan?.InnerText ?? "");
+            if (!runtimeRegex.Success || !int.TryParse(runtimeRegex.Groups[1].Value, out var runtimeInt))
+            {
+                return null;
+            };
+
+            return TimeSpan.FromMinutes(runtimeInt);
+        }
+
         private static ShowTimeType GetType(HtmlNodeCollection spans)
         {
             // Sprache here indicates the type, but if it's Deutsch, it's a German movie with German audio
@@ -138,5 +154,8 @@ namespace kinohannover.Scrapers
 
         [GeneratedRegex(_dateRegex)]
         private static partial Regex DateRegex();
+
+        [GeneratedRegex(@"(\d*)\s*min")]
+        private static partial Regex RuntimeRegex();
     }
 }

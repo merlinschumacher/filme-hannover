@@ -80,7 +80,9 @@ namespace kinohannover.Scrapers.FilmkunstKinos
 
                     var (title, type, language) = GetTitleTypeLanguage(titleNode);
 
-                    var movie = await CreateMovieAsync(title, Cinema);
+                    var movie = new Movie() { DisplayName = title };
+
+                    movie = await CreateMovieAsync(movie);
 
                     CreateShowTime(movie, showDateTime.Value, type, language, showTimeUrl, _shopUrl);
                 }
@@ -88,10 +90,10 @@ namespace kinohannover.Scrapers.FilmkunstKinos
             await Context.SaveChangesAsync();
         }
 
-        private DateTime? GetShowDateTime(DateOnly date, HtmlNode? movieNode)
+        private static DateTime? GetShowDateTime(DateOnly date, HtmlNode? movieNode)
         {
             var timeNode = movieNode.ChildNodes[0];
-            if (!TimeOnly.TryParse(timeNode.InnerText, culture, out var time))
+            if (!TimeOnly.TryParse(timeNode.InnerText, out var time))
                 return null;
             return new DateTime(date.Year, date.Month, date.Day, time.Hour, time.Minute, 0);
         }

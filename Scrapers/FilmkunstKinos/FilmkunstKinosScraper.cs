@@ -55,7 +55,7 @@ namespace kinohannover.Scrapers.FilmkunstKinos
                     var timeNodes = filmTagNode.SelectNodes(timeSelector);
                     foreach (var timeNode in timeNodes)
                     {
-                        if (!TimeOnly.TryParse(timeNode.InnerText, culture, out var timeOnly)) continue;
+                        if (!TimeOnly.TryParse(timeNode.InnerText, out var timeOnly)) continue;
                         var shopUrl = timeNode.GetAttributeValue("href", "");
                         var showDateTime = new DateTime(dateTime.Year, dateTime.Month, dateTime.Day, timeOnly.Hour, timeOnly.Minute, 0);
                         CreateShowTime(movie, showDateTime, type, language, movieUrl, shopUrl);
