@@ -26,25 +26,22 @@ namespace kinohannover.Renderer.JsonRenderer
                             ExtendedProps = new Dictionary<string, object>()
                             {
                                 { "cinema", cinema.DisplayName },
-                                { "showTimeType", showTime.Type },
-                                { "showTimeLanguage", showTime.Language },
-                                { "shopUrl", showTime.ShopUrl ?? "" },
-                                { "movieUrl", showTime.Url }
                             }
                         };
+
                         if (movie.Runtime.HasValue)
                         {
                             newEvent.End = showTime.StartTime.Add(movie.Runtime.Value);
                         }
+                        if (cinema.LinkToShop && showTime.ShopUrl is not null)
+                        {
+                            newEvent.Url = showTime.ShopUrl;
+                        }
+                        else if (showTime.Url is not null)
+                        {
+                            newEvent.Url = showTime.Url;
+                        }
 
-                        if (cinema.LinkToShop && !string.IsNullOrWhiteSpace(showTime.ShopUrl))
-                        {
-                            newEvent.Url = new Uri(showTime.ShopUrl);
-                        }
-                        else
-                        {
-                            newEvent.Url = new Uri(showTime.Url);
-                        }
                         events.Add(newEvent);
                     }
                 }

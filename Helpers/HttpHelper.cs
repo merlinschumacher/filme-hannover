@@ -7,12 +7,29 @@ namespace kinohannover.Helpers
     {
         private static readonly HttpClient _httpClient = new();
 
-        public static async Task<HtmlDocument> GetHtmlDocumentAsync(string url)
+        public static async Task<HtmlDocument> GetHtmlDocumentAsync(string url, StringContent? content = null)
         {
-            var html = await _httpClient.GetStringAsync(url);
+            string? html = await GetHttpContentAsync(url, content);
             var doc = new HtmlDocument();
             doc.LoadHtml(html);
             return doc;
+        }
+
+        public static async Task<string?> GetHttpContentAsync(string url, StringContent? content = null)
+        {
+            string? html;
+            if (content is null)
+            {
+                html = await _httpClient.GetStringAsync(url);
+            }
+            else
+            {
+                ArgumentNullException.ThrowIfNull(content);
+                var response = await _httpClient.PostAsync(url, (StringContent)content);
+                html = await response.Content.ReadAsStringAsync();
+            }
+
+            return html;
         }
 
         public static Uri? BuildAbsoluteUrl(string? url, string baseUrl = "")

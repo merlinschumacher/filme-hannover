@@ -48,6 +48,9 @@ namespace kinohannover.Scrapers
                 return await AddMovieAsync(movie);
             }
 
+            existingMovie.Cinemas.Add(Cinema);
+            existingMovie.Cinemas = existingMovie.Cinemas.Distinct().ToList();
+
             return existingMovie;
         }
 
@@ -81,36 +84,33 @@ namespace kinohannover.Scrapers
             return await query.FirstOrDefaultAsync();
         }
 
-        protected void CreateShowTime(Movie movie, DateTime dateTime, ShowTimeType type = ShowTimeType.Regular, ShowTimeLanguage lang = ShowTimeLanguage.German, string url = "", string? shopUrl = null, string? specialEvent = null)
+        protected async Task<ShowTime?> CreateShowTimeAsync(ShowTime showTime)
         {
-            url = BuildAbsoluteUrl(url);
-            shopUrl = BuildAbsoluteUrl(shopUrl);
-
             // Don't add showtimes that have already passed more than an hour ago
-            if (dateTime < DateTime.Now.AddHours(-1))
+            if (showTime.StartTime < DateTime.Now.AddHours(-1))
             {
-                return;
+                return null;
             }
 
-            var showTimeEntity = Context.ShowTime.FirstOrDefault(s => s.StartTime == dateTime && s.MovieId == movie.Id && s.CinemaId == Cinema.Id && s.Type == type && s.Language == lang);
+            // Check if the showtime is already in the database. Ids, Cinema and Time are not enough to uniquely identify a showtime.
+            var result = await Context.ShowTime.FirstOrDefaultAsync(s => s.StartTime == showTime.StartTime
+                                                                      && s.Movie == showTime.Movie
+                                                                      && s.Cinema == showTime.Cinema
+                                                                      && s.Type == showTime.Type
+                                                                      && s.Language == showTime.Language);
 
-            if (showTimeEntity != null)
+            if (result is not null)
             {
-                return;
+                logger.LogInformation("Showtime for {movie} at {time} already exists", showTime.Movie.DisplayName, showTime.StartTime);
+                return result;
             }
 
-            showTimeEntity = new ShowTime
-            {
-                StartTime = dateTime,
-                Cinema = Cinema,
-                Type = type,
-                Language = lang,
-                Url = url,
-                ShopUrl = shopUrl,
-                SpecialEvent = specialEvent
-            };
+            logger.LogInformation("Adding showtime for {movie} at {time}", showTime.Movie.DisplayName, showTime.StartTime);
 
-            movie.ShowTimes.Add(showTimeEntity);
+            await Context.ShowTime.AddAsync(showTime);
+            await Context.SaveChangesAsync();
+
+            return showTime;
         }
 
         private void CreateCinema()

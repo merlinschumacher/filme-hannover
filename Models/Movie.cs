@@ -22,14 +22,14 @@
             }
         }
 
-        public ICollection<ShowTime> ShowTimes { get; set; } = [];
-        public ICollection<Cinema> Cinemas { get; set; } = [];
+        public List<ShowTime> ShowTimes { get; set; } = [];
+        public List<Cinema> Cinemas { get; set; } = [];
 
         public TimeSpan? Runtime { get; set; }
 
-        public string? TrailerUrl { get; set; } = string.Empty;
+        public string? TrailerUrl { get; set; }
 
-        public string? PosterUrl { get; set; } = string.Empty;
+        public string? PosterUrl { get; set; }
         public DateTime? ReleaseDate { get; set; }
 
         public IList<string> Aliases { get; set; } = [];

@@ -60,9 +60,9 @@ namespace kinohannover.Renderer.CalendarRenderer
                         Organizer = new Organizer() { CommonName = showTime.Cinema.DisplayName, Value = new Uri(showTime.Cinema.Website) },
                         Name = $"{movie.DisplayName} {showTime.GetShowTimeSuffix()}",
                     };
-                    if (!string.IsNullOrWhiteSpace(showTime.Url))
+                    if (showTime.Url is not null)
                     {
-                        calendarEvent.Url = new Uri(showTime.Url);
+                        calendarEvent.Url = showTime.Url;
                     }
                     calendar.Events.Add(calendarEvent);
                 }

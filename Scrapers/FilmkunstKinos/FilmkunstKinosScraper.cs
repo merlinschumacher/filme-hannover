@@ -1,5 +1,5 @@
-﻿using HtmlAgilityPack;
-using kinohannover.Data;
+﻿using kinohannover.Data;
+using kinohannover.Helpers;
 using kinohannover.Models;
 using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
@@ -20,17 +20,14 @@ namespace kinohannover.Scrapers.FilmkunstKinos
 
         public async Task ScrapeAsync()
         {
-            var scrapedHtml = _httpClient.GetAsync(Cinema.Website);
-            var html = await scrapedHtml.Result.Content.ReadAsStringAsync();
-            var doc = new HtmlDocument();
-            doc.LoadHtml(html);
+            var doc = await HttpHelper.GetHtmlDocumentAsync(Cinema.Website);
 
             var contentBox = doc.DocumentNode.SelectSingleNode(contentBoxSelector);
             var movieNodes = contentBox.SelectNodes(movieSelector);
             foreach (var movieNode in movieNodes)
             {
                 var titleString = movieNode.SelectSingleNode(titleSelector).InnerText;
-                var movieUrl = BuildAbsoluteUrl(movieNode.SelectSingleNode(titleSelector).GetAttributeValue("href", ""));
+                var movieUrl = HttpHelper.BuildAbsoluteUrl(movieNode.SelectSingleNode(titleSelector).GetAttributeValue("href", ""));
                 var title = TitleRegex();
                 var match = title.Match(titleString);
                 var type = ShowTimeType.Regular;

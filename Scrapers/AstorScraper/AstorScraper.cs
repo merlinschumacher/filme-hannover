@@ -1,4 +1,5 @@
 ﻿using kinohannover.Data;
+using kinohannover.Helpers;
 using kinohannover.Models;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
@@ -19,6 +20,8 @@ namespace kinohannover.Scrapers.AstorScraper
 
         private readonly List<string> ignoreEventTitles = ["(MET "];
         private readonly string apiEndpointUrl = "https://hannover.premiumkino.de/api/v1/de/config";
+        private const string movieBaseUrl = "https://hannover.premiumkino.de/film";
+        private const string shopBaseUrl = "https://hannover.premiumkino.de/vorstellung";
 
         private string SanitizeTitle(string title)
         {
@@ -44,27 +47,40 @@ namespace kinohannover.Scrapers.AstorScraper
 
                 var title = SanitizeTitle(astorMovie.name);
                 var releaseYear = astorMovie.year;
-                var movie = await CreateMovieAsync(title, Cinema, releaseYear);
+                var movie = new Movie() { DisplayName = title };
+                movie.SetReleaseDateFromYear(releaseYear);
+                movie = await CreateMovieAsync(movie);
 
                 foreach (var performance in astorMovie.performances)
                 {
-                    if (DateTime.Now > performance.begin || (!performance.bookable && !performance.reservable))
+                    // Skip performances that are not bookable and not reservable
+                    if (performance is null || !performance.bookable && !performance.reservable)
                         continue;
 
-                    var dateTime = performance.begin;
-                    ShowTimeType type = GetShowTimeType(performance);
-
+                    var type = GetShowTimeType(performance);
                     var language = ShowTimeHelper.GetLanguage(performance.language);
-                    var shopUrl = GetShopUrl(performance);
-                    var movieUrl = GetMovieUrl(performance);
 
-                    CreateShowTime(movie, dateTime, type, language, movieUrl, shopUrl);
+                    var shopUrl = GetShopUrl(performance);
+                    var movieUrl = HttpHelper.BuildAbsoluteUrl(performance.slug, movieBaseUrl);
+
+                    var showTime = new ShowTime()
+                    {
+                        StartTime = performance.begin,
+                        Type = type,
+                        Language = language,
+                        Url = movieUrl,
+                        ShopUrl = shopUrl,
+                        Cinema = Cinema,
+                        Movie = movie,
+                    };
+
+                    await CreateShowTimeAsync(showTime);
                 }
             }
             await Context.SaveChangesAsync();
         }
 
-        private static ShowTimeType GetShowTimeType(Performance? performance)
+        private static ShowTimeType GetShowTimeType(Performance performance)
         {
             var type = ShowTimeType.Regular;
             if (performance?.is_ov == true)
@@ -84,7 +100,7 @@ namespace kinohannover.Scrapers.AstorScraper
             IList<AstorMovie> astorMovies = [];
             try
             {
-                var jsonString = await _httpClient.GetStringAsync(apiEndpointUrl);
+                var jsonString = await HttpHelper.GetHttpContentAsync(apiEndpointUrl) ?? string.Empty;
                 var json = JObject.Parse(jsonString)["movie_list"];
                 if (json == null)
                 {
@@ -108,20 +124,10 @@ namespace kinohannover.Scrapers.AstorScraper
             }
         }
 
-        private static string GetShopUrl(Performance performance)
+        private static Uri? GetShopUrl(Performance performance)
         {
-            var shopBaseUrl = "https://hannover.premiumkino.de/vorstellung";
-
-            var shopUrl = $"{shopBaseUrl}/{performance.slug}/0/0/{performance.crypt_id}";
-            return shopUrl;
-        }
-
-        private static string GetMovieUrl(Performance performance)
-        {
-            var movieBaseUrl = "https://hannover.premiumkino.de/film";
-
-            var movieUrl = $"{movieBaseUrl}/{performance.slug}";
-            return movieUrl;
+            var shopUrl = $"{performance.slug}/0/0/{performance.crypt_id}";
+            return HttpHelper.BuildAbsoluteUrl(shopUrl, shopBaseUrl);
         }
     }
 }

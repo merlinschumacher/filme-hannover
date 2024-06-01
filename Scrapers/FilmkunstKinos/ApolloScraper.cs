@@ -1,5 +1,6 @@
 ﻿using HtmlAgilityPack;
 using kinohannover.Data;
+using kinohannover.Helpers;
 using kinohannover.Models;
 using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
@@ -52,10 +53,7 @@ namespace kinohannover.Scrapers.FilmkunstKinos
 
         public async Task ScrapeAsync()
         {
-            var scrapedHtml = _httpClient.GetAsync(Cinema.Website);
-            var html = await scrapedHtml.Result.Content.ReadAsStringAsync();
-            var doc = new HtmlDocument();
-            doc.LoadHtml(html);
+            var doc = await HttpHelper.GetHtmlDocumentAsync(Cinema.Website);
             var table = doc.DocumentNode.SelectSingleNode("//table[@class='vorschau']");
             var days = table.SelectNodes(".//tr");
             // Skip the first row, it contains the table headers
@@ -69,14 +67,14 @@ namespace kinohannover.Scrapers.FilmkunstKinos
                 foreach (var movieNode in movieNodes)
                 {
                     // Skip the movie if it's in the ignore list
-                    if (showsToIgnore.Any(e => movieNode.InnerHtml.Contains(e))) continue;
+                    if (movieNode is null || showsToIgnore.Any(e => movieNode.InnerHtml.Contains(e))) continue;
 
                     var showDateTime = GetShowDateTime(date, movieNode);
                     if (showDateTime == null) continue;
 
                     var (titleNode, specialEventTitle) = GetTitleNode(movieNode);
 
-                    var showTimeUrl = BuildAbsoluteUrl(titleNode.GetAttributeValue("href", ""), "https://www.apollokino.de/");
+                    var showTimeUrl = HttpHelper.BuildAbsoluteUrl(titleNode.GetAttributeValue("href", ""), "https://www.apollokino.de/");
 
                     var (title, type, language) = GetTitleTypeLanguage(titleNode);
 
@@ -84,13 +82,23 @@ namespace kinohannover.Scrapers.FilmkunstKinos
 
                     movie = await CreateMovieAsync(movie);
 
+                    var showTime = new ShowTime()
+                    {
+                        Movie = movie,
+                        StartTime = showDateTime.Value,
+                        Type = type,
+                        Language = language,
+                        ShopUrl = showTimeUrl,
+                        Cinema = Cinema,
+                    };
+
                     CreateShowTime(movie, showDateTime.Value, type, language, showTimeUrl, _shopUrl);
                 }
             }
             await Context.SaveChangesAsync();
         }
 
-        private static DateTime? GetShowDateTime(DateOnly date, HtmlNode? movieNode)
+        private static DateTime? GetShowDateTime(DateOnly date, HtmlNode movieNode)
         {
             var timeNode = movieNode.ChildNodes[0];
             if (!TimeOnly.TryParse(timeNode.InnerText, out var time))

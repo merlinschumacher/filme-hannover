@@ -1,7 +1,7 @@
 ﻿using kinohannover.Data;
+using kinohannover.Helpers;
 using kinohannover.Models;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using TMDbLib.Client;
 
 namespace kinohannover.Scrapers.Cinemaxx
@@ -17,20 +17,19 @@ namespace kinohannover.Scrapers.Cinemaxx
     {
         private const int cinemaId = 81;
         private readonly List<string> specialEventTitles = ["Maxxi Mornings:", "Mini Mornings:", "Sharkweek:", "Shark Week:"];
+        private const string baseUrl = "https://www.cinemaxx.de";
 
         public async Task ScrapeAsync()
         {
             var scrapeUrl = GetScraperUrl("jetzt-im-kino");
-            var json = await _httpClient.GetStringAsync(scrapeUrl);
+            var json = await HttpHelper.GetJsonAsync<CinemaxxRoot>(scrapeUrl);
 
-            CinemaxxRoot? myDeserializedClass = JsonConvert.DeserializeObject<CinemaxxRoot>(json);
-
-            if (myDeserializedClass == null)
+            if (json == null)
             {
                 return;
             }
 
-            foreach (var film in myDeserializedClass.WhatsOnAlphabeticFilms)
+            foreach (var film in json.WhatsOnAlphabeticFilms)
             {
                 var (title, eventTitle) = SanitizeTitle(film.Title);
                 var movie = await CreateMovieAsync(title, Cinema);
@@ -46,8 +45,8 @@ namespace kinohannover.Scrapers.Cinemaxx
 
                             var language = ShowTimeHelper.GetLanguage(shedule.VersionTitle);
                             var type = ShowTimeHelper.GetType(shedule.VersionTitle);
-                            var movieUrl = BuildAbsoluteUrl(film.FilmUrl);
-                            var shopUrl = BuildAbsoluteUrl(shedule.BookingLink);
+                            var movieUrl = HttpHelper.BuildAbsoluteUrl(film.FilmUrl, baseUrl);
+                            var shopUrl = HttpHelper.BuildAbsoluteUrl(shedule.BookingLink, baseUrl);
                             CreateShowTime(movie, time, type, language, movieUrl, shopUrl);
                         }
                     }
