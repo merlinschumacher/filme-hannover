@@ -32,7 +32,12 @@ namespace kinohannover.Scrapers.Cinemaxx
             foreach (var film in json.WhatsOnAlphabeticFilms)
             {
                 var (title, eventTitle) = SanitizeTitle(film.Title);
-                var movie = await CreateMovieAsync(title, Cinema);
+                var movie = new Movie()
+                {
+                    DisplayName = film.Title
+                };
+
+                movie = await CreateMovieAsync(movie);
 
                 foreach (var outerCinema in film.WhatsOnAlphabeticCinemas)
                 {
@@ -47,7 +52,19 @@ namespace kinohannover.Scrapers.Cinemaxx
                             var type = ShowTimeHelper.GetType(shedule.VersionTitle);
                             var movieUrl = HttpHelper.BuildAbsoluteUrl(film.FilmUrl, baseUrl);
                             var shopUrl = HttpHelper.BuildAbsoluteUrl(shedule.BookingLink, baseUrl);
-                            CreateShowTime(movie, time, type, language, movieUrl, shopUrl);
+
+                            var showTime = new ShowTime()
+                            {
+                                Cinema = Cinema,
+                                StartTime = time,
+                                Type = type,
+                                Language = language,
+                                ShopUrl = shopUrl,
+                                Url = movieUrl,
+                                Movie = movie,
+                                SpecialEvent = eventTitle,
+                            };
+                            await CreateShowTimeAsync(showTime);
                         }
                     }
                 }

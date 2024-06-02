@@ -15,7 +15,7 @@ namespace kinohannover.Scrapers.FilmkunstKinos
         Color = "#0000ff",
     }), IScraper
     {
-        private const string _shopUrl = "https://www.apollokino.de/?v=&mp=Tickets";
+        private readonly Uri shopUrl = new("https://www.apollokino.de/?v=&mp=Tickets");
         private readonly List<string> showsToIgnore = ["00010032", "spezialclub.de"];
         private readonly List<string> specialEventTitles = ["MonGay-Filmnacht", "WoMonGay"];
 
@@ -88,11 +88,12 @@ namespace kinohannover.Scrapers.FilmkunstKinos
                         StartTime = showDateTime.Value,
                         Type = type,
                         Language = language,
-                        ShopUrl = showTimeUrl,
+                        Url = showTimeUrl,
+                        ShopUrl = shopUrl,
                         Cinema = Cinema,
                     };
 
-                    CreateShowTime(movie, showDateTime.Value, type, language, showTimeUrl, _shopUrl);
+                    await CreateShowTimeAsync(showTime);
                 }
             }
             await Context.SaveChangesAsync();

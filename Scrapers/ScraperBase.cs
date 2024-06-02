@@ -51,14 +51,14 @@ namespace kinohannover.Scrapers
             existingMovie.Cinemas.Add(Cinema);
             existingMovie.Cinemas = existingMovie.Cinemas.Distinct().ToList();
 
+            await Context.SaveChangesAsync();
             return existingMovie;
         }
 
         private async Task<Movie> AddMovieAsync(Movie movie)
         {
             logger.LogInformation("Adding movie {title}", movie.DisplayName);
-            Context.Movies.Add(movie);
-            await Context.SaveChangesAsync();
+            await Context.Movies.AddAsync(movie);
             return movie;
         }
 

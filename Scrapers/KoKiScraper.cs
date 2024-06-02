@@ -41,15 +41,30 @@ namespace kinohannover.Scrapers
                     continue;
                 }
                 var stringEventId = GetEventId(eventDetailElement);
-                var shopLink = _shopUrlBase + stringEventId;
+                var shopUrl = HttpHelper.BuildAbsoluteUrl(stringEventId, _shopUrlBase);
                 var (type, language) = GetShowTimeTypeLanguage(eventDetailElement);
                 var showDateTimes = GetShowDateTimes(eventDetailElement);
                 var runtime = GetRuntime(eventDetailElement);
 
-                var movie = await CreateMovieAsync(title, Cinema);
+                var movie = new Movie()
+                {
+                    DisplayName = title,
+                };
+                movie.Cinemas.Add(Cinema);
+
+                movie = await CreateMovieAsync(movie);
                 foreach (var showDateTime in showDateTimes)
                 {
-                    CreateShowTime(movie, showDateTime, type, language, shopLink, stringEventId);
+                    var showTime = new ShowTime()
+                    {
+                        Movie = movie,
+                        StartTime = showDateTime,
+                        Type = type,
+                        Language = language,
+                        ShopUrl = shopUrl,
+                        Cinema = Cinema,
+                    };
+                    await CreateShowTimeAsync(showTime);
                 }
             }
             await Context.SaveChangesAsync();

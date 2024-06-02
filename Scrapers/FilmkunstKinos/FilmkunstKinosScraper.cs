@@ -14,7 +14,7 @@ namespace kinohannover.Scrapers.FilmkunstKinos
         private const string titleSelector = ".//h3";
         private const string filmTagSelector = ".//span[contains(concat(' ', normalize-space(@class), ' '), ' filmtag ')]";
         private const string dateSelector = ".//span[contains(concat(' ', normalize-space(@class), ' '), ' filmtagdatum ')]/text()[preceding-sibling::br]";
-        private const string timeSelector = ".//a";
+        private const string aElemeSelector = ".//a";
         private const string dateFormat = "dd.MM.";
         private const string titleRegex = @"(.*)(?>.*\s+[-–]\s+)(.*\.?)?\s(OmU|OV)";
 
@@ -26,21 +26,26 @@ namespace kinohannover.Scrapers.FilmkunstKinos
             var movieNodes = contentBox.SelectNodes(movieSelector);
             foreach (var movieNode in movieNodes)
             {
-                var titleString = movieNode.SelectSingleNode(titleSelector).InnerText;
-                var movieUrl = HttpHelper.BuildAbsoluteUrl(movieNode.SelectSingleNode(titleSelector).GetAttributeValue("href", ""));
-                var title = TitleRegex();
-                var match = title.Match(titleString);
+                var title = movieNode.SelectSingleNode(titleSelector).InnerText;
+                var movieUrlNode = movieNode.SelectSingleNode(titleSelector).SelectSingleNode(aElemeSelector).GetAttributeValue("href", "");
+                var movieUrl = HttpHelper.BuildAbsoluteUrl(movieUrlNode);
+                var match = TitleRegex().Match(title);
                 var type = ShowTimeType.Regular;
                 var language = ShowTimeLanguage.German;
                 if (match.Success)
                 {
-                    titleString = match.Groups[1].Value;
+                    title = match.Groups[1].Value;
                     language = ShowTimeHelper.GetLanguage(match.Groups[2].Value);
                     type = ShowTimeHelper.GetType(match.Groups[3].Value);
                 }
 
-                var movie = await CreateMovieAsync(titleString, Cinema);
+                var movie = new Movie()
+                {
+                    DisplayName = title,
+                };
                 movie.Cinemas.Add(Cinema);
+
+                movie = await CreateMovieAsync(movie);
 
                 var filmTagNodes = movieNode.SelectNodes(filmTagSelector);
 
@@ -49,13 +54,24 @@ namespace kinohannover.Scrapers.FilmkunstKinos
                     var date = filmTagNode.SelectSingleNode(dateSelector);
                     var dateTime = DateOnly.ParseExact(date.InnerText, dateFormat);
 
-                    var timeNodes = filmTagNode.SelectNodes(timeSelector);
+                    var timeNodes = filmTagNode.SelectNodes(aElemeSelector);
                     foreach (var timeNode in timeNodes)
                     {
                         if (!TimeOnly.TryParse(timeNode.InnerText, out var timeOnly)) continue;
-                        var shopUrl = timeNode.GetAttributeValue("href", "");
+                        var shopUrl = HttpHelper.BuildAbsoluteUrl(timeNode.GetAttributeValue("href", ""));
                         var showDateTime = new DateTime(dateTime.Year, dateTime.Month, dateTime.Day, timeOnly.Hour, timeOnly.Minute, 0);
-                        CreateShowTime(movie, showDateTime, type, language, movieUrl, shopUrl);
+
+                        var showTime = new ShowTime()
+                        {
+                            Cinema = Cinema,
+                            Movie = movie,
+                            StartTime = showDateTime,
+                            Type = type,
+                            Language = language,
+                            Url = movieUrl,
+                            ShopUrl = shopUrl,
+                        };
+                        await CreateShowTimeAsync(showTime);
                     }
                 }
             }
