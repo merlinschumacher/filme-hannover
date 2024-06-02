@@ -33,7 +33,7 @@ namespace kinohannover.Renderer.JsonRenderer
                         {
                             newEvent.End = showTime.StartTime.Add(movie.Runtime.Value);
                         }
-                        if (cinema.LinkToShop && showTime.ShopUrl is not null)
+                        if (cinema.HasShop && showTime.ShopUrl is not null)
                         {
                             newEvent.Url = showTime.ShopUrl;
                         }

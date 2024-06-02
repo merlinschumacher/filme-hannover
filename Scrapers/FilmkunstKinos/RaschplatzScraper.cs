@@ -10,9 +10,9 @@ namespace kinohannover.Scrapers.FilmkunstKinos
         private static readonly Cinema cinema = new()
         {
             DisplayName = "Kino am Raschplatz",
-            Website = "https://www.kinoamraschplatz.de/de/programm.php",
+            Website = new("https://www.kinoamraschplatz.de/de/programm.php"),
             Color = "#7e0f23",
-            LinkToShop = true,
+            HasShop = true,
         };
     }
 }

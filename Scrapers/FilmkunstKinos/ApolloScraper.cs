@@ -11,11 +11,12 @@ namespace kinohannover.Scrapers.FilmkunstKinos
     public partial class ApolloScraper(KinohannoverContext context, ILogger<ApolloScraper> logger, TMDbClient tmdbClient) : ScraperBase(context, logger, tmdbClient, new()
     {
         DisplayName = "Apollo Kino",
-        Website = "https://www.apollokino.de/?v=&mp=Vorschau",
+        Website = new Uri("https://www.apollokino.de/"),
         Color = "#0000ff",
     }), IScraper
     {
         private readonly Uri shopUrl = new("https://www.apollokino.de/?v=&mp=Tickets");
+        private readonly Uri dataUri = new("https://www.apollokino.de/?v=&mp=Vorschau");
         private readonly List<string> showsToIgnore = ["00010032", "spezialclub.de"];
         private readonly List<string> specialEventTitles = ["MonGay-Filmnacht", "WoMonGay"];
 
@@ -53,7 +54,7 @@ namespace kinohannover.Scrapers.FilmkunstKinos
 
         public async Task ScrapeAsync()
         {
-            var doc = await HttpHelper.GetHtmlDocumentAsync(Cinema.Website);
+            var doc = await HttpHelper.GetHtmlDocumentAsync(dataUri);
             var table = doc.DocumentNode.SelectSingleNode("//table[@class='vorschau']");
             var days = table.SelectNodes(".//tr");
             // Skip the first row, it contains the table headers
@@ -73,8 +74,8 @@ namespace kinohannover.Scrapers.FilmkunstKinos
                     if (showDateTime == null) continue;
 
                     var (titleNode, specialEventTitle) = GetTitleNode(movieNode);
-
-                    var showTimeUrl = HttpHelper.BuildAbsoluteUrl(titleNode.GetAttributeValue("href", ""), "https://www.apollokino.de/");
+                    var href = titleNode.GetAttributeValue("href", "");
+                    var showTimeUrl = new Uri(Cinema.Website, href);
 
                     var (title, type, language) = GetTitleTypeLanguage(titleNode);
 

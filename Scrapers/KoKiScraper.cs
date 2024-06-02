@@ -12,12 +12,13 @@ namespace kinohannover.Scrapers
     public partial class KoKiScraper(KinohannoverContext context, ILogger<KoKiScraper> logger, TMDbClient tmdbClient) : ScraperBase(context, logger, tmdbClient, new()
     {
         DisplayName = "Kino im Künstlerhaus",
-        Website = "https://www.koki-hannover.de",
+        Website = new("https://www.koki-hannover.de"),
         Color = "#2c2e35",
+        HasShop = true,
     }), IScraper
     {
-        private readonly string _dataUrl = "https://booking.cinetixx.de/Program?cinemaId=2995877579";
-        private readonly string _shopUrlBase = "https://booking.cinetixx.de/frontend/#/movie/2995877579/";
+        private readonly Uri _dataUrl = new("https://booking.cinetixx.de/Program?cinemaId=2995877579");
+        private readonly Uri _shopUrlBase = new("https://booking.cinetixx.de/frontend/#/movie/2995877579/");
         private const string _cinetixxId = "2995877579";
         private const string _eventSelector = $"//div[contains(@id, '{_cinetixxId}#')]";
         private const string _eventTitleSelector = ".//h3";
@@ -41,7 +42,7 @@ namespace kinohannover.Scrapers
                     continue;
                 }
                 var stringEventId = GetEventId(eventDetailElement);
-                var shopUrl = HttpHelper.BuildAbsoluteUrl(stringEventId, _shopUrlBase);
+                var shopUrl = new Uri(_shopUrlBase, stringEventId);
                 var (type, language) = GetShowTimeTypeLanguage(eventDetailElement);
                 var showDateTimes = GetShowDateTimes(eventDetailElement);
                 var runtime = GetRuntime(eventDetailElement);

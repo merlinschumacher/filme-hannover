@@ -10,9 +10,9 @@ namespace kinohannover.Scrapers.FilmkunstKinos
         private static readonly Cinema cinema = new()
         {
             DisplayName = "Hochhaus Lichtspiele",
-            Website = "https://www.hochhaus-lichtspiele.de/pages/programm.php",
+            Website = new("https://www.hochhaus-lichtspiele.de/pages/programm.php"),
             Color = "#ffc112",
-            LinkToShop = true,
+            HasShop = true,
         };
     }
 }

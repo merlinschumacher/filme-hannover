@@ -15,7 +15,7 @@ namespace kinohannover.Renderer.CalendarRenderer
         {
             Id = cinema.Id;
             DisplayName = cinema.DisplayName;
-            Website = new Uri(cinema.Website);
+            Website = cinema.Website;
             Color = cinema.Color;
         }
 

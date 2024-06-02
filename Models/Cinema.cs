@@ -3,9 +3,9 @@
     public class Cinema
     {
         public int Id { get; set; }
-        public string DisplayName { get; set; } = string.Empty;
+        public required string DisplayName { get; set; }
 
-        public string Website { get; set; } = string.Empty;
+        public required Uri Website { get; set; }
 
         public ICollection<Movie> Movies { get; set; } = [];
 
@@ -16,7 +16,7 @@
         /// <summary>
         /// Gets or sets a value indicating whether the showtime entries should link to the shop
         /// </summary>
-        public bool LinkToShop { get; set; } = false;
+        public bool HasShop { get; set; } = false;
 
         /// <summary>
         /// Gets or sets a value indicating whether this cinema has reliable movie titles.

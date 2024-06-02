@@ -25,7 +25,7 @@ namespace kinohannover.Scrapers
             Cinema = cinema;
             this.logger = logger;
             this.tmdbClient = tmdbClient;
-            CreateCinema();
+            CreateCinemaAsync().Wait();
         }
 
         protected async Task<Movie> CreateMovieAsync(Movie movie)
@@ -34,6 +34,7 @@ namespace kinohannover.Scrapers
             var existingMovie = await FindMovie(movie);
             if (existingMovie is not null)
             {
+                await AddMovieToCinemaAsync(existingMovie);
                 return existingMovie;
             }
             // If it's not in the database, query TMDb
@@ -48,11 +49,19 @@ namespace kinohannover.Scrapers
                 return await AddMovieAsync(movie);
             }
 
-            existingMovie.Cinemas.Add(Cinema);
-            existingMovie.Cinemas = existingMovie.Cinemas.Distinct().ToList();
+            await AddMovieToCinemaAsync(existingMovie);
 
-            await Context.SaveChangesAsync();
             return existingMovie;
+        }
+
+        private async Task AddMovieToCinemaAsync(Movie movie)
+        {
+            if (!movie.Cinemas.Contains(Cinema))
+            {
+                logger.LogInformation("Adding movie {title} to cinema {cinema}", movie.DisplayName, Cinema.DisplayName);
+                movie.Cinemas.Add(Cinema);
+                await Context.SaveChangesAsync();
+            }
         }
 
         private async Task<Movie> AddMovieAsync(Movie movie)
@@ -113,17 +122,17 @@ namespace kinohannover.Scrapers
             return showTime;
         }
 
-        private void CreateCinema()
+        private async Task CreateCinemaAsync()
         {
             ArgumentNullException.ThrowIfNull(Cinema);
 
-            var cinema = Context.Cinema.FirstOrDefault(c => c.DisplayName == Cinema.DisplayName);
+            var cinema = await Context.Cinema.FirstOrDefaultAsync(c => c.DisplayName == Cinema.DisplayName);
 
             if (cinema == null)
             {
                 logger.LogInformation("Creating cinema {name}", Cinema.DisplayName);
-                cinema = Context.Cinema.Add(Cinema).Entity;
-                Context.SaveChanges();
+                cinema = (await Context.Cinema.AddAsync(Cinema)).Entity;
+                await Context.SaveChangesAsync();
             }
             Cinema = cinema;
         }

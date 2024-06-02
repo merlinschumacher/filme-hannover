@@ -7,7 +7,7 @@ namespace kinohannover.Helpers
     {
         private static readonly HttpClient _httpClient = new();
 
-        public static async Task<HtmlDocument> GetHtmlDocumentAsync(string url, StringContent? content = null)
+        public static async Task<HtmlDocument> GetHtmlDocumentAsync(Uri url, StringContent? content = null)
         {
             string? html = await GetHttpContentAsync(url, content);
             var doc = new HtmlDocument();
@@ -15,7 +15,7 @@ namespace kinohannover.Helpers
             return doc;
         }
 
-        public static async Task<string?> GetHttpContentAsync(string url, StringContent? content = null)
+        public static async Task<string?> GetHttpContentAsync(Uri url, StringContent? content = null)
         {
             string? html;
             if (content is null)
@@ -25,7 +25,7 @@ namespace kinohannover.Helpers
             else
             {
                 ArgumentNullException.ThrowIfNull(content);
-                var response = await _httpClient.PostAsync(url, (StringContent)content);
+                var response = await _httpClient.PostAsync(url, content);
                 html = await response.Content.ReadAsStringAsync();
             }
 

@@ -11,12 +11,13 @@ namespace kinohannover.Scrapers
     public class SprengelScraper(KinohannoverContext context, ILogger<SprengelScraper> logger, TMDbClient tmdbClient) : ScraperBase(context, logger, tmdbClient, new Cinema()
     {
         DisplayName = "Kino im Sprengel",
-        Website = "https://www.kino-im-sprengel.de/",
+        Website = new("https://www.kino-im-sprengel.de/"),
         Color = "#ADD8E6",
     }), IScraper
     {
-        private const string _dataUrl = "https://www.kino-im-sprengel.de/eventLoader.php";
-        private readonly Uri shopUrl = new("https://www.kino-im-sprengel.de/kontakt.php");
+        private readonly Uri _dataUrl = new("https://www.kino-im-sprengel.de/eventLoader.php");
+        private readonly Uri _shopUrl = new("https://www.kino-im-sprengel.de/kontakt.php");
+        private readonly Uri _baseUri = new("https://www.kino-im-sprengel.de/");
 
         private const string _icalLinkSelector = "//a[contains(@href, 'merke')]";
         private const string _postData = "t%5Badvice%5D=daterange&t%5Brange%5D=currentmonth";
@@ -30,8 +31,8 @@ namespace kinohannover.Scrapers
             foreach (var icalLinkNode in icalLinkNodes)
             {
                 var icalLink = icalLinkNode.GetAttributeValue("href", "");
-                var icalLinkUri = new Uri(new Uri(_dataUrl), icalLink);
-                var icalText = await HttpHelper.GetHttpContentAsync(icalLink);
+                var icalUri = new Uri(_baseUri, icalLink);
+                var icalText = await HttpHelper.GetHttpContentAsync(icalUri);
 
                 var calendar = Calendar.Load(icalText);
 
@@ -42,14 +43,14 @@ namespace kinohannover.Scrapers
                     movie = await CreateMovieAsync(movie);
 
                     var showDateTime = calendarEvent.Start.AsSystemLocal;
-                    var movieUrl = HttpHelper.BuildAbsoluteUrl(calendarEvent.Url.ToString());
+                    var movieUrl = calendarEvent.Url;
 
                     var showTime = new ShowTime()
                     {
                         Movie = movie,
                         StartTime = showDateTime,
                         Url = movieUrl,
-                        ShopUrl = shopUrl,
+                        ShopUrl = _shopUrl,
                         Cinema = Cinema,
                     };
 

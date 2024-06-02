@@ -57,7 +57,7 @@ namespace kinohannover.Renderer.CalendarRenderer
                         Start = new CalDateTime(showTime.StartTime, "Europe/Berlin"),
                         Summary = $"{movie.DisplayName} {showTime.GetShowTimeSuffix()}",
                         Location = showTime.Cinema.DisplayName,
-                        Organizer = new Organizer() { CommonName = showTime.Cinema.DisplayName, Value = new Uri(showTime.Cinema.Website) },
+                        Organizer = new Organizer() { CommonName = showTime.Cinema.DisplayName, Value = showTime.Cinema.Website },
                         Name = $"{movie.DisplayName} {showTime.GetShowTimeSuffix()}",
                     };
                     if (showTime.Url is not null)

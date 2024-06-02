@@ -9,15 +9,14 @@ namespace kinohannover.Scrapers.Cinemaxx
     public class CinemaxxScraper(KinohannoverContext context, ILogger<CinemaxxScraper> logger, TMDbClient tmdbClient) : ScraperBase(context, logger, tmdbClient, new()
     {
         DisplayName = "Cinemaxx",
-        Website = "https://www.cinemaxx.de/kinoprogramm/hannover/",
+        Website = new("https://www.cinemaxx.de/"),
         Color = "#ca01ca",
-        LinkToShop = true,
+        HasShop = true,
     }), IScraper
 
     {
         private const int cinemaId = 81;
         private readonly List<string> specialEventTitles = ["Maxxi Mornings:", "Mini Mornings:", "Sharkweek:", "Shark Week:"];
-        private const string baseUrl = "https://www.cinemaxx.de";
 
         public async Task ScrapeAsync()
         {
@@ -36,6 +35,7 @@ namespace kinohannover.Scrapers.Cinemaxx
                 {
                     DisplayName = film.Title
                 };
+                movie.Cinemas.Add(Cinema);
 
                 movie = await CreateMovieAsync(movie);
 
@@ -50,8 +50,8 @@ namespace kinohannover.Scrapers.Cinemaxx
 
                             var language = ShowTimeHelper.GetLanguage(shedule.VersionTitle);
                             var type = ShowTimeHelper.GetType(shedule.VersionTitle);
-                            var movieUrl = HttpHelper.BuildAbsoluteUrl(film.FilmUrl, baseUrl);
-                            var shopUrl = HttpHelper.BuildAbsoluteUrl(shedule.BookingLink, baseUrl);
+                            var movieUrl = new Uri(Cinema.Website, film.FilmUrl);
+                            var shopUrl = new Uri(Cinema.Website, shedule.BookingLink);
 
                             var showTime = new ShowTime()
                             {

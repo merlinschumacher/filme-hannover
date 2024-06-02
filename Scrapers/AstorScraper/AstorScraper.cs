@@ -10,16 +10,16 @@ namespace kinohannover.Scrapers.AstorScraper
     public class AstorScraper(KinohannoverContext context, ILogger<AstorScraper> logger, TMDbClient tmdbClient) : ScraperBase(context, logger, tmdbClient, new()
     {
         DisplayName = "Astor",
-        Website = "https://hannover.premiumkino.de/programmwoche",
+        Website = new Uri("https://hannover.premiumkino.de/"),
         Color = "#ceb07a",
         ReliableMetadata = true,
-        LinkToShop = true,
+        HasShop = true,
     }), IScraper
     {
         private readonly List<string> specialEventTitles = ["(Best of Cinema)"];
 
         private readonly List<string> ignoreEventTitles = ["(MET "];
-        private readonly string apiEndpointUrl = "https://hannover.premiumkino.de/api/v1/de/config";
+        private readonly Uri apiEndpointUrl = new("https://hannover.premiumkino.de/api/v1/de/config");
         private const string movieBaseUrl = "https://hannover.premiumkino.de/film";
         private const string shopBaseUrl = "https://hannover.premiumkino.de/vorstellung";
 
@@ -49,6 +49,7 @@ namespace kinohannover.Scrapers.AstorScraper
                 var releaseYear = astorMovie.year;
                 var movie = new Movie() { DisplayName = title };
                 movie.SetReleaseDateFromYear(releaseYear);
+                movie.Cinemas.Add(Cinema);
                 movie = await CreateMovieAsync(movie);
 
                 foreach (var performance in astorMovie.performances)
