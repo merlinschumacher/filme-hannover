@@ -69,7 +69,7 @@
         public List<FilmParam> FilmParams { get; set; }
         public List<Tag> tags { get; set; }
         public string FilmUrl { get; set; }
-        public DateTime ReleaseDate { get; set; }
+        public DateTime? ReleaseDate { get; set; }
         public object HeroMobileImage { get; set; }
         public string WantSee { get; set; }
         public bool ShowWantSee { get; set; }

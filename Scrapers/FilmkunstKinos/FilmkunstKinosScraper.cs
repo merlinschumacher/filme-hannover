@@ -1,84 +1,104 @@
-﻿using kinohannover.Data;
+﻿using HtmlAgilityPack;
+using kinohannover.Data;
 using kinohannover.Helpers;
 using kinohannover.Models;
 using Microsoft.Extensions.Logging;
+using System.Globalization;
 using System.Text.RegularExpressions;
 using TMDbLib.Client;
 
 namespace kinohannover.Scrapers.FilmkunstKinos
 {
-    public abstract partial class FilmkunstKinosScraper(KinohannoverContext context, ILogger<FilmkunstKinosScraper> logger, Cinema cinema, TMDbClient tmdbClient) : ScraperBase(context, logger, tmdbClient, cinema), IScraper
+    public abstract partial class FilmkunstKinosScraper(KinohannoverContext context, ILogger<FilmkunstKinosScraper> logger, Cinema cinema, TMDbClient tmdbClient) : ScraperBase(context, logger, tmdbClient, cinema)
     {
-        private const string contentBoxSelector = "//div[contains(concat(' ', normalize-space(@class), ' '), ' contentbox ')]";
-        private const string movieSelector = ".//table";
-        private const string titleSelector = ".//h3";
-        private const string filmTagSelector = ".//span[contains(concat(' ', normalize-space(@class), ' '), ' filmtag ')]";
-        private const string dateSelector = ".//span[contains(concat(' ', normalize-space(@class), ' '), ' filmtagdatum ')]/text()[preceding-sibling::br]";
-        private const string aElemeSelector = ".//a";
-        private const string dateFormat = "dd.MM.";
-        private const string titleRegex = @"(.*)(?>.*\s+[-–]\s+)(.*\.?)?\s(OmU|OV)";
+        private const string _contentBoxSelector = "//div[contains(concat(' ', normalize-space(@class), ' '), ' contentbox ')]";
+        private const string _movieSelector = ".//table";
+        private const string _titleSelector = ".//h3";
+        private const string _filmTagSelector = ".//span[contains(concat(' ', normalize-space(@class), ' '), ' filmtag ')]";
+        private const string _dateSelector = ".//span[contains(concat(' ', normalize-space(@class), ' '), ' filmtagdatum ')]/text()[preceding-sibling::br]";
+        private const string _aElemeSelector = ".//a";
+        private const string _dateFormat = "dd.MM.";
+        private const string _titleRegex = @"(.*)(?>.*\s+[-–]\s+)(.*\.?)?\s(OmU|OV)";
 
         public async Task ScrapeAsync()
         {
             var doc = await HttpHelper.GetHtmlDocumentAsync(Cinema.Website);
 
-            var contentBox = doc.DocumentNode.SelectSingleNode(contentBoxSelector);
-            var movieNodes = contentBox.SelectNodes(movieSelector);
-            foreach (var movieNode in movieNodes)
+            var contentBox = doc.DocumentNode.SelectSingleNode(_contentBoxSelector);
+            foreach (var movieNode in contentBox.SelectNodes(_movieSelector))
             {
-                var title = movieNode.SelectSingleNode(titleSelector).InnerText;
-                var movieUrlNode = movieNode.SelectSingleNode(titleSelector).SelectSingleNode(aElemeSelector).GetAttributeValue("href", "");
-                var movieUrl = HttpHelper.BuildAbsoluteUrl(movieUrlNode);
-                var match = TitleRegex().Match(title);
-                var type = ShowTimeType.Regular;
-                var language = ShowTimeLanguage.German;
-                if (match.Success)
+                if (movieNode is null) continue;
+                var (movie, type, language) = await ProcessMovie(movieNode);
+
+                foreach (var filmTagNode in movieNode.SelectNodes(_filmTagSelector))
                 {
-                    title = match.Groups[1].Value;
-                    language = ShowTimeHelper.GetLanguage(match.Groups[2].Value);
-                    type = ShowTimeHelper.GetType(match.Groups[3].Value);
-                }
-
-                var movie = new Movie()
-                {
-                    DisplayName = title,
-                };
-                movie.Cinemas.Add(Cinema);
-
-                movie = await CreateMovieAsync(movie);
-
-                var filmTagNodes = movieNode.SelectNodes(filmTagSelector);
-
-                foreach (var filmTagNode in filmTagNodes)
-                {
-                    var date = filmTagNode.SelectSingleNode(dateSelector);
-                    var dateTime = DateOnly.ParseExact(date.InnerText, dateFormat);
-
-                    var timeNodes = filmTagNode.SelectNodes(aElemeSelector);
-                    foreach (var timeNode in timeNodes)
-                    {
-                        if (!TimeOnly.TryParse(timeNode.InnerText, out var timeOnly)) continue;
-                        var shopUrl = HttpHelper.BuildAbsoluteUrl(timeNode.GetAttributeValue("href", ""));
-                        var showDateTime = new DateTime(dateTime.Year, dateTime.Month, dateTime.Day, timeOnly.Hour, timeOnly.Minute, 0);
-
-                        var showTime = new ShowTime()
-                        {
-                            Cinema = Cinema,
-                            Movie = movie,
-                            StartTime = showDateTime,
-                            Type = type,
-                            Language = language,
-                            Url = movieUrl,
-                            ShopUrl = shopUrl,
-                        };
-                        await CreateShowTimeAsync(showTime);
-                    }
+                    if (filmTagNode is null) continue;
+                    await ProcessShowTimes(filmTagNode, movie, type, language);
                 }
             }
             await Context.SaveChangesAsync();
         }
 
-        [GeneratedRegex(titleRegex)]
+        private async Task<(Movie, ShowTimeType, ShowTimeLanguage)> ProcessMovie(HtmlNode movieNode)
+        {
+            var title = movieNode.SelectSingleNode(_titleSelector).InnerText;
+            var movieUriString = movieNode.SelectSingleNode(_titleSelector).SelectSingleNode(_aElemeSelector).GetAttributeValue("href", "");
+            var movieUri = new Uri(Cinema.Website, movieUriString);
+            var match = TitleRegex().Match(title);
+            var type = ShowTimeType.Regular;
+            var language = ShowTimeLanguage.German;
+            if (match.Success)
+            {
+                title = match.Groups[1].Value;
+                language = ShowTimeHelper.GetLanguage(match.Groups[2].Value);
+                type = ShowTimeHelper.GetType(match.Groups[3].Value);
+            }
+
+            var movie = new Movie()
+            {
+                DisplayName = title,
+                Url = movieUri,
+            };
+            movie.Cinemas.Add(Cinema);
+
+            movie = await CreateMovieAsync(movie);
+
+            return (movie, type, language);
+        }
+
+        private async Task ProcessShowTimes(HtmlNode filmTagNode, Movie movie, ShowTimeType type, ShowTimeLanguage language)
+        {
+            var dateString = filmTagNode.SelectSingleNode(_dateSelector).InnerText;
+            var date = DateOnly.ParseExact(dateString, _dateFormat, CultureInfo.CurrentCulture);
+
+            foreach (var timeNode in filmTagNode.SelectNodes(_aElemeSelector))
+            {
+                var showDateTime = GetShowTimeDateTime(date, timeNode);
+                if (showDateTime is null) continue;
+
+                Uri.TryCreate(Cinema.Website, timeNode?.GetAttributeValue("href", ""), out var shopUri);
+
+                var showTime = new ShowTime()
+                {
+                    Cinema = Cinema,
+                    Movie = movie,
+                    StartTime = showDateTime.Value,
+                    Type = type,
+                    Language = language,
+                    Url = movie.Url,
+                    ShopUrl = shopUri,
+                };
+                await CreateShowTimeAsync(showTime);
+            }
+        }
+
+        private static DateTime? GetShowTimeDateTime(DateOnly date, HtmlNode? timeNode)
+        {
+            if (!TimeOnly.TryParse(timeNode?.InnerText, CultureInfo.CurrentCulture, out var timeOnly)) return null;
+            return new(date.Year, date.Month, date.Day, timeOnly.Hour, timeOnly.Minute, 0, DateTimeKind.Local);
+        }
+
+        [GeneratedRegex(_titleRegex)]
         private static partial Regex TitleRegex();
     }
 }

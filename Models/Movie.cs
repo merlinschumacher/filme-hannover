@@ -1,4 +1,6 @@
-﻿namespace kinohannover.Models
+﻿using kinohannover.Helpers;
+
+namespace kinohannover.Models
 {
     public class Movie
     {
@@ -14,11 +16,10 @@
             }
             set
             {
-                _displayName = value;
-                if (!Aliases.Contains(value, StringComparer.CurrentCultureIgnoreCase))
-                {
-                    Aliases.Add(value);
-                }
+                var title = value.Trim();
+                _displayName = MovieTitleHelper.NormalizeTitle(title);
+                Aliases.Add(new Alias { Value = _displayName });
+                Aliases.Add(new Alias { Value = title });
             }
         }
 
@@ -26,29 +27,30 @@
         public List<Cinema> Cinemas { get; set; } = [];
 
         public TimeSpan? Runtime { get; set; }
+        public Uri? Url { get; set; }
 
-        public string? TrailerUrl { get; set; }
+        public Uri? TrailerUrl { get; set; }
 
         public string? PosterUrl { get; set; }
         public DateTime? ReleaseDate { get; set; }
 
-        public IList<string> Aliases { get; set; } = [];
+        public HashSet<Alias> Aliases { get; set; } = [];
 
         public string? Description { get; set; }
 
         public int? TmdbId { get; set; }
 
-        public string[] GetTitles()
-        {
-            return [DisplayName, .. Aliases];
-        }
-
         public void SetReleaseDateFromYear(int? year)
         {
             if (year.HasValue && year > 0)
             {
-                ReleaseDate = new DateTime(year.Value, 1, 1);
+                ReleaseDate = new DateTime(year.Value, 1, 1, 0, 0, 0, DateTimeKind.Local);
             }
+        }
+
+        public override string ToString()
+        {
+            return DisplayName;
         }
     }
 }

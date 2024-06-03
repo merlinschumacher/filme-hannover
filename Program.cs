@@ -1,11 +1,8 @@
 using kinohannover;
 using kinohannover.Data;
-using kinohannover.Renderer.CalendarRenderer;
-using kinohannover.Renderer.JsonRenderer;
+using kinohannover.Extensions;
+using kinohannover.Renderer;
 using kinohannover.Scrapers;
-using kinohannover.Scrapers.AstorScraper;
-using kinohannover.Scrapers.Cinemaxx;
-using kinohannover.Scrapers.FilmkunstKinos;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,55 +28,32 @@ if (string.IsNullOrWhiteSpace(apiKey))
 
 var tmdbClient = new TMDbClient(apiKey);
 builder.Services.AddSingleton(tmdbClient);
-
-builder.Services.AddScoped<AstorScraper>();
-builder.Services.AddScoped<CinemaxxScraper>();
-builder.Services.AddScoped<RaschplatzScraper>();
-builder.Services.AddScoped<HochhausScraper>();
-builder.Services.AddScoped<ApolloScraper>();
-builder.Services.AddScoped<SprengelScraper>();
-builder.Services.AddScoped<KoKiScraper>();
 builder.Services.AddScoped<CleanupService>();
-builder.Services.AddScoped<CalendarRenderer>();
-builder.Services.AddScoped<FcJsonRenderer>();
-builder.Services.AddScoped<JsonDataRenderer>();
+
+builder.Services.AddServicesByInterface<IScraper>();
+builder.Services.AddServicesByInterface<IRenderer>();
+
 var app = builder.Build();
 
-// Create the output directory if needed.
+var configuration = app.Services.GetRequiredService<IConfiguration>();
+var defaultOutputDirectory = CreateOutputDirectory(configuration);
+using var scope = app.Services.CreateScope();
+var context = scope.ServiceProvider.GetRequiredService<KinohannoverContext>();
+await context.Database.MigrateAsync();
 
-ExecuteScrapingProcess(app.Services);
+var cleanupService = scope.ServiceProvider.GetRequiredService<CleanupService>();
+await cleanupService.CleanupAsync();
 
-static void ExecuteScrapingProcess(IServiceProvider serviceProvider)
+var scrapers = scope.ServiceProvider.GetServices<IScraper>();
+foreach (var scraper in scrapers)
 {
-    var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-    var defaultOutputDirectory = CreateOutputDirectory(configuration);
-    using var scope = serviceProvider.CreateScope();
-    var context = scope.ServiceProvider.GetRequiredService<KinohannoverContext>();
-    context.Database.Migrate();
-    var cleanupService = scope.ServiceProvider.GetRequiredService<CleanupService>();
-    cleanupService.CleanupAsync().Wait();
+    await scraper.ScrapeAsync();
+}
 
-    var astorScraper = scope.ServiceProvider.GetRequiredService<AstorScraper>();
-    astorScraper.ScrapeAsync().Wait();
-    var cinemaxxScraper = scope.ServiceProvider.GetRequiredService<CinemaxxScraper>();
-    cinemaxxScraper.ScrapeAsync().Wait();
-    var kinoAmRaschplatzScraper = scope.ServiceProvider.GetRequiredService<RaschplatzScraper>();
-    kinoAmRaschplatzScraper.ScrapeAsync().Wait();
-    var hochhausScraper = scope.ServiceProvider.GetRequiredService<HochhausScraper>();
-    hochhausScraper.ScrapeAsync().Wait();
-    var apolloScraper = scope.ServiceProvider.GetRequiredService<ApolloScraper>();
-    apolloScraper.ScrapeAsync().Wait();
-    var sprengelScraper = scope.ServiceProvider.GetRequiredService<SprengelScraper>();
-    sprengelScraper.ScrapeAsync().Wait();
-    var kokiScraper = scope.ServiceProvider.GetRequiredService<KoKiScraper>();
-    kokiScraper.ScrapeAsync().Wait();
-
-    var iCalRenderer = scope.ServiceProvider.GetRequiredService<CalendarRenderer>();
-    iCalRenderer.Render(defaultOutputDirectory);
-    var fcJsonRenderer = scope.ServiceProvider.GetRequiredService<FcJsonRenderer>();
-    fcJsonRenderer.Render(defaultOutputDirectory);
-    var jsonRenderer = scope.ServiceProvider.GetRequiredService<JsonDataRenderer>();
-    jsonRenderer.Render(Path.Combine(defaultOutputDirectory, "data.json"));
+var renderers = scope.ServiceProvider.GetServices<IRenderer>();
+foreach (var renderer in renderers)
+{
+    renderer.Render(defaultOutputDirectory);
 }
 
 static string CreateOutputDirectory(IConfiguration config)

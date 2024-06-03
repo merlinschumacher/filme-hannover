@@ -2,6 +2,7 @@
 using kinohannover.Helpers;
 using kinohannover.Models;
 using Microsoft.Extensions.Logging;
+using System.Globalization;
 using TMDbLib.Client;
 
 namespace kinohannover.Scrapers.Cinemaxx
@@ -15,13 +16,21 @@ namespace kinohannover.Scrapers.Cinemaxx
     }), IScraper
 
     {
-        private const int cinemaId = 81;
-        private readonly List<string> specialEventTitles = ["Maxxi Mornings:", "Mini Mornings:", "Sharkweek:", "Shark Week:"];
+        private const int _cinemaId = 81;
+        private readonly List<string> _specialEventTitles = ["Maxxi Mornings:", "Mini Mornings:", "Sharkweek:", "Shark Week:"];
+        private readonly Uri _weeklyProgramDataUrl = GetScraperUrl("jetzt-im-kino");
+        private readonly Uri _presaleDataUrl = GetScraperUrl("Vorverkauf");
 
         public async Task ScrapeAsync()
         {
-            var scrapeUrl = GetScraperUrl("jetzt-im-kino");
-            var json = await HttpHelper.GetJsonAsync<CinemaxxRoot>(scrapeUrl);
+            await ProcessJsonResultAsync(_weeklyProgramDataUrl);
+            await ProcessJsonResultAsync(_presaleDataUrl);
+            await Context.SaveChangesAsync();
+        }
+
+        private async Task ProcessJsonResultAsync(Uri dataUri)
+        {
+            var json = await HttpHelper.GetJsonAsync<CinemaxxRoot>(dataUri);
 
             if (json == null)
             {
@@ -30,67 +39,78 @@ namespace kinohannover.Scrapers.Cinemaxx
 
             foreach (var film in json.WhatsOnAlphabeticFilms)
             {
-                var (title, eventTitle) = SanitizeTitle(film.Title);
-                var movie = new Movie()
-                {
-                    DisplayName = film.Title
-                };
-                movie.Cinemas.Add(Cinema);
+                var (movie, eventTitle) = await ProcessMovieAsync(film);
 
-                movie = await CreateMovieAsync(movie);
+                // Select the schedules from the nested lists
+                var schedules = film.WhatsOnAlphabeticCinemas.SelectMany(e => e.WhatsOnAlphabeticCinemas)
+                                                             .SelectMany(e => e.WhatsOnAlphabeticShedules);
 
-                foreach (var outerCinema in film.WhatsOnAlphabeticCinemas)
+                foreach (var schedule in schedules)
                 {
-                    foreach (var innerCinema in outerCinema.WhatsOnAlphabeticCinemas)
+                    if (schedule?.Time == null)
                     {
-                        foreach (var shedule in innerCinema.WhatsOnAlphabeticShedules)
-                        {
-                            if (!DateTime.TryParse(shedule.Time, out var time))
-                                continue;
-
-                            var language = ShowTimeHelper.GetLanguage(shedule.VersionTitle);
-                            var type = ShowTimeHelper.GetType(shedule.VersionTitle);
-                            var movieUrl = new Uri(Cinema.Website, film.FilmUrl);
-                            var shopUrl = new Uri(Cinema.Website, shedule.BookingLink);
-
-                            var showTime = new ShowTime()
-                            {
-                                Cinema = Cinema,
-                                StartTime = time,
-                                Type = type,
-                                Language = language,
-                                ShopUrl = shopUrl,
-                                Url = movieUrl,
-                                Movie = movie,
-                                SpecialEvent = eventTitle,
-                            };
-                            await CreateShowTimeAsync(showTime);
-                        }
+                        continue;
                     }
+                    await ProcessShowTimeAsync(schedule, movie, eventTitle);
                 }
             }
-            await Context.SaveChangesAsync();
+        }
+
+        private async Task ProcessShowTimeAsync(WhatsOnAlphabeticShedule schedule, Movie movie, string? eventTitle)
+        {
+            if (!DateTime.TryParse(schedule.Time, CultureInfo.CurrentCulture, out var time))
+                return;
+            var language = ShowTimeHelper.GetLanguage(schedule.VersionTitle);
+            var type = ShowTimeHelper.GetType(schedule.VersionTitle);
+            var shopUrl = new Uri(Cinema.Website, schedule.BookingLink);
+
+            var showTime = new ShowTime()
+            {
+                Cinema = Cinema,
+                StartTime = time,
+                Type = type,
+                Language = language,
+                ShopUrl = shopUrl,
+                Url = movie.Url,
+                Movie = movie,
+                SpecialEvent = eventTitle,
+            };
+            await CreateShowTimeAsync(showTime);
+        }
+
+        private async Task<(Movie, string?)> ProcessMovieAsync(WhatsOnAlphabeticFilm film)
+        {
+            var (title, eventTitle) = SanitizeTitle(film.Title);
+
+            var movie = new Movie()
+            {
+                DisplayName = title,
+                Url = new Uri(Cinema.Website, film.FilmUrl),
+            };
+
+            movie.Cinemas.Add(Cinema);
+            movie = await CreateMovieAsync(movie);
+            return (movie, eventTitle);
         }
 
         private (string title, string? eventTitle) SanitizeTitle(string title)
         {
             string? eventTitle = null;
-            foreach (var specialEventTitle in specialEventTitles)
+            foreach (var specialEventTitle in _specialEventTitles.Where(specialEventTitle => title.Contains(specialEventTitle, StringComparison.OrdinalIgnoreCase)))
             {
-                if (title.Contains(specialEventTitle, StringComparison.OrdinalIgnoreCase))
-                {
-                    title = title.Replace(specialEventTitle, "", StringComparison.OrdinalIgnoreCase);
-                    eventTitle = specialEventTitle.Replace(":", "").Trim();
-                }
+                title = title.Replace(specialEventTitle, "", StringComparison.OrdinalIgnoreCase);
+                eventTitle = specialEventTitle.Replace(":", "").Trim();
             }
+
             return (title.Trim(), eventTitle);
         }
 
-        private static string GetScraperUrl(string listType)
+        private static Uri GetScraperUrl(string listType)
         {
             var startDate = DateOnly.FromDateTime(DateTime.Now).ToString("dd-MM-yyyy");
             var endDate = DateOnly.FromDateTime(DateTime.Now.AddDays(28)).ToString("dd-MM-yyyy");
-            return string.Format("https://www.cinemaxx.de/api/sitecore/WhatsOn/WhatsOnV2Alphabetic?cinemaId={0}&Datum={1},{2}&type={3}", cinemaId, startDate, endDate, listType);
+            var uriString = string.Format("https://www.cinemaxx.de/api/sitecore/WhatsOn/WhatsOnV2Alphabetic?cinemaId={0}&Datum={1},{2}&type={3}", _cinemaId, startDate, endDate, listType);
+            return new Uri(uriString);
         }
     }
 }

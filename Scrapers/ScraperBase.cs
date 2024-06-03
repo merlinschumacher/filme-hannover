@@ -11,20 +11,20 @@ namespace kinohannover.Scrapers
     {
         internal Cinema Cinema;
         protected readonly KinohannoverContext Context;
-        private const string tmdbPosterBaseUrl = "https://image.tmdb.org/t/p/w500";
-        private const string tmdbSearchLanguageDE = "de-DE";
-        private const string youtubeVideoBaseUrl = "https://www.youtube.com/watch?v=";
-        private const string tmdbVideoTypeConst = "Trailer";
-        private const string tmdbVideoPlatformConst = "YouTube";
-        private readonly ILogger<ScraperBase> logger;
-        private readonly TMDbClient tmdbClient;
+        private static readonly Uri _tmdbPosterBaseUrl = new("https://image.tmdb.org/t/p/w500");
+        private const string _tmdbSearchLanguageDE = "de-DE";
+        private static readonly Uri _youtubeVideoBaseUrl = new("https://www.youtube.com/watch?v=");
+        private const string _tmdbVideoTypeConst = "Trailer";
+        private const string _tmdbVideoPlatformConst = "YouTube";
+        private readonly ILogger<ScraperBase> _logger;
+        private readonly TMDbClient _tmdbClient;
 
         protected ScraperBase(KinohannoverContext context, ILogger<ScraperBase> logger, TMDbClient tmdbClient, Cinema cinema)
         {
             Context = context;
             Cinema = cinema;
-            this.logger = logger;
-            this.tmdbClient = tmdbClient;
+            this._logger = logger;
+            this._tmdbClient = tmdbClient;
             CreateCinemaAsync().Wait();
         }
 
@@ -58,7 +58,7 @@ namespace kinohannover.Scrapers
         {
             if (!movie.Cinemas.Contains(Cinema))
             {
-                logger.LogInformation("Adding movie {title} to cinema {cinema}", movie.DisplayName, Cinema.DisplayName);
+                _logger.LogInformation("Adding movie {Title} to cinema {Cinema}", movie, Cinema);
                 movie.Cinemas.Add(Cinema);
                 await Context.SaveChangesAsync();
             }
@@ -66,7 +66,7 @@ namespace kinohannover.Scrapers
 
         private async Task<Movie> AddMovieAsync(Movie movie)
         {
-            logger.LogInformation("Adding movie {title}", movie.DisplayName);
+            _logger.LogInformation("Adding movie {Title}", movie.DisplayName);
             await Context.Movies.AddAsync(movie);
             return movie;
         }
@@ -77,12 +77,12 @@ namespace kinohannover.Scrapers
 
             if (movie.TmdbId.HasValue)
             {
-                return query.FirstOrDefault(m => m.TmdbId == movie.TmdbId);
+                return await query.FirstOrDefaultAsync(m => m.TmdbId == movie.TmdbId);
             }
 
-            foreach (var title in movie.GetTitles())
+            foreach (var alias in movie.Aliases)
             {
-                query = query.Where(m => m.Aliases.Any(e => EF.Functions.Collate(e, "NOCASE") == title));
+                query = query.Where(m => m.Aliases.Any(e => e.Value == alias.Value));
             }
 
             if (movie.ReleaseDate.HasValue)
@@ -90,7 +90,20 @@ namespace kinohannover.Scrapers
                 query.Where(m => m.ReleaseDate == movie.ReleaseDate);
             }
 
-            return await query.FirstOrDefaultAsync();
+            var result = await query.FirstOrDefaultAsync();
+            if (result is not null)
+            {
+                return result;
+            }
+
+            var similarMovies = new List<Movie>();
+            var similarMoviesquery = await Context.Movies.Include(m => m.Cinemas).ToListAsync();
+            foreach (var alias in movie.Aliases)
+            {
+                similarMovies.AddRange(similarMoviesquery.Where(m => MovieTitleHelper.GetMostSimilarTitle(m.Aliases.Select(e => e.Value).ToList(), alias.Value) != null));
+            }
+
+            return similarMovies.Distinct().FirstOrDefault();
         }
 
         protected async Task<ShowTime?> CreateShowTimeAsync(ShowTime showTime)
@@ -110,11 +123,11 @@ namespace kinohannover.Scrapers
 
             if (result is not null)
             {
-                logger.LogInformation("Showtime for {movie} at {time} already exists", showTime.Movie.DisplayName, showTime.StartTime);
+                _logger.LogInformation("Showtime for {Movie} at {Time} already exists", showTime.Movie.DisplayName, showTime.StartTime);
                 return result;
             }
 
-            logger.LogInformation("Adding showtime for {movie} at {time}", showTime.Movie.DisplayName, showTime.StartTime);
+            _logger.LogInformation("Adding Showtime for {Movie} at {Time}", showTime.Movie.DisplayName, showTime.StartTime);
 
             await Context.ShowTime.AddAsync(showTime);
             await Context.SaveChangesAsync();
@@ -130,7 +143,7 @@ namespace kinohannover.Scrapers
 
             if (cinema == null)
             {
-                logger.LogInformation("Creating cinema {name}", Cinema.DisplayName);
+                _logger.LogInformation("Creating cinema {Cinema}", Cinema);
                 cinema = (await Context.Cinema.AddAsync(Cinema)).Entity;
                 await Context.SaveChangesAsync();
             }
@@ -141,27 +154,27 @@ namespace kinohannover.Scrapers
         {
             try
             {
-                var tmdbResult = (await tmdbClient.SearchMovieAsync(movie.DisplayName,
-                                                                    language: tmdbSearchLanguageDE,
+                var tmdbResult = (await _tmdbClient.SearchMovieAsync(movie.DisplayName,
+                                                                    language: _tmdbSearchLanguageDE,
                                                                     primaryReleaseYear: movie.ReleaseDate?.Year ?? 0)).Results.FirstOrDefault();
 
                 if (tmdbResult is not null)
                 {
-                    var tmdbMovieDetails = (await tmdbClient.GetMovieAsync(tmdbResult.Id,
-                                                                           extraMethods: TMDbLib.Objects.Movies.MovieMethods.Videos | TMDbLib.Objects.Movies.MovieMethods.AlternativeTitles,
-                                                                           language: tmdbSearchLanguageDE));
+                    var tmdbMovieDetails = (await _tmdbClient.GetMovieAsync(tmdbResult.Id,
+                                                                           language: _tmdbSearchLanguageDE,
+                                                                           extraMethods: TMDbLib.Objects.Movies.MovieMethods.Videos | TMDbLib.Objects.Movies.MovieMethods.AlternativeTitles));
 
                     movie.TmdbId = tmdbResult.Id;
                     movie.DisplayName = MovieTitleHelper.DetermineMovieTitle(movie.DisplayName, tmdbMovieDetails, guessHarder: !Cinema.ReliableMetadata);
-                    movie.PosterUrl = tmdbPosterBaseUrl + tmdbResult.PosterPath;
+                    movie.PosterUrl = _tmdbPosterBaseUrl + tmdbResult.PosterPath;
                     movie.ReleaseDate = tmdbMovieDetails.ReleaseDate;
-                    movie.Runtime = DetermineMovieLength(tmdbRuntime: tmdbMovieDetails.Runtime, originalRuntime: movie.Runtime);
+                    movie.Runtime = DetermineMovieLength(originalRuntime: movie.Runtime, tmdbRuntime: tmdbMovieDetails.Runtime);
                     movie.TrailerUrl = SelectTrailer(tmdbMovieDetails);
                 }
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Error querying TMDb for movie {title}", movie.DisplayName);
+                _logger.LogError(ex, "Error querying TMDb for movie {Movie}", movie);
             }
             return movie;
         }
@@ -204,13 +217,13 @@ namespace kinohannover.Scrapers
             return Constants.AverageMovieRuntime;
         }
 
-        private static string? SelectTrailer(TMDbLib.Objects.Movies.Movie tmdbResult)
+        private static Uri? SelectTrailer(TMDbLib.Objects.Movies.Movie tmdbResult)
         {
-            var trailer = tmdbResult.Videos.Results.FirstOrDefault(v => v.Type.Equals(tmdbVideoTypeConst, StringComparison.OrdinalIgnoreCase) && v.Site.Equals(tmdbVideoPlatformConst, StringComparison.OrdinalIgnoreCase));
+            var trailer = tmdbResult.Videos.Results.Find(v => v.Type.Equals(_tmdbVideoTypeConst, StringComparison.OrdinalIgnoreCase) && v.Site.Equals(_tmdbVideoPlatformConst, StringComparison.OrdinalIgnoreCase));
 
             if (trailer is not null)
             {
-                return youtubeVideoBaseUrl + trailer.Key;
+                return new Uri(_youtubeVideoBaseUrl, trailer.Key);
             }
             return null;
         }

@@ -10,21 +10,21 @@ using Newtonsoft.Json.Serialization;
 
 namespace kinohannover.Renderer.CalendarRenderer
 {
-    public class CalendarRenderer(KinohannoverContext context)
+    public class CalendarRenderer(KinohannoverContext context) : IRenderer
     {
-        private readonly List<CinemaInfo> cinemaInfos = [];
+        private readonly List<CinemaInfo> _cinemaInfos = [];
 
         public void Render(string path)
         {
             var moviesAll = context.Movies.Include(e => e.Cinemas).Include(e => e.ShowTimes);
             var allCinemas = new CinemaInfo("Alle Kinos", "#ffffff");
-            cinemaInfos.Add(allCinemas);
+            _cinemaInfos.Add(allCinemas);
             WriteCalendarToFile(moviesAll, Path.Combine(path, allCinemas.CalendarFile));
 
             foreach (var cinema in context.Cinema.OrderBy(e => e.DisplayName))
             {
                 var cinemaInfo = new CinemaInfo(cinema);
-                cinemaInfos.Add(cinemaInfo);
+                _cinemaInfos.Add(cinemaInfo);
 
                 var movies = context.Movies.Where(e => e.Cinemas.Contains(cinema)).Select(e => new Movie()
                 {
@@ -34,7 +34,7 @@ namespace kinohannover.Renderer.CalendarRenderer
                 WriteCalendarToFile(movies, Path.Combine(path, cinemaInfo.CalendarFile));
             }
 
-            WriteJsonToFile(cinemaInfos, Path.Combine(path, "cinemas.json"));
+            WriteJsonToFile(_cinemaInfos, Path.Combine(path, "cinemas.json"));
         }
 
         private static void WriteCalendarToFile(IEnumerable<Movie> movies, string path)

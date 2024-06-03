@@ -23,7 +23,7 @@ namespace kinohannover.Renderer.CalendarRenderer
 
         public string DisplayName { get; set; }
 
-        Uri? Website { get; set; }
+        Uri? Website { get; }
 
         public string CalendarFile => DisplayName.Replace(" ", "_").Replace(":", "_").Replace("/", "_") + ".ics";
 

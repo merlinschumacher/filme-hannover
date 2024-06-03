@@ -26,7 +26,7 @@
 
     public static class ShowTimeHelper
     {
-        private static readonly Dictionary<string, ShowTimeLanguage> ShowTimeLanguageMap = new(StringComparer.OrdinalIgnoreCase)
+        private static readonly Dictionary<string, ShowTimeLanguage> _showTimeLanguageMap = new(StringComparer.OrdinalIgnoreCase)
 
         {
             { "Dänisch", ShowTimeLanguage.Danish },
@@ -77,10 +77,10 @@
 
         public static ShowTimeLanguage GetLanguage(string language)
         {
-            return GetMatchingDictionaryVaue(language, ShowTimeLanguageMap, ShowTimeLanguage.German);
+            return GetMatchingDictionaryVaue(language, _showTimeLanguageMap, ShowTimeLanguage.German);
         }
 
-        private static readonly Dictionary<string, ShowTimeType> ShowTimeTypeMap = new(StringComparer.OrdinalIgnoreCase)
+        private static readonly Dictionary<string, ShowTimeType> _showTimeTypeMap = new(StringComparer.OrdinalIgnoreCase)
         {
             { "OV", ShowTimeType.OriginalVersion },
             { "OmU", ShowTimeType.Subtitled },
@@ -91,7 +91,7 @@
 
         public static ShowTimeType GetType(string type)
         {
-            return GetMatchingDictionaryVaue(type, ShowTimeTypeMap, ShowTimeType.Regular);
+            return GetMatchingDictionaryVaue(type, _showTimeTypeMap, ShowTimeType.Regular);
         }
 
         private static T GetMatchingDictionaryVaue<T>(string needle, Dictionary<string, T> dictionary, T defaultValue)

@@ -5,9 +5,9 @@ using Newtonsoft.Json.Serialization;
 
 namespace kinohannover.Renderer.JsonRenderer
 {
-    public class JsonDataRenderer(KinohannoverContext context)
+    public class JsonDataRenderer(KinohannoverContext context) : IRenderer
     {
-        private class JsonData
+        private sealed class JsonData
         {
             public List<Movie> Movies { get; set; } = [];
             public List<Cinema> Cinema { get; set; } = [];
@@ -16,6 +16,7 @@ namespace kinohannover.Renderer.JsonRenderer
 
         public void Render(string path)
         {
+            path = Path.Combine(path, "data.json");
             var data = new JsonData()
             {
                 Movies = [.. context.Movies],

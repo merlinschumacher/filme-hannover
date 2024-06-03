@@ -5,7 +5,7 @@ using Newtonsoft.Json.Serialization;
 
 namespace kinohannover.Renderer.JsonRenderer
 {
-    public class FcJsonRenderer(KinohannoverContext context)
+    public class FcJsonRenderer(KinohannoverContext context) : IRenderer
     {
         public void Render(string path)
         {
