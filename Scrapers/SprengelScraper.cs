@@ -48,8 +48,7 @@ namespace kinohannover.Scrapers
             {
                 Movie = movie,
                 StartTime = showDateTime,
-                Url = movie.Url,
-                ShopUrl = _shopUrl,
+                Url = _shopUrl,
                 Cinema = Cinema,
             };
 

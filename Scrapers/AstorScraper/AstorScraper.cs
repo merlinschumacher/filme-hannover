@@ -19,8 +19,8 @@ namespace kinohannover.Scrapers.AstorScraper
     {
         private const string _movieListKey = "movie_list";
         private readonly Uri _apiEndpointUrl = new("https://hannover.premiumkino.de/api/v1/de/config");
-        private readonly Uri _movieBaseUrl = new("https://hannover.premiumkino.de/film");
-        private readonly Uri _showTimeBaseUrl = new("https://hannover.premiumkino.de/vorstellung");
+        private readonly Uri _movieBaseUrl = new("https://hannover.premiumkino.de/film/");
+        private readonly Uri _showTimeBaseUrl = new("https://hannover.premiumkino.de/vorstellung/");
 
         private string SanitizeTitle(string title, string? eventTitle)
         {
@@ -76,7 +76,7 @@ namespace kinohannover.Scrapers.AstorScraper
                 title = SanitizeTitle(title, eventTitle);
             }
 
-            var movieUrl = new Uri(_movieBaseUrl, astorMovie.slug);
+            var movieUrl = new Uri(_movieBaseUrl + astorMovie.slug);
             var movie = new Movie()
             {
                 DisplayName = title,
@@ -93,15 +93,14 @@ namespace kinohannover.Scrapers.AstorScraper
             var type = GetShowTimeType(performance);
             var language = ShowTimeHelper.GetLanguage(performance.language);
 
-            var shopUrl = new Uri(_showTimeBaseUrl, $"{performance.slug}/0/0/{performance.crypt_id}");
+            var performanceUrl = new Uri(_showTimeBaseUrl + $"{performance.slug}/0/0/{performance.crypt_id}");
 
             var showTime = new ShowTime()
             {
                 StartTime = performance.begin,
                 Type = type,
                 Language = language,
-                Url = movie.Url,
-                ShopUrl = shopUrl,
+                Url = performanceUrl,
                 Cinema = Cinema,
                 Movie = movie,
             };

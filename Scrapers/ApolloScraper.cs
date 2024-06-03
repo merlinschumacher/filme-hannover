@@ -121,8 +121,7 @@ namespace kinohannover.Scrapers.FilmkunstKinos
                 StartTime = dateTime,
                 Type = type,
                 Language = language,
-                Url = movie.Url,
-                ShopUrl = _shopUri,
+                Url = _shopUri,
                 Cinema = Cinema,
                 SpecialEvent = specialEventTitle,
             };

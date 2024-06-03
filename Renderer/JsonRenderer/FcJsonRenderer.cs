@@ -33,9 +33,9 @@ namespace kinohannover.Renderer.JsonRenderer
                         {
                             newEvent.End = showTime.StartTime.Add(movie.Runtime.Value);
                         }
-                        if (cinema.HasShop && showTime.ShopUrl is not null)
+                        if (cinema.HasShop && showTime.Url is not null)
                         {
-                            newEvent.Url = showTime.ShopUrl;
+                            newEvent.Url = showTime.Url;
                         }
                         else if (showTime.Url is not null)
                         {

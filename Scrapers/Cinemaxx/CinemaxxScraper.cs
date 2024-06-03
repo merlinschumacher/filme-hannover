@@ -62,7 +62,7 @@ namespace kinohannover.Scrapers.Cinemaxx
                 return;
             var language = ShowTimeHelper.GetLanguage(schedule.VersionTitle);
             var type = ShowTimeHelper.GetType(schedule.VersionTitle);
-            var shopUrl = new Uri(Cinema.Website, schedule.BookingLink);
+            var performanceUri = new Uri(Cinema.Website, schedule.BookingLink);
 
             var showTime = new ShowTime()
             {
@@ -70,8 +70,7 @@ namespace kinohannover.Scrapers.Cinemaxx
                 StartTime = time,
                 Type = type,
                 Language = language,
-                ShopUrl = shopUrl,
-                Url = movie.Url,
+                Url = performanceUri,
                 Movie = movie,
                 SpecialEvent = eventTitle,
             };

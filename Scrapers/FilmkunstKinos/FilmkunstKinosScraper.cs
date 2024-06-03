@@ -76,7 +76,7 @@ namespace kinohannover.Scrapers.FilmkunstKinos
                 var showDateTime = GetShowTimeDateTime(date, timeNode);
                 if (showDateTime is null) continue;
 
-                Uri.TryCreate(Cinema.Website, timeNode?.GetAttributeValue("href", ""), out var shopUri);
+                Uri.TryCreate(Cinema.Website, timeNode?.GetAttributeValue("href", ""), out var performanceUri);
 
                 var showTime = new ShowTime()
                 {
@@ -85,8 +85,7 @@ namespace kinohannover.Scrapers.FilmkunstKinos
                     StartTime = showDateTime.Value,
                     Type = type,
                     Language = language,
-                    Url = movie.Url,
-                    ShopUrl = shopUri,
+                    Url = performanceUri,
                 };
                 await CreateShowTimeAsync(showTime);
             }

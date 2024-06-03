@@ -46,7 +46,7 @@ namespace kinohannover.Scrapers
                 }
 
                 var eventId = movieNode.GetAttributeValue("id", "").Split('#')[1];
-                var shopUrl = new Uri(_shopUrlBase + eventId);
+                var performanceUri = new Uri(_shopUrlBase + eventId);
                 var (type, language) = GetShowTimeTypeLanguage(movieNode);
                 foreach (var showDateTime in GetShowDateTimes(movieNode))
                 {
@@ -56,7 +56,7 @@ namespace kinohannover.Scrapers
                         StartTime = showDateTime,
                         Type = type,
                         Language = language,
-                        ShopUrl = shopUrl,
+                        Url = performanceUri,
                         Cinema = Cinema,
                     };
                     await CreateShowTimeAsync(showTime);

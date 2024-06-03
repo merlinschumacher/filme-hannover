@@ -9,7 +9,6 @@
         public ShowTimeType Type { get; set; } = ShowTimeType.Regular;
         public ShowTimeLanguage Language { get; set; } = ShowTimeLanguage.German;
         public Uri? Url { get; set; }
-        public Uri? ShopUrl { get; set; }
         public string? SpecialEvent { get; set; }
 
         public string GetShowTimeSuffix()
