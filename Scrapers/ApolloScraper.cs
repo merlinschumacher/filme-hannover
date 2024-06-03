@@ -83,26 +83,24 @@ namespace kinohannover.Scrapers.FilmkunstKinos
 
                     var titleNode = GetTitleNode(movieNode);
                     var (title, type, language) = GetMovieDetails(titleNode);
-                    Movie movie = await ProcessMovieAsync(titleNode, title);
+                    var movieUrl = new Uri(Cinema.Website, titleNode.GetHref());
+                    Movie movie = await ProcessMovieAsync(title);
                     var showDateTime = GetShowDateTime(date, movieNode);
                     if (showDateTime == null) continue;
 
                     var specialEventTitle = GetSpecialEventTitle(movieNode);
-                    await ProcessShowTimeAsync(movie, specialEventTitle, showDateTime.Value, type, language);
+                    await ProcessShowTimeAsync(movie, specialEventTitle, showDateTime.Value, type, language, movieUrl);
                 }
             }
             await Context.SaveChangesAsync();
         }
 
-        private async Task<Movie> ProcessMovieAsync(HtmlNode titleNode, string title)
+        private async Task<Movie> ProcessMovieAsync(string title)
         {
-            var movieUrl = new Uri(Cinema.Website, titleNode.GetHref());
             var movie = new Movie()
             {
                 DisplayName = title,
-                Url = movieUrl
             };
-
             return await CreateMovieAsync(movie);
         }
 
@@ -113,7 +111,7 @@ namespace kinohannover.Scrapers.FilmkunstKinos
             return date;
         }
 
-        private async Task ProcessShowTimeAsync(Movie movie, string? specialEventTitle, DateTime dateTime, ShowTimeType type, ShowTimeLanguage language)
+        private async Task ProcessShowTimeAsync(Movie movie, string? specialEventTitle, DateTime dateTime, ShowTimeType type, ShowTimeLanguage language, Uri performanceUri)
         {
             var showTime = new ShowTime()
             {
@@ -121,7 +119,7 @@ namespace kinohannover.Scrapers.FilmkunstKinos
                 StartTime = dateTime,
                 Type = type,
                 Language = language,
-                Url = _shopUri,
+                Url = performanceUri,
                 Cinema = Cinema,
                 SpecialEvent = specialEventTitle,
             };
