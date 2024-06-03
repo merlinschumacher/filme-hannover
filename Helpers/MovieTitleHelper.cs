@@ -42,35 +42,40 @@ namespace kinohannover.Helpers
 
         private static string? GetTitleFromTmdbData(string title, Movie tmdbMovieDetails)
         {
+            var tmdbTitle = tmdbMovieDetails.Title.NormalizeDashes();
+            if (tmdbTitle.Equals(title, StringComparison.OrdinalIgnoreCase))
+            {
+                return tmdbTitle;
+            }
             if (tmdbMovieDetails.OriginalLanguage.Equals("DE", StringComparison.OrdinalIgnoreCase))
             {
                 return tmdbMovieDetails.OriginalTitle.NormalizeDashes();
             }
-            var tmdbTitle = GetAlternativeTitle(tmdbMovieDetails, "DE");
+            tmdbTitle = GetAlternativeTitle(tmdbMovieDetails, "DE");
             if (tmdbTitle is not null)
             {
                 return tmdbTitle;
             }
 
             tmdbTitle = tmdbMovieDetails.Title.NormalizeDashes();
-            if (tmdbTitle.Equals(title, StringComparison.CurrentCultureIgnoreCase))
+            if (tmdbTitle.DistancePercentageFrom(title, true) > 0.9)
             {
-                return tmdbMovieDetails.Title.NormalizeDashes();
+                return tmdbTitle;
             }
 
             tmdbTitle = tmdbMovieDetails.OriginalTitle.NormalizeDashes();
-            if (tmdbTitle.Equals(title, StringComparison.CurrentCultureIgnoreCase))
+            if (tmdbTitle.DistancePercentageFrom(title, true) > 0.9)
             {
-                return tmdbMovieDetails.OriginalTitle;
+                return tmdbTitle;
             }
 
-            var altTitle = tmdbMovieDetails.AlternativeTitles.Titles.Find(e => e.Title.NormalizeDashes().Equals(title, StringComparison.CurrentCultureIgnoreCase))?.Title;
-            if (altTitle is not null)
+            tmdbTitle = tmdbMovieDetails.AlternativeTitles.Titles.Find(e => e.Title.NormalizeDashes().DistancePercentageFrom(title) > 0.9)?.Title;
+            if (tmdbTitle is not null)
             {
-                return altTitle;
+                return tmdbTitle;
             }
-            altTitle = GetAlternativeTitle(tmdbMovieDetails, "EN");
-            return altTitle is not null ? altTitle : null;
+            tmdbTitle = GetAlternativeTitle(tmdbMovieDetails, "EN");
+            return tmdbTitle is not null ? tmdbTitle : null;
         }
 
         public static string NormalizeTitle(string title)
@@ -81,8 +86,8 @@ namespace kinohannover.Helpers
 
             title = ReplaceParenthesisAttributeRegex().Replace(title, " ");
 
-            title = title.Replace("OmU", "", StringComparison.CurrentCultureIgnoreCase).Trim();
-            title = title.Replace("OV", "", StringComparison.CurrentCultureIgnoreCase).Trim();
+            title = title.Replace(" OmU ", "", StringComparison.CurrentCultureIgnoreCase).Trim();
+            title = title.Replace(" OV ", "", StringComparison.CurrentCultureIgnoreCase).Trim();
 
             // Avoid adding movies with only uppercase letters, as this is usually a sign of a bad title. Make them title case instead.
             var upperCasePercentage = title.Count(c => char.IsLetter(c) && char.IsUpper(c)) / (double)title.Length;
