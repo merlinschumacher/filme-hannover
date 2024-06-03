@@ -17,6 +17,7 @@ namespace kinohannover.Scrapers.FilmkunstKinos
         Color = "#0000ff",
     }), IScraper
     {
+        public bool ReliableMetadata => false;
         private readonly Uri _shopUri = new("https://www.apollokino.de/?v=&mp=Tickets");
         private readonly Uri _dataUri = new("https://www.apollokino.de/?v=&mp=Vorschau");
         private readonly List<string> _showsToIgnore = ["00010032", "spezialclub.de"];
@@ -101,6 +102,7 @@ namespace kinohannover.Scrapers.FilmkunstKinos
             {
                 DisplayName = title,
             };
+            movie.Cinemas.Add(Cinema);
             return await CreateMovieAsync(movie);
         }
 

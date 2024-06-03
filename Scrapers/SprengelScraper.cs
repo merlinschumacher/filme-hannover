@@ -16,6 +16,7 @@ namespace kinohannover.Scrapers
         Color = "#ADD8E6",
     }), IScraper
     {
+        public bool ReliableMetadata => false;
         private readonly Uri _dataUrl = new("https://www.kino-im-sprengel.de/eventLoader.php");
         private readonly Uri _shopUrl = new("https://www.kino-im-sprengel.de/kontakt.php");
         private readonly Uri _baseUri = new("https://www.kino-im-sprengel.de/");

@@ -17,9 +17,9 @@ namespace kinohannover.Models
             set
             {
                 var title = value.Trim();
-                _displayName = MovieTitleHelper.NormalizeTitle(title);
-                Aliases.Add(new Alias { Value = _displayName });
-                Aliases.Add(new Alias { Value = title });
+                _displayName = MovieTitleHelper.NormalizeTitle(title).Trim();
+                AddAlias(_displayName);
+                AddAlias(title);
             }
         }
 
@@ -46,6 +46,19 @@ namespace kinohannover.Models
             {
                 ReleaseDate = new DateTime(year.Value, 1, 1, 0, 0, 0, DateTimeKind.Local);
             }
+        }
+
+        public void AddAlias(string alias)
+        {
+            if (string.IsNullOrWhiteSpace(alias))
+            {
+                return;
+            }
+            if (Aliases.Any(a => a.Value.Equals(alias, StringComparison.CurrentCultureIgnoreCase)))
+            {
+                return;
+            }
+            Aliases.Add(new Alias { Value = alias });
         }
 
         public override string ToString()

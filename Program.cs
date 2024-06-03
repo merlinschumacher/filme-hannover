@@ -44,7 +44,7 @@ await context.Database.MigrateAsync();
 var cleanupService = scope.ServiceProvider.GetRequiredService<CleanupService>();
 await cleanupService.CleanupAsync();
 
-var scrapers = scope.ServiceProvider.GetServices<IScraper>();
+var scrapers = scope.ServiceProvider.GetServices<IScraper>().OrderByDescending(e => e.ReliableMetadata);
 foreach (var scraper in scrapers)
 {
     await scraper.ScrapeAsync();

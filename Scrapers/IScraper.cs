@@ -3,5 +3,7 @@
     public interface IScraper
     {
         Task ScrapeAsync();
+
+        public bool ReliableMetadata { get; }
     }
 }

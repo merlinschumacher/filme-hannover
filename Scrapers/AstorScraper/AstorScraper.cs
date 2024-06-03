@@ -17,6 +17,8 @@ namespace kinohannover.Scrapers.AstorScraper
         HasShop = true,
     }), IScraper
     {
+        public bool ReliableMetadata => true;
+
         private const string _movieListKey = "movie_list";
         private readonly Uri _apiEndpointUrl = new("https://hannover.premiumkino.de/api/v1/de/config");
         private readonly Uri _movieBaseUrl = new("https://hannover.premiumkino.de/film/");

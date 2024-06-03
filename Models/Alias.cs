@@ -1,15 +1,28 @@
 ﻿namespace kinohannover.Models
 {
-    public class Alias : IEqualityComparer<Alias>
+    public class Alias
     {
         public int Id { get; set; }
 
         public required string Value { get; set; }
 
+        public Movie Movie { get; set; }
+
         public override string ToString() => Value;
 
-        public bool Equals(Alias? x, Alias? y) => x?.Value.Equals(y?.Value, StringComparison.CurrentCultureIgnoreCase) == true;
+        public override bool Equals(object? obj)
+        {
+            if (obj is not Alias objAsAlias)
+            {
+                return false;
+            }
 
-        public int GetHashCode(Alias obj) => obj.Value.GetHashCode();
+            return Value.Equals(objAsAlias.Value, StringComparison.CurrentCultureIgnoreCase);
+        }
+
+        public override int GetHashCode()
+        {
+            return Value.GetHashCode();
+        }
     }
 }

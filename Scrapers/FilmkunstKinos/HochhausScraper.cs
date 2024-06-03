@@ -14,5 +14,7 @@ namespace kinohannover.Scrapers.FilmkunstKinos
             Color = "#ffc112",
             HasShop = true,
         };
+
+        public bool ReliableMetadata => false;
     }
 }

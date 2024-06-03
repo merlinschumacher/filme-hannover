@@ -12,7 +12,7 @@ namespace kinohannover.Scrapers
 {
     public partial class KoKiScraper(KinohannoverContext context, ILogger<KoKiScraper> logger, TMDbClient tmdbClient) : ScraperBase(context, logger, tmdbClient, new()
     {
-        DisplayName = "Kino im Künstlerhaus",
+        DisplayName = "KoKi (Kino im Künstlerhaus)",
         Website = new("https://www.koki-hannover.de"),
         Color = "#2c2e35",
         HasShop = true,
@@ -31,6 +31,8 @@ namespace kinohannover.Scrapers
         private const string _eventTimeRowNodeSelector = ".//tr[td[contains(@class, 'date-picker-shows')]]";
         private const string _eventTimeNodeSelector = ".//td[contains(@class, 'date-picker-shows')]";
         private const string _spanNodeSelector = ".//span";
+
+        public bool ReliableMetadata => false;
 
         public async Task ScrapeAsync()
         {

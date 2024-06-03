@@ -16,7 +16,9 @@ namespace kinohannover.Scrapers.Cinemaxx
     }), IScraper
 
     {
+        public bool ReliableMetadata => true;
         private const int _cinemaId = 81;
+
         private readonly List<string> _specialEventTitles = ["Maxxi Mornings:", "Mini Mornings:", "Sharkweek:", "Shark Week:"];
         private readonly Uri _weeklyProgramDataUrl = GetScraperUrl("jetzt-im-kino");
         private readonly Uri _presaleDataUrl = GetScraperUrl("Vorverkauf");

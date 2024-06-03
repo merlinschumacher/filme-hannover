@@ -1,17 +1,16 @@
 ﻿using System.Globalization;
+using System.Text.RegularExpressions;
 using TMDbLib.Objects.Movies;
 
 namespace kinohannover.Helpers
 {
-    internal static class MovieTitleHelper
+    internal static partial class MovieTitleHelper
     {
-        private static readonly char[] _dashCharacters = ['-', '֊', '־', '᐀', '᠆', '‐', '‑', '‒', '–', '—', '―', '⸗', '⸚', '⸺', '⸻', '⹀', '⹝', '〜', '〰', '゠', '︱', '︲', '﹘', '﹣', '－'];
         private static readonly char[] _delimiterCharacters = [':', '(', ')', '[', ']', '{', '}', '<', '>', '|', '/', '\\', '!', '?', '.', ',', ';', ' ', '\t', '\n', '\r'];
         private const string _translationConst = "Translation";
 
         public static string DetermineMovieTitle(string title, TMDbLib.Objects.Movies.Movie tmdbMovieDetails, bool guessHarder = true)
         {
-            title = NormalizeTitle(title);
             var matchedTitle = GetTitleFromTmdbData(title, tmdbMovieDetails);
             if (matchedTitle is not null)
             {
@@ -43,54 +42,52 @@ namespace kinohannover.Helpers
 
         private static string? GetTitleFromTmdbData(string title, Movie tmdbMovieDetails)
         {
-            if (tmdbMovieDetails.Title.Equals(title, StringComparison.CurrentCultureIgnoreCase))
-            {
-                return tmdbMovieDetails.Title;
-            }
-
-            if (tmdbMovieDetails.OriginalTitle.Equals(title, StringComparison.CurrentCultureIgnoreCase))
-            {
-                return tmdbMovieDetails.OriginalTitle;
-            }
-
             if (tmdbMovieDetails.OriginalLanguage.Equals("DE", StringComparison.OrdinalIgnoreCase))
             {
+                return tmdbMovieDetails.OriginalTitle.NormalizeDashes();
+            }
+            var tmdbTitle = GetAlternativeTitle(tmdbMovieDetails, "DE");
+            if (tmdbTitle is not null)
+            {
+                return tmdbTitle;
+            }
+
+            tmdbTitle = tmdbMovieDetails.Title.NormalizeDashes();
+            if (tmdbTitle.Equals(title, StringComparison.CurrentCultureIgnoreCase))
+            {
+                return tmdbMovieDetails.Title.NormalizeDashes();
+            }
+
+            tmdbTitle = tmdbMovieDetails.OriginalTitle.NormalizeDashes();
+            if (tmdbTitle.Equals(title, StringComparison.CurrentCultureIgnoreCase))
+            {
                 return tmdbMovieDetails.OriginalTitle;
             }
 
-            var matchingAltTitle = tmdbMovieDetails.AlternativeTitles.Titles.Find(e => e.Title.Equals(title, StringComparison.CurrentCultureIgnoreCase))?.Title;
-            if (matchingAltTitle is not null)
+            var altTitle = tmdbMovieDetails.AlternativeTitles.Titles.Find(e => e.Title.NormalizeDashes().Equals(title, StringComparison.CurrentCultureIgnoreCase))?.Title;
+            if (altTitle is not null)
             {
-                return matchingAltTitle;
+                return altTitle;
             }
-            matchingAltTitle = GetAlternativeTitle(tmdbMovieDetails, "DE");
-            if (matchingAltTitle is not null)
-            {
-                return matchingAltTitle;
-            }
-            matchingAltTitle = GetAlternativeTitle(tmdbMovieDetails, "EN");
-            return matchingAltTitle is not null ? matchingAltTitle : null;
+            altTitle = GetAlternativeTitle(tmdbMovieDetails, "EN");
+            return altTitle is not null ? altTitle : null;
         }
 
         public static string NormalizeTitle(string title)
         {
-            title = title.Normalize().Trim();
+            title = title.Normalize().NormalizeDashes();
 
-            foreach (var dash in _dashCharacters)
-            {
-                title = title.Trim(dash);
-            }
+            title = ReplaceMultipleSpacesRegex().Replace(title, " ");
 
-            foreach (var delim in _delimiterCharacters)
-            {
-                title = title.Trim(delim);
-            }
+            title = ReplaceParenthesisAttributeRegex().Replace(title, " ");
+
+            title = title.Replace("OmU", "", StringComparison.CurrentCultureIgnoreCase).Trim();
+            title = title.Replace("OV", "", StringComparison.CurrentCultureIgnoreCase).Trim();
 
             // Avoid adding movies with only uppercase letters, as this is usually a sign of a bad title. Make them title case instead.
             var upperCasePercentage = title.Count(c => char.IsLetter(c) && char.IsUpper(c)) / (double)title.Length;
-#pragma warning disable CA1862 // We explcitly want to check for upper here.
-            var upperCaseWords = title.Split(' ').Count(e => e.ToUpper(CultureInfo.CurrentCulture) == e);
-#pragma warning restore CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
+            var words = title.Split(' ');
+            var upperCaseWords = words.Count(e => !LatinNumeralRegex().IsMatch(e) && e.Where(e => char.IsLetter(e)).All(char.IsUpper));
             if (upperCasePercentage > 0.7)
             {
                 return ToTitleCase(title);
@@ -100,7 +97,7 @@ namespace kinohannover.Helpers
                 return ToTitleCase(title);
             }
 
-            return title;
+            return title.Trim();
         }
 
         private static string ToTitleCase(string title)
@@ -111,16 +108,7 @@ namespace kinohannover.Helpers
 
         public static string? GetMostSimilarTitle(IEnumerable<string> haystack, string needle)
         {
-            Fastenshtein.Levenshtein lev = new(needle);
-            var needleLength = needle.Length;
-
-            var mostSimilarList = haystack.Select(e =>
-            {
-                var dist = lev.DistanceFrom(e);
-                var bigger = Math.Max(needleLength, e.Length);
-                var distPercent = (double)(bigger - dist) / bigger;
-                return (altTitle: e, index: distPercent);
-            });
+            var mostSimilarList = haystack.Select(e => (altTitle: e, index: needle.DistancePercentageFrom(e)));
             return mostSimilarList.FirstOrDefault(e => e.index > 0.7).altTitle;
         }
 
@@ -135,6 +123,47 @@ namespace kinohannover.Helpers
                 return tmdbMovieDetails.AlternativeTitles.Titles.First(e => e.Type == _translationConst && e.Iso_3166_1.Equals(language, StringComparison.OrdinalIgnoreCase)).Title;
             }
             return null;
+        }
+
+        [GeneratedRegex(@"\s{2,}")]
+        private static partial Regex ReplaceMultipleSpacesRegex();
+
+        [GeneratedRegex(@"^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$")]
+        private static partial Regex LatinNumeralRegex();
+
+        [GeneratedRegex(@"\(.*\)")]
+        private static partial Regex ReplaceParenthesisAttributeRegex();
+    }
+
+    public static class StringExtensions
+    {
+        private static readonly char[] _dashCharacters = ['-', '֊', '־', '᐀', '᠆', '‐', '‑', '‒', '–', '—', '―', '⸗', '⸚', '⸺', '⸻', '⹀', '⹝', '〜', '〰', '゠', '︱', '︲', '﹘', '﹣', '－'];
+
+        public static string NormalizeDashes(this string s)
+
+        {
+            foreach (var dash in _dashCharacters)
+            {
+                s = s.Trim(dash);
+                s = s.Replace(dash, '–');
+            }
+
+            return s;
+        }
+
+        public static double DistancePercentageFrom(this string s, string c, bool caseInsensitive = false)
+        {
+            if (caseInsensitive)
+            {
+                s = s.ToLower();
+                c = c.ToLower();
+            }
+            Fastenshtein.Levenshtein lev = new(c);
+            var needleLength = c.Length;
+
+            var dist = lev.DistanceFrom(s);
+            var bigger = Math.Max(needleLength, s.Length);
+            return (double)(bigger - dist) / bigger;
         }
     }
 }

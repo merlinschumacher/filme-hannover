@@ -82,7 +82,7 @@ namespace kinohannover.Scrapers
 
             foreach (var alias in movie.Aliases)
             {
-                query = query.Where(m => m.Aliases.Any(e => e.Value == alias.Value));
+                query = query.Where(m => m.Aliases.Any(a => a.Equals(alias)));
             }
 
             if (movie.ReleaseDate.HasValue)
@@ -96,14 +96,15 @@ namespace kinohannover.Scrapers
                 return result;
             }
 
-            var similarMovies = new List<Movie>();
-            var similarMoviesquery = await Context.Movies.Include(m => m.Cinemas).ToListAsync();
+            List<KeyValuePair<Movie, double>> similiarMovies = [];
+
             foreach (var alias in movie.Aliases)
             {
-                similarMovies.AddRange(similarMoviesquery.Where(m => MovieTitleHelper.GetMostSimilarTitle(m.Aliases.Select(e => e.Value).ToList(), alias.Value) != null));
+                var movies = Context.Aliases.AsEnumerable().Select(a => new KeyValuePair<Movie, double>(a.Movie, a.Value.DistancePercentageFrom(movie.DisplayName, true))).Where(e => e.Value > 0.9);
+                similiarMovies.AddRange(movies);
             }
 
-            return similarMovies.Distinct().FirstOrDefault();
+            return similiarMovies.OrderByDescending(e => e.Value).FirstOrDefault().Key;
         }
 
         protected async Task<ShowTime?> CreateShowTimeAsync(ShowTime showTime)
