@@ -1,50 +1,65 @@
-﻿using kinohannover.Data;
-using kinohannover.Helpers;
+﻿using kinohannover.Helpers;
 using kinohannover.Models;
+using kinohannover.Services;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
-using TMDbLib.Client;
 
 namespace kinohannover.Scrapers.AstorScraper
 {
-    public class AstorScraper(KinohannoverContext context, ILogger<AstorScraper> logger, TMDbClient tmdbClient) : ScraperBase(context, logger, tmdbClient, new()
+    public class AstorScraper : IScraper
     {
-        DisplayName = "Astor",
-        Website = new("https://hannover.premiumkino.de/"),
-        Color = "#ceb07a",
-        ReliableMetadata = true,
-        HasShop = true,
-    }), IScraper
-    {
+        private readonly Cinema _cinema = new()
+        {
+            DisplayName = "Astor Grand Cinema",
+            Url = new("https://hannover.premiumkino.de/"),
+            ShopUrl = new("https://hannover.premiumkino.de/programmwoche"),
+            Color = "#ceb07a",
+            ReliableMetadata = true,
+            HasShop = true,
+        };
+
         public bool ReliableMetadata => true;
 
         private const string _movieListKey = "movie_list";
         private readonly Uri _apiEndpointUrl = new("https://hannover.premiumkino.de/api/v1/de/config");
         private readonly Uri _movieBaseUrl = new("https://hannover.premiumkino.de/film/");
         private readonly Uri _showTimeBaseUrl = new("https://hannover.premiumkino.de/vorstellung/");
+        private readonly ILogger<AstorScraper> _logger;
+        private readonly CinemaService _cinemaService;
+        private readonly ShowTimeService _showTimeService;
+        private readonly MovieService _movieService;
+
+        public AstorScraper(ILogger<AstorScraper> logger, MovieService movieService, ShowTimeService showTimeService, CinemaService cinemaService)
+        {
+            _logger = logger;
+            _cinemaService = cinemaService;
+            _cinema = _cinemaService.CreateAsync(_cinema).Result;
+            _showTimeService = showTimeService;
+            _movieService = movieService;
+        }
 
         private string SanitizeTitle(string title, string? eventTitle)
         {
             // If the event title is "Events", return the title as is, as it is a generic title and not part of the movie title
             if (eventTitle?.Equals("Events", StringComparison.CurrentCultureIgnoreCase) != false)
             {
-                logger.LogDebug("Event title is null or 'Events', returning title as is.");
+                _logger.LogDebug("Event title is null or 'Events', returning title as is.");
                 return title;
             }
-            var regexString = @$"/((?>\(?\s?{eventTitle}\s?\d*\/?\d*:?\s?\)?))";
+            var regexString = @$"/((?>\(?\s?{Regex.Escape(eventTitle)}\s?\d*\/?\d*:?\s?\)?))";
             try
             {
                 var regex = new Regex(regexString, RegexOptions.IgnoreCase | RegexOptions.Multiline);
                 foreach (Match match in regex.Matches(title))
                 {
-                    logger.LogDebug("Removing event title '{EventTitle}' from movie title '{Title}'.", match, title);
+                    _logger.LogDebug("Removing event title '{EventTitle}' from movie title '{Title}'.", match, title);
                     title = title.Replace(match.Value, string.Empty);
                 }
             }
             catch (Exception e)
             {
-                logger.LogError(e, "Failed to sanitize title.");
+                _logger.LogError(e, "Failed to sanitize title.");
             }
             return title.Trim();
         }
@@ -65,7 +80,6 @@ namespace kinohannover.Scrapers.AstorScraper
                     await ProcessShowTime(movie, performance);
                 }
             }
-            await Context.SaveChangesAsync();
         }
 
         private async Task<Movie> ProcessMovie(AstorMovie astorMovie)
@@ -86,8 +100,9 @@ namespace kinohannover.Scrapers.AstorScraper
             };
 
             movie.SetReleaseDateFromYear(releaseYear);
-            movie.Cinemas.Add(Cinema);
-            return await CreateMovieAsync(movie);
+            movie = await _movieService.CreateAsync(movie);
+            await _cinemaService.AddMovieToCinemaAsync(movie, _cinema);
+            return movie;
         }
 
         private async Task ProcessShowTime(Movie movie, Performance performance)
@@ -103,11 +118,11 @@ namespace kinohannover.Scrapers.AstorScraper
                 Type = type,
                 Language = language,
                 Url = performanceUrl,
-                Cinema = Cinema,
+                Cinema = _cinema,
                 Movie = movie,
             };
 
-            await CreateShowTimeAsync(showTime);
+            await _showTimeService.CreateAsync(showTime);
         }
 
         private static ShowTimeType GetShowTimeType(Performance performance)
@@ -147,7 +162,7 @@ namespace kinohannover.Scrapers.AstorScraper
             }
             catch (Exception e)
             {
-                logger.LogError(e, "Failed to process {Cinema} movie list.", Cinema);
+                _logger.LogError(e, "Failed to process {Cinema} movie list.", _cinema);
                 return astorMovies;
             }
         }

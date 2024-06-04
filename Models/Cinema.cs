@@ -5,13 +5,14 @@
         public int Id { get; set; }
         public required string DisplayName { get; set; }
 
-        public required Uri Website { get; set; }
+        public required Uri Url { get; set; }
+        public required Uri ShopUrl { get; set; }
 
         public ICollection<Movie> Movies { get; set; } = [];
 
         public ICollection<ShowTime> ShowTimes { get; set; } = [];
 
-        public string Color { get; set; } = "#000000";
+        public required string Color { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the showtime entries should link to the shop

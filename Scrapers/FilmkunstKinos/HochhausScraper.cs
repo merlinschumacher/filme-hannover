@@ -1,19 +1,22 @@
-﻿using kinohannover.Data;
-using kinohannover.Models;
+﻿using kinohannover.Services;
 using Microsoft.Extensions.Logging;
-using TMDbLib.Client;
 
 namespace kinohannover.Scrapers.FilmkunstKinos
 {
-    public class HochhausScraper(KinohannoverContext context, ILogger<HochhausScraper> logger, TMDbClient tmdbClient) : FilmkunstKinosScraper(context, logger, _cinema, tmdbClient), IScraper
+    public class HochhausScraper : FilmkunstKinosScraper, IScraper
     {
-        private static readonly Cinema _cinema = new()
+        public HochhausScraper(ILogger<HochhausScraper> logger, MovieService movieService, CinemaService cinemaService, ShowTimeService showTimeService) : base(logger, movieService, cinemaService, showTimeService)
         {
-            DisplayName = "Hochhaus Lichtspiele",
-            Website = new("https://www.hochhaus-lichtspiele.de/pages/programm.php"),
-            Color = "#ffc112",
-            HasShop = true,
-        };
+            _cinema = new()
+            {
+                DisplayName = "Hochhaus Lichtspiele",
+                Url = new("https://www.hochhaus-lichtspiele.de/pages/programm.php"),
+                ShopUrl = new("https://kinotickets.express/hannover-hls/movies"),
+                Color = "#ffc112",
+                HasShop = true,
+            };
+            _cinema = _cinemaService.CreateAsync(_cinema).Result;
+        }
 
         public bool ReliableMetadata => false;
     }

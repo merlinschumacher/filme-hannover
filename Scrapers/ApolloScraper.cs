@@ -1,34 +1,47 @@
 ﻿using HtmlAgilityPack;
-using kinohannover.Data;
 using kinohannover.Extensions;
 using kinohannover.Helpers;
 using kinohannover.Models;
+using kinohannover.Services;
 using Microsoft.Extensions.Logging;
 using System.Globalization;
 using System.Text.RegularExpressions;
-using TMDbLib.Client;
 
 namespace kinohannover.Scrapers.FilmkunstKinos
 {
-    public partial class ApolloScraper(KinohannoverContext context, ILogger<ApolloScraper> logger, TMDbClient tmdbClient) : ScraperBase(context, logger, tmdbClient, new()
+    public partial class ApolloScraper : IScraper
     {
-        DisplayName = "Apollo Kino",
-        Website = new("https://www.apollokino.de/"),
-        Color = "#0000ff",
-    }), IScraper
-    {
+        private readonly Cinema _cinema = new()
+        {
+            DisplayName = "Apollo Kino",
+            Url = new("https://www.apollokino.de/"),
+            ShopUrl = new("https://www.apollokino.de/?v=&mp=Tickets"),
+            Color = "#0000ff",
+        };
+
         public bool ReliableMetadata => false;
-        private readonly Uri _shopUri = new("https://www.apollokino.de/?v=&mp=Tickets");
         private readonly Uri _dataUri = new("https://www.apollokino.de/?v=&mp=Vorschau");
         private readonly List<string> _showsToIgnore = ["00010032", "spezialclub.de"];
         private readonly List<string> _specialEventTitles = ["MonGay-Filmnacht", "WoMonGay"];
-
+        private readonly ShowTimeService _showTimeService;
+        private readonly MovieService _movieService;
+        private readonly ILogger<ApolloScraper> _logger;
+        private readonly CinemaService _cinemaService;
         private const string _titleRegexString = @"^(.*) [-––\u0096] (.*\.?) (OmU|OV).*$";
         private const string _dateFormat = "dd.MM.yyyy";
         private const string _vorschauTableNodeSelector = "//table[@class='vorschau']";
         private const string _tableRowNodesSelector = ".//tr";
         private const string _tableDataNodesSelector = ".//td";
         private const string _linkNodeSelector = ".//a";
+
+        public ApolloScraper(ILogger<ApolloScraper> logger, MovieService movieService, CinemaService cinemaService, ShowTimeService showTimeService)
+        {
+            _logger = logger;
+            _cinemaService = cinemaService;
+            _cinema = _cinemaService.CreateAsync(_cinema).Result;
+            _showTimeService = showTimeService;
+            _movieService = movieService;
+        }
 
         private string? GetSpecialEventTitle(HtmlNode node)
         {
@@ -84,7 +97,7 @@ namespace kinohannover.Scrapers.FilmkunstKinos
 
                     var titleNode = GetTitleNode(movieNode);
                     var (title, type, language) = GetMovieDetails(titleNode);
-                    var movieUrl = new Uri(Cinema.Website, titleNode.GetHref());
+                    var movieUrl = new Uri(_cinema.Url, titleNode.GetHref());
                     Movie movie = await ProcessMovieAsync(title);
                     var showDateTime = GetShowDateTime(date, movieNode);
                     if (showDateTime == null) continue;
@@ -93,7 +106,6 @@ namespace kinohannover.Scrapers.FilmkunstKinos
                     await ProcessShowTimeAsync(movie, specialEventTitle, showDateTime.Value, type, language, movieUrl);
                 }
             }
-            await Context.SaveChangesAsync();
         }
 
         private async Task<Movie> ProcessMovieAsync(string title)
@@ -102,8 +114,9 @@ namespace kinohannover.Scrapers.FilmkunstKinos
             {
                 DisplayName = title,
             };
-            movie.Cinemas.Add(Cinema);
-            return await CreateMovieAsync(movie);
+            movie = await _movieService.CreateAsync(movie);
+            await _cinemaService.AddMovieToCinemaAsync(movie, _cinema);
+            return movie;
         }
 
         private static DateOnly GetDate(HtmlNodeCollection cells)
@@ -122,11 +135,11 @@ namespace kinohannover.Scrapers.FilmkunstKinos
                 Type = type,
                 Language = language,
                 Url = performanceUri,
-                Cinema = Cinema,
+                Cinema = _cinema,
                 SpecialEvent = specialEventTitle,
             };
 
-            await CreateShowTimeAsync(showTime);
+            await _showTimeService.CreateAsync(showTime);
         }
 
         private static DateTime? GetShowDateTime(DateOnly date, HtmlNode movieNode)

@@ -1,19 +1,22 @@
-﻿using kinohannover.Data;
-using kinohannover.Models;
+﻿using kinohannover.Services;
 using Microsoft.Extensions.Logging;
-using TMDbLib.Client;
 
 namespace kinohannover.Scrapers.FilmkunstKinos
 {
-    public class RaschplatzScraper(KinohannoverContext context, ILogger<RaschplatzScraper> logger, TMDbClient tmdbClient) : FilmkunstKinosScraper(context, logger, _cinema, tmdbClient), IScraper
+    public class RaschplatzScraper : FilmkunstKinosScraper, IScraper
     {
-        private static readonly Cinema _cinema = new()
+        public RaschplatzScraper(ILogger<RaschplatzScraper> logger, MovieService movieService, CinemaService cinemaService, ShowTimeService showTimeService) : base(logger, movieService, cinemaService, showTimeService)
         {
-            DisplayName = "Kino am Raschplatz",
-            Website = new("https://www.kinoamraschplatz.de/de/programm.php"),
-            Color = "#7e0f23",
-            HasShop = true,
-        };
+            _cinema = new()
+            {
+                DisplayName = "Kino am Raschplatz",
+                Url = new("https://www.kinoamraschplatz.de/de/programm.php"),
+                ShopUrl = new("https://kinotickets.express/kinoamraschplatz/movies"),
+                Color = "#7e0f23",
+                HasShop = true,
+            };
+            _cinema = _cinemaService.CreateAsync(_cinema).Result;
+        }
 
         public bool ReliableMetadata => false;
     }

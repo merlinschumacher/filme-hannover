@@ -1,28 +1,41 @@
 ﻿using Ical.Net;
 using Ical.Net.CalendarComponents;
-using kinohannover.Data;
 using kinohannover.Helpers;
 using kinohannover.Models;
+using kinohannover.Services;
 using Microsoft.Extensions.Logging;
 using System.Text;
-using TMDbLib.Client;
 
 namespace kinohannover.Scrapers
 {
-    public class SprengelScraper(KinohannoverContext context, ILogger<SprengelScraper> logger, TMDbClient tmdbClient) : ScraperBase(context, logger, tmdbClient, new Cinema()
+    public class SprengelScraper : IScraper
     {
-        DisplayName = "Kino im Sprengel",
-        Website = new("https://www.kino-im-sprengel.de/"),
-        Color = "#ADD8E6",
-    }), IScraper
-    {
+        private readonly Cinema _cinema = new()
+        {
+            DisplayName = "Kino im Sprengel",
+            Url = new("https://www.kino-im-sprengel.de/"),
+            ShopUrl = new("https://www.kino-im-sprengel.de/kontakt.php"),
+            Color = "#ADD8E6",
+        };
+
         public bool ReliableMetadata => false;
         private readonly Uri _dataUrl = new("https://www.kino-im-sprengel.de/eventLoader.php");
-        private readonly Uri _shopUrl = new("https://www.kino-im-sprengel.de/kontakt.php");
         private readonly Uri _baseUri = new("https://www.kino-im-sprengel.de/");
-
+        private readonly ILogger<SprengelScraper> _logger;
+        private readonly CinemaService _cinemaService;
+        private readonly ShowTimeService _showTimeService;
+        private readonly MovieService _movieService;
         private const string _icalLinkSelector = "//a[contains(@href, 'merke')]";
         private const string _postData = "t%5Badvice%5D=daterange&t%5Brange%5D=currentmonth";
+
+        public SprengelScraper(ILogger<SprengelScraper> logger, MovieService movieService, CinemaService cinemaService, ShowTimeService showTimeService)
+        {
+            _logger = logger;
+            _cinemaService = cinemaService;
+            _cinema = _cinemaService.CreateAsync(_cinema).Result;
+            _showTimeService = showTimeService;
+            _movieService = movieService;
+        }
 
         public async Task ScrapeAsync()
         {
@@ -40,7 +53,6 @@ namespace kinohannover.Scrapers
                     await ProcessShowTime(showDateTime, movie);
                 }
             }
-            await Context.SaveChangesAsync();
         }
 
         private async Task ProcessShowTime(DateTime showDateTime, Movie movie)
@@ -50,10 +62,10 @@ namespace kinohannover.Scrapers
                 Movie = movie,
                 StartTime = showDateTime,
                 Url = movie.Url,
-                Cinema = Cinema,
+                Cinema = _cinema,
             };
 
-            await CreateShowTimeAsync(showTime);
+            await _showTimeService.CreateAsync(showTime);
         }
 
         private async Task<Movie> ProcessMovieAsync(CalendarEvent calendarEvent)
@@ -63,8 +75,9 @@ namespace kinohannover.Scrapers
                 DisplayName = calendarEvent.Summary,
                 Url = calendarEvent.Url
             };
-            movie.Cinemas.Add(Cinema);
-            return await CreateMovieAsync(movie);
+            movie = await _movieService.CreateAsync(movie);
+            await _cinemaService.AddMovieToCinemaAsync(movie, _cinema);
+            return movie;
         }
 
         private async Task<Calendar?> GetCalendar(Uri icalUri)
@@ -76,7 +89,7 @@ namespace kinohannover.Scrapers
             }
             catch (Exception e)
             {
-                logger.LogError(e, "Failed to load iCal from {Uri}", icalUri);
+                _logger.LogError(e, "Failed to load iCal from {Uri}", icalUri);
             }
             return null;
         }

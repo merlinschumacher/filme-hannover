@@ -1,33 +1,48 @@
-﻿using kinohannover.Data;
-using kinohannover.Helpers;
+﻿using kinohannover.Helpers;
 using kinohannover.Models;
+using kinohannover.Services;
 using Microsoft.Extensions.Logging;
 using System.Globalization;
-using TMDbLib.Client;
 
 namespace kinohannover.Scrapers.Cinemaxx
 {
-    public class CinemaxxScraper(KinohannoverContext context, ILogger<CinemaxxScraper> logger, TMDbClient tmdbClient) : ScraperBase(context, logger, tmdbClient, new()
-    {
-        DisplayName = "Cinemaxx",
-        Website = new("https://www.cinemaxx.de/"),
-        Color = "#ca01ca",
-        HasShop = true,
-    }), IScraper
+    public class CinemaxxScraper : IScraper
 
     {
+        private readonly Cinema _cinema = new()
+        {
+            DisplayName = "Cinemaxx",
+            Url = new("https://www.cinemaxx.de/"),
+            ShopUrl = new("https://www.cinemaxx.de/kinoprogramm/hannover/"),
+            Color = "#ca01ca",
+            HasShop = true,
+        };
+
         public bool ReliableMetadata => true;
-        private const int _cinemaId = 81;
+        private const int _cinemaxxId = 81;
 
+        private readonly Uri _baseUri = new("https://www.cinemaxx.de/");
         private readonly List<string> _specialEventTitles = ["Maxxi Mornings:", "Mini Mornings:", "Sharkweek:", "Shark Week:"];
         private readonly Uri _weeklyProgramDataUrl = GetScraperUrl("jetzt-im-kino");
         private readonly Uri _presaleDataUrl = GetScraperUrl("Vorverkauf");
+        private readonly ILogger<CinemaxxScraper> _logger;
+        private readonly CinemaService _cinemaService;
+        private readonly ShowTimeService _showTimeService;
+        private readonly MovieService _movieService;
+
+        public CinemaxxScraper(ILogger<CinemaxxScraper> logger, MovieService movieService, ShowTimeService showTimeService, CinemaService cinemaService)
+        {
+            _logger = logger;
+            _cinemaService = cinemaService;
+            _cinema = _cinemaService.CreateAsync(_cinema).Result;
+            _showTimeService = showTimeService;
+            _movieService = movieService;
+        }
 
         public async Task ScrapeAsync()
         {
             await ProcessJsonResultAsync(_weeklyProgramDataUrl);
             await ProcessJsonResultAsync(_presaleDataUrl);
-            await Context.SaveChangesAsync();
         }
 
         private async Task ProcessJsonResultAsync(Uri dataUri)
@@ -64,11 +79,11 @@ namespace kinohannover.Scrapers.Cinemaxx
                 return;
             var language = ShowTimeHelper.GetLanguage(schedule.VersionTitle);
             var type = ShowTimeHelper.GetType(schedule.VersionTitle);
-            var performanceUri = new Uri(Cinema.Website, schedule.BookingLink);
+            var performanceUri = new Uri(_cinema.Url, schedule.BookingLink);
 
             var showTime = new ShowTime()
             {
-                Cinema = Cinema,
+                Cinema = _cinema,
                 StartTime = time,
                 Type = type,
                 Language = language,
@@ -76,7 +91,7 @@ namespace kinohannover.Scrapers.Cinemaxx
                 Movie = movie,
                 SpecialEvent = eventTitle,
             };
-            await CreateShowTimeAsync(showTime);
+            await _showTimeService.CreateAsync(showTime);
         }
 
         private async Task<(Movie, string?)> ProcessMovieAsync(WhatsOnAlphabeticFilm film)
@@ -86,11 +101,11 @@ namespace kinohannover.Scrapers.Cinemaxx
             var movie = new Movie()
             {
                 DisplayName = title,
-                Url = new Uri(Cinema.Website, film.FilmUrl),
+                Url = new Uri(_baseUri, film.FilmUrl),
             };
+            movie = await _movieService.CreateAsync(movie);
+            await _cinemaService.AddMovieToCinemaAsync(movie, _cinema);
 
-            movie.Cinemas.Add(Cinema);
-            movie = await CreateMovieAsync(movie);
             return (movie, eventTitle);
         }
 
@@ -110,7 +125,7 @@ namespace kinohannover.Scrapers.Cinemaxx
         {
             var startDate = DateOnly.FromDateTime(DateTime.Now).ToString("dd-MM-yyyy");
             var endDate = DateOnly.FromDateTime(DateTime.Now.AddDays(28)).ToString("dd-MM-yyyy");
-            var uriString = string.Format("https://www.cinemaxx.de/api/sitecore/WhatsOn/WhatsOnV2Alphabetic?cinemaId={0}&Datum={1},{2}&type={3}", _cinemaId, startDate, endDate, listType);
+            var uriString = string.Format("https://www.cinemaxx.de/api/sitecore/WhatsOn/WhatsOnV2Alphabetic?cinemaId={0}&Datum={1},{2}&type={3}", _cinemaxxId, startDate, endDate, listType);
             return new Uri(uriString);
         }
     }

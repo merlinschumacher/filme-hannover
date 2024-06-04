@@ -41,5 +41,10 @@
 
             return $"({typeString}/{languageString})";
         }
+
+        public override string ToString()
+        {
+            return $"{Movie} at {StartTime.ToString("u")} at {Cinema}";
+        }
     }
 }

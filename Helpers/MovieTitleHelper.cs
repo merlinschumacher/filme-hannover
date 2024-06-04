@@ -19,7 +19,7 @@ namespace kinohannover.Helpers
 
             //If the cinema is known to have reliable movie titles, return the original title.
             // Otherwise we try more desperate measures to find a matching title.
-            if (guessHarder)
+            if (guessHarder && tmdbMovieDetails.AlternativeTitles.Titles.Count != 0)
             {
                 // Try to find a similar title in the alternative titles
                 var altTitles = tmdbMovieDetails.AlternativeTitles.Titles.Select(e => e.Title);
@@ -30,7 +30,7 @@ namespace kinohannover.Helpers
                 }
 
                 // Try to find a similar title in the alternative titles with the translation type
-                matchedTitle = tmdbMovieDetails.AlternativeTitles.Titles.First(e => e.Type.Equals(_translationConst, StringComparison.OrdinalIgnoreCase))?.Title;
+                matchedTitle = tmdbMovieDetails.AlternativeTitles.Titles.Find(e => e.Type.Equals(_translationConst, StringComparison.OrdinalIgnoreCase))?.Title;
                 if (matchedTitle is not null)
                 {
                     return NormalizeTitle(matchedTitle);
@@ -74,8 +74,7 @@ namespace kinohannover.Helpers
             {
                 return tmdbTitle;
             }
-            tmdbTitle = GetAlternativeTitle(tmdbMovieDetails, "EN");
-            return tmdbTitle is not null ? tmdbTitle : null;
+            return GetAlternativeTitle(tmdbMovieDetails, "EN");
         }
 
         public static string NormalizeTitle(string title)

@@ -1,16 +1,16 @@
 ﻿using HtmlAgilityPack;
-using kinohannover.Data;
 using kinohannover.Helpers;
 using kinohannover.Models;
+using kinohannover.Services;
 using Microsoft.Extensions.Logging;
 using System.Globalization;
 using System.Text.RegularExpressions;
-using TMDbLib.Client;
 
 namespace kinohannover.Scrapers.FilmkunstKinos
 {
-    public abstract partial class FilmkunstKinosScraper(KinohannoverContext context, ILogger<FilmkunstKinosScraper> logger, Cinema cinema, TMDbClient tmdbClient) : ScraperBase(context, logger, tmdbClient, cinema)
+    public abstract partial class FilmkunstKinosScraper(ILogger<FilmkunstKinosScraper> logger, MovieService movieService, CinemaService cinemaService, ShowTimeService showTimeService)
     {
+        protected Cinema _cinema;
         private const string _contentBoxSelector = "//div[contains(concat(' ', normalize-space(@class), ' '), ' contentbox ')]";
         private const string _movieSelector = ".//table";
         private const string _titleSelector = ".//h3";
@@ -19,10 +19,11 @@ namespace kinohannover.Scrapers.FilmkunstKinos
         private const string _aElemeSelector = ".//a";
         private const string _dateFormat = "dd.MM.";
         private const string _titleRegex = @"(.*)(?>.*\s+[-–]\s+)(.*\.?)?\s(OmU|OV)";
+        protected readonly CinemaService _cinemaService = cinemaService;
 
         public async Task ScrapeAsync()
         {
-            var doc = await HttpHelper.GetHtmlDocumentAsync(Cinema.Website);
+            var doc = await HttpHelper.GetHtmlDocumentAsync(_cinema.Url);
 
             var contentBox = doc.DocumentNode.SelectSingleNode(_contentBoxSelector);
             foreach (var movieNode in contentBox.SelectNodes(_movieSelector))
@@ -36,14 +37,13 @@ namespace kinohannover.Scrapers.FilmkunstKinos
                     await ProcessShowTimes(filmTagNode, movie, type, language);
                 }
             }
-            await Context.SaveChangesAsync();
         }
 
         private async Task<(Movie, ShowTimeType, ShowTimeLanguage)> ProcessMovie(HtmlNode movieNode)
         {
             var title = movieNode.SelectSingleNode(_titleSelector).InnerText;
             var movieUriString = movieNode.SelectSingleNode(_titleSelector).SelectSingleNode(_aElemeSelector).GetAttributeValue("href", "");
-            var movieUri = new Uri(Cinema.Website, movieUriString);
+            var movieUri = new Uri(_cinema.Url, movieUriString);
             var match = TitleRegex().Match(title);
             var type = ShowTimeType.Regular;
             var language = ShowTimeLanguage.German;
@@ -59,9 +59,9 @@ namespace kinohannover.Scrapers.FilmkunstKinos
                 DisplayName = title,
                 Url = movieUri,
             };
-            movie.Cinemas.Add(Cinema);
 
-            movie = await CreateMovieAsync(movie);
+            movie = await movieService.CreateAsync(movie);
+            await _cinemaService.AddMovieToCinemaAsync(movie, _cinema);
 
             return (movie, type, language);
         }
@@ -76,18 +76,18 @@ namespace kinohannover.Scrapers.FilmkunstKinos
                 var showDateTime = GetShowTimeDateTime(date, timeNode);
                 if (showDateTime is null) continue;
 
-                Uri.TryCreate(Cinema.Website, timeNode?.GetAttributeValue("href", ""), out var performanceUri);
+                Uri.TryCreate(_cinema.Url, timeNode?.GetAttributeValue("href", ""), out var performanceUri);
 
                 var showTime = new ShowTime()
                 {
-                    Cinema = Cinema,
+                    Cinema = _cinema,
                     Movie = movie,
                     StartTime = showDateTime.Value,
                     Type = type,
                     Language = language,
                     Url = performanceUri,
                 };
-                await CreateShowTimeAsync(showTime);
+                await showTimeService.CreateAsync(showTime);
             }
         }
 

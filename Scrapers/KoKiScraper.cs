@@ -1,25 +1,31 @@
 ﻿using HtmlAgilityPack;
-using kinohannover.Data;
 using kinohannover.Helpers;
 using kinohannover.Models;
+using kinohannover.Services;
 using Microsoft.Extensions.Logging;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Web;
-using TMDbLib.Client;
 
 namespace kinohannover.Scrapers
 {
-    public partial class KoKiScraper(KinohannoverContext context, ILogger<KoKiScraper> logger, TMDbClient tmdbClient) : ScraperBase(context, logger, tmdbClient, new()
+    public partial class KoKiScraper : IScraper
     {
-        DisplayName = "KoKi (Kino im Künstlerhaus)",
-        Website = new("https://www.koki-hannover.de"),
-        Color = "#2c2e35",
-        HasShop = true,
-    }), IScraper
-    {
+        private readonly Cinema _cinema = new()
+        {
+            DisplayName = "KoKi (Kino im Künstlerhaus)",
+            Url = new("https://www.koki-hannover.de"),
+            ShopUrl = new("https://booking.cinetixx.de/Program?cinemaId=2995877579"),
+            Color = "#2c2e35",
+            HasShop = true,
+        };
+
         private readonly Uri _dataUrl = new("https://booking.cinetixx.de/Program?cinemaId=2995877579");
         private readonly Uri _shopUrlBase = new("https://booking.cinetixx.de/frontend/#/movie/2995877579/");
+        private readonly ILogger<KoKiScraper> _logger;
+        private readonly CinemaService _cinemaService;
+        private readonly ShowTimeService _showTimeService;
+        private readonly MovieService _movieService;
         private const string _cinetixxId = "2995877579";
         private const string _movieNodeSelector = $"//div[contains(@id, '{_cinetixxId}#')]";
         private const string _eventTitleNodeSelector = ".//h3";
@@ -31,6 +37,15 @@ namespace kinohannover.Scrapers
         private const string _eventTimeRowNodeSelector = ".//tr[td[contains(@class, 'date-picker-shows')]]";
         private const string _eventTimeNodeSelector = ".//td[contains(@class, 'date-picker-shows')]";
         private const string _spanNodeSelector = ".//span";
+
+        public KoKiScraper(ILogger<KoKiScraper> logger, MovieService movieService, ShowTimeService showTimeService, CinemaService cinemaService)
+        {
+            _logger = logger;
+            _cinemaService = cinemaService;
+            _cinema = _cinemaService.CreateAsync(_cinema).Result;
+            _showTimeService = showTimeService;
+            _movieService = movieService;
+        }
 
         public bool ReliableMetadata => false;
 
@@ -59,12 +74,11 @@ namespace kinohannover.Scrapers
                         Type = type,
                         Language = language,
                         Url = performanceUri,
-                        Cinema = Cinema,
+                        Cinema = _cinema,
                     };
-                    await CreateShowTimeAsync(showTime);
+                    await _showTimeService.CreateAsync(showTime);
                 }
             }
-            await Context.SaveChangesAsync();
         }
 
         private async Task<Movie?> ProcessMovieAsync(HtmlNode movieNode)
@@ -81,9 +95,11 @@ namespace kinohannover.Scrapers
                 DisplayName = title,
                 Runtime = runtime,
             };
-            movie.Cinemas.Add(Cinema);
 
-            return await CreateMovieAsync(movie);
+            movie = await _movieService.CreateAsync(movie);
+            await _cinemaService.AddMovieToCinemaAsync(movie, _cinema);
+
+            return movie;
         }
 
         private static List<DateTime> GetShowDateTimes(HtmlNode eventDetailElement)

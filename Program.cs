@@ -3,6 +3,7 @@ using kinohannover.Data;
 using kinohannover.Extensions;
 using kinohannover.Renderer;
 using kinohannover.Scrapers;
+using kinohannover.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,6 +30,9 @@ if (string.IsNullOrWhiteSpace(apiKey))
 var tmdbClient = new TMDbClient(apiKey);
 builder.Services.AddSingleton(tmdbClient);
 builder.Services.AddScoped<CleanupService>();
+builder.Services.AddScoped<MovieService>();
+builder.Services.AddTransient<CinemaService>();
+builder.Services.AddScoped<ShowTimeService>();
 
 builder.Services.AddServicesByInterface<IScraper>();
 builder.Services.AddServicesByInterface<IRenderer>();
