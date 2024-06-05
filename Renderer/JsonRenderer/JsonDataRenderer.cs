@@ -9,8 +9,8 @@ namespace kinohannover.Renderer.JsonRenderer
     {
         private sealed class JsonData
         {
-            public List<Movie> Movies { get; set; } = [];
             public List<Cinema> Cinema { get; set; } = [];
+            public List<Movie> Movies { get; set; } = [];
             public List<ShowTime> ShowTimes { get; set; } = [];
         }
 
@@ -19,8 +19,8 @@ namespace kinohannover.Renderer.JsonRenderer
             path = Path.Combine(path, "data.json");
             var data = new JsonData()
             {
-                Movies = [.. context.Movies],
                 Cinema = [.. context.Cinema],
+                Movies = [.. context.Movies],
                 ShowTimes = [.. context.ShowTime]
             };
 
