@@ -1,8 +1,4 @@
 import './style.css'
-import { loadData } from './event-data-loader' 
-// document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-// `
+import { db} from './event-data-loader' 
 
-// setupCounter(document.querySelector<HTMLButtonElement>('#counter')!)
-
-loadData()
+console.log(await db.getEventDataForCinema(1));
