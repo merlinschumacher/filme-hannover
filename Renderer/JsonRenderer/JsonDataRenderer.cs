@@ -72,8 +72,8 @@ namespace kinohannover.Renderer.JsonRenderer
                 ShowTimes = context.ShowTime.OrderBy(e => e.StartTime).Select(s => new ShowTimeDto
                 {
                     Id = s.Id,
-                    StartTime = s.StartTime,
-                    EndTime = s.StartTime.Add(s.Movie.Runtime ?? Constants.AverageMovieRuntime),
+                    StartTime = s.StartTime.ToUniversalTime(),
+                    EndTime = s.StartTime.Add(s.Movie.Runtime ?? Constants.AverageMovieRuntime).ToUniversalTime(),
                     Movie = s.Movie.Id,
                     Cinema = s.Cinema.Id,
                     Language = s.Language,
@@ -99,6 +99,7 @@ namespace kinohannover.Renderer.JsonRenderer
                 Formatting = Formatting.None,
                 ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
                 PreserveReferencesHandling = PreserveReferencesHandling.Objects,
+                DateTimeZoneHandling = DateTimeZoneHandling.Utc,
             });
             File.WriteAllText(path, serializedEventSources);
         }

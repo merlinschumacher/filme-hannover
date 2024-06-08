@@ -8,15 +8,12 @@ export interface Cinema {
   url: string;
   shopUrl: string;
   color: string;
-  movies: number[];
-  showTimes: number[];
 }
 
 export interface Movie {
   id: number;
   displayName: string;
   releaseDate: Date | null;
-  cinemas: number[];
   runtime: number | null;
 }
 
