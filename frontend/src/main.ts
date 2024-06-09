@@ -1,6 +1,10 @@
+// import 'sprucecss/css/spruce.min.css' 
+
 import './style.css'
 import { cinemaDb } from './cinemaDb' 
-import EventListElement from './components/eventlistElement'
+import DayListElement from './components/dayListElement';
+import EventListElement from './components/eventListElement';
+import FilterButtonElement from './components/filterButtonElement';
 
 await cinemaDb.Init();
 var today = new Date();
@@ -25,19 +29,20 @@ button.onclick = async () => {
     const eventList = await cinemaDb.getAllEvents();
 const events= document.querySelector<HTMLDivElement>('#events')!;
     events.innerHTML = '';
-eventList.forEach(element => {
-  
-    const eventElement = new EventListElement(element.startTime, element.displayName, element.type.toString(), element.language.toString(), 'red', new URL('https://www.google.com'));
-    eventElement.setAttribute('date', element.startTime.toLocaleString());
-    eventElement.setAttribute('title', element.displayName);
-    eventElement.setAttribute('type', element.type.toString());
-    eventElement.setAttribute('language', element.language.toString());
-    events.appendChild(eventElement);
-});
+   const dayList = document.createElement('day-list') as DayListElement;
+   eventList.forEach(element => {
+    
+    const eventListElement = document.createElement('event-list-element') as EventListElement; 
+    eventListElement.data = element;
+    dayList.appendChild(eventListElement);
+    events.appendChild(eventListElement);
+
+   });
+    events.appendChild(dayList);
 
 }
 
 app.appendChild(button);
-
+app.appendChild( new FilterButtonElement('Action'));
 
 

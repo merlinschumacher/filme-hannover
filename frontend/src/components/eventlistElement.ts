@@ -1,52 +1,46 @@
 
+import { EventData } from "../interfaces";
+
 const template = document.createElement('template');
 
 template.innerHTML = `
-  <div class="event-list-element">
-    <span class="event-list-element__dot"></span>
-    <span class="event-list-element__date"></span>
-    <span class="event-list-element__title"></span> 
-    <span class="event-list-element__type"></span>
-    <span class="event-list-element__language"></span>
+  <div class="day-list-element">
+    <div class="day-list-element__header"></div>
+    <slot></slot>
+    <div class="day-list-element__footer"></div>
   </div>
 `;
 
 export default class EventListElement extends HTMLElement {
 
   static get observedAttributes() {
-    return ['date', 'title', 'type', 'language'];
+    return ['data'];
   }
 
-  private readonly shadow: ShadowRoot;
-  private date: Date;
-  private eventTitle: string;
-  private type: string;
-  private language: string;
-  private color: string;
-  private url: URL;
-  constructor(date: Date, eventTitle: string, type: string, language: string, color: string, url: URL) {
+  public data: EventData | undefined;
+
+
+  constructor() {
     super();
-    this.shadow = this.attachShadow({ mode: 'open' });
-    this.shadow.appendChild(template.content.cloneNode(true));
-    this.date = date;
-    this.eventTitle = eventTitle;
-    this.type = type;
-    this.language = language;
-    this.color = color;
-    this.url = url;
   }
 
   connectedCallback() {
-    const dateElem = this.shadow.querySelector('.event-list-element__date');
-    const titleElem = this.shadow.querySelector('.event-list-element__title');
-    const typeElem = this.shadow.querySelector('.event-list-element__type');
-    const languageElem = this.shadow.querySelector('.event-list-element__language');
+    console.log('connectedCallback');
+    const shadow = this.attachShadow({ mode: 'open' });
+    shadow.appendChild(template.content.cloneNode(true));
+    const dotElem = shadow.querySelector('.event-list-element__dot');
+    const dateElem = shadow.querySelector('.event-list-element__date');
+    const titleElem = shadow.querySelector('.event-list-element__title');
+    const typeElem = shadow.querySelector('.event-list-element__type');
+    const languageElem = shadow.querySelector('.event-list-element__language');
 
-    if (dateElem && titleElem && typeElem && languageElem) {
-      dateElem.textContent = this.date.toString(); 
-      titleElem.textContent = this.eventTitle;
-      typeElem.textContent = this.type; 
-      languageElem.textContent = this.language; 
+    if (this.data && dateElem && titleElem && typeElem && languageElem) {
+      dotElem?.classList.add(this.data.colorClass);
+      dateElem.textContent = new Date(this.data.startTime).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit'}); 
+      titleElem.textContent = this.data.displayName;
+      titleElem.setAttribute('href', this.data.url.toString());
+      typeElem.textContent = this.data.type.toString(); 
+      languageElem.textContent = this.data.language.toString(); 
     }
   }
 }

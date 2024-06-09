@@ -90,7 +90,7 @@ class CinemaDb extends Dexie {
     }
 
     async getAllEvents(): Promise<EventData[]> {
-        const showTimes = await this.showTimes.toArray();
+        const showTimes = await this.showTimes.orderBy('startTime').toArray();
         const movies = await this.movies.where('id').anyOf(showTimes.map(st => st.movie)).toArray();
         const cinemas = await this.cinemas.where('id').anyOf(showTimes.map(st => st.cinema)).toArray();
 
@@ -114,7 +114,9 @@ class CinemaDb extends Dexie {
                 runtime: movie!.runtime,
                 cinema: cinema.displayName,
                 language: st.language,
-                type: st.type
+                type: st.type,
+                colorClass: cinema.id.toString(),
+                url: st.url
             }
         });
         return eventDataElements;
@@ -128,7 +130,7 @@ class CinemaDb extends Dexie {
     async getEventsForDateRange(startDate: Date, endDate: Date): Promise<EventData[]> {
         const startDateString = startDate.toISOString();
         const endDateString = endDate.toISOString();
-        const showTimes = await this.showTimes.where('startTime').between(startDateString, endDateString).toArray();
+        const showTimes = (await this.showTimes.where('startTime').between(startDateString, endDateString).sortBy('startTime'));
         const movies = await this.movies.where('id').anyOf(showTimes.map(st => st.movie)).toArray();
         const cinemas = await this.cinemas.where('id').anyOf(showTimes.map(st => st.cinema)).toArray();
 
@@ -152,7 +154,9 @@ class CinemaDb extends Dexie {
                 runtime: movie!.runtime,
                 cinema: cinema.displayName,
                 language: st.language,
-                type: st.type
+                type: st.type,
+                colorClass: cinema.id.toString(),
+                url: st.url
             }
         });
         return eventDataElements;
@@ -179,7 +183,9 @@ class CinemaDb extends Dexie {
                 runtime: movie!.runtime,
                 cinema: cinema.displayName,
                 language: st.language,
-                type: st.type
+                type: st.type,
+                colorClass: cinema.id.toString(),
+                url: st.url
             }
         });
         return eventDataElements;

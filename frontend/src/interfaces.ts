@@ -23,6 +23,7 @@ export interface ShowTime {
   endTime: Date;
   movie: number;
   cinema: number;
+  url: URL;
   language: ShowTimeLanguage;
   type: ShowTimeType;
 }
@@ -63,6 +64,8 @@ export interface EventData {
   displayName: string;
   runtime: number | null;
   cinema: string;
+  colorClass: string;
+  url: URL;
   language: ShowTimeLanguage;
   type: ShowTimeType;
 }
