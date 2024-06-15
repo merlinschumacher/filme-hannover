@@ -9,11 +9,21 @@
   <title>Das aktuelle Kinoprogramm in Hannover</title>
   <meta name="description" content="Das aktuelle Kinoprogramm in Hannover" />
   <meta name="keywords" content="Kino, Hannover, Kinoprogramm" />
+  <script type="module" src="/src/main.ts"></script>
+  <style type="text/css">
+    a {
+      color: #007bff;
+      text-decoration: none;
+    }
+  </style>
 </head>
 
 <body>
   <div id="app"><div id="events"></div></div>
-  <script type="module" src="/src/main.ts"></script>
+  <event-list-element href="blubb">
+<span slot="title" href="bla">Das aktuelle Kinoprogramm in Hannover</span>
+
+  </event-list-element>
 </body>
 
 

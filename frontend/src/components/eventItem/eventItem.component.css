@@ -1,0 +1,12 @@
+:host {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #000;
+}
