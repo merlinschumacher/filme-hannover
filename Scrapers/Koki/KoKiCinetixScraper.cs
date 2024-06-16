@@ -2,6 +2,7 @@
 using kinohannover.Data;
 using kinohannover.Helpers;
 using kinohannover.Models;
+using kinohannover.Scrapers.Koki;
 using Microsoft.Extensions.Logging;
 using System.Globalization;
 using System.Text.RegularExpressions;
@@ -10,13 +11,9 @@ using TMDbLib.Client;
 
 namespace kinohannover.Scrapers
 {
-    public partial class KoKiCinetixScraper(KinohannoverContext context, ILogger<KoKiCinetixScraper> logger, TMDbClient tmdbClient) : ScraperBase(context, logger, tmdbClient, new()
-    {
-        DisplayName = "KoKi (Kino im Künstlerhaus)",
-        Website = new("https://www.koki-hannover.de"),
-        Color = "#2c2e35",
-        HasShop = true,
-    }), IScraper
+    public partial class KoKiCinetixScraper(KinohannoverContext context, ILogger<KoKiCinetixScraper> logger, TMDbClient tmdbClient)
+        : ScraperBase(context, logger, tmdbClient, KokiCinema.Cinema), IScraper
+
     {
         private readonly Uri _dataUrl = new("https://booking.cinetixx.de/Program?cinemaId=2995877579");
         private readonly Uri _shopUrlBase = new("https://booking.cinetixx.de/frontend/#/movie/2995877579/");
@@ -39,6 +36,12 @@ namespace kinohannover.Scrapers
             var doc = await HttpHelper.GetHtmlDocumentAsync(_dataUrl);
 
             var movieNodes = doc.DocumentNode.SelectNodes(_movieNodeSelector);
+
+            if (movieNodes is null)
+            {
+                return;
+            }
+
             foreach (var movieNode in movieNodes)
             {
                 var movie = await ProcessMovieAsync(movieNode);

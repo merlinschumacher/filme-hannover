@@ -1,6 +1,7 @@
 ﻿using kinohannover.Data;
 using kinohannover.Helpers;
 using kinohannover.Models;
+using kinohannover.Scrapers.Koki;
 using Microsoft.Extensions.Logging;
 using System.Globalization;
 using System.Text.RegularExpressions;
@@ -9,15 +10,10 @@ using TMDbLib.Client;
 
 namespace kinohannover.Scrapers
 {
-    public partial class KoKiScraper(KinohannoverContext context, ILogger<KoKiScraper> logger, TMDbClient tmdbClient) : ScraperBase(context, logger, tmdbClient, new()
-    {
-        DisplayName = "Kino im Künstlerhaus",
-        Website = new Uri("https://www.koki-hannover.de"),
-        Color = "#2c2e35",
-    }), IScraper
+    public partial class KoKiScraper(KinohannoverContext context, ILogger<KoKiScraper> logger, TMDbClient tmdbClient) : ScraperBase(context, logger, tmdbClient, KokiCinema.Cinema), IScraper
     {
         private readonly string _dataUrl = "https://www.hannover.de/Kommunales-Kino-im-K%C3%BCnstlerhaus-Hannover/Programm-im-Kommunalen-Kino-Hannover";
-        private readonly string _shopLink = "https://www.hannover.de/Media/02-GIS-Objekte/Organisationsdatenbank/Redaktion-Hannover.de/Portale/Kinos/Kommunales-Kino-im-K%C3%BCnstlerhaus";
+        private readonly string _shopLink = "https://booking.cinetixx.de/Program?cinemaId=2995877579";
         private const string _eventDetailElementsSelector = "//div[contains(@class, 'event-detail__main')]/section";
         private const string _hrSelector = ".//hr";
         private const string _paragraphSelection = "./following-sibling::p[position() <= 2]";

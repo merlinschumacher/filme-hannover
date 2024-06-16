@@ -30,7 +30,7 @@ namespace kinohannover.Helpers
                 }
 
                 // Try to find a similar title in the alternative titles with the translation type
-                matchedTitle = tmdbMovieDetails.AlternativeTitles.Titles.First(e => e.Type.Equals(_translationConst, StringComparison.OrdinalIgnoreCase))?.Title;
+                matchedTitle = tmdbMovieDetails.AlternativeTitles.Titles.Find(e => e.Type.Equals(_translationConst, StringComparison.OrdinalIgnoreCase))?.Title;
                 if (matchedTitle is not null)
                 {
                     return NormalizeTitle(matchedTitle);
