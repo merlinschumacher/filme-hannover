@@ -5,7 +5,6 @@ import { Cinema } from "./Cinema";
 import { Configuration } from "./Configuration";
 import { JsonData } from "./JsonData";
 import { EventData } from "./EventData";
-import moment from 'moment';
 
 class HttpClient {
     protected constructor() {}
@@ -121,7 +120,7 @@ class CinemaDb extends Dexie {
                 cinema: cinema.displayName,
                 language: st.language,
                 type: st.type,
-                colorClass: cinema.id.toString(),
+                colorClass: 'cinema-'+cinema.id.toString(),
                 url: st.url
             }
         });
@@ -139,7 +138,7 @@ class CinemaDb extends Dexie {
         const eventsByDay = new Map<string, EventData[]>();
 
         events.forEach(event => {
-            const day = new Date(new Date(event.startTime).setUTCHours(24,0,0,0)).toLocaleDateString([], {dateStyle: 'long'});
+            const day = new Date(new Date(event.startTime).setUTCHours(0,0,0,0)).toISOString();
             if (!eventsByDay.has(day)) {
                 eventsByDay.set(day, []);
             }
@@ -176,7 +175,7 @@ class CinemaDb extends Dexie {
                 cinema: cinema.displayName,
                 language: st.language,
                 type: st.type,
-                colorClass: cinema.id.toString(),
+                colorClass: 'cinema-'+cinema.id.toString(),
                 url: st.url
             }
         });
@@ -205,7 +204,7 @@ class CinemaDb extends Dexie {
                 cinema: cinema.displayName,
                 language: st.language,
                 type: st.type,
-                colorClass: cinema.id.toString(),
+                colorClass: 'cinema-'+cinema.id.toString(),
                 url: st.url
             }
         });

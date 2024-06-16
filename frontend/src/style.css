@@ -1,3 +1,8 @@
+:root {
+  --light-accent: #ddd;
+  --highlighted-day: #fffadf;
+}
+
 /* Box sizing rules */
 *,
 *::before,
@@ -13,7 +18,7 @@ html {
 }
 
 /* Remove default margin in favour of better control in authored CSS */
-body, h1, h2, h3, h4, p,
+body, h1, h2, h3, h4, h5, h6, p,
 figure, blockquote, dl, dd {
   margin-block-end: 0;
 }
@@ -29,19 +34,25 @@ body {
   min-height: 100vh;
   line-height: 1.5;
   font-family: "Inter Variable", "Helvetica Neue", "Roboto", "Arial" , sans-serif;
-  font-size: 14px;
+  font-size: 13px;
+  padding: 1em;
+  margin: 0;
 }
 
 /* Set shorter line heights on headings and interactive elements */
-h1, h2, h3, h4,
+h1, h2, h3, h4, h5, h6,
 button, input, label {
   line-height: 1.1;
 }
 
 /* Balance text wrapping on headings */
 h1, h2,
-h3, h4 {
+h3, h4, h3, h5, h6{
   text-wrap: balance;
+}
+
+h1, h2 {
+  font-weight: normal;
 }
 
 /* A elements that don't have a class get default styles */
@@ -72,4 +83,26 @@ textarea:not([rows]) {
 /* Anything that has been anchored to should have extra scroll margin */
 :target {
   scroll-margin-block: 5ex;
+}
+
+body > h1:first-of-type {
+  margin-top: 0;
+}
+
+.leadin {
+  margin-bottom: 1em;
+  font-size: 1.25em;
+}
+
+xswiper-slide {
+  height: auto;
+  align-self: stretch;
+  border: 1px solid var(--light-accent);
+  display: flex;
+  align-items: stretch;
+}
+swiper-slide {
+  border: 1px solid var(--light-accent);
+  align-self: stretch;
+  height: auto;
 }

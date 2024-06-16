@@ -1,12 +1,11 @@
 :host {
   display: flex;
-  /* gap: .5em; */
 }
 ::slotted(day-list) {
   flex: 1 1 0px;
-  border: 1px solid #000;
+  border: 1px solid var(--light-accent);
   border-right: none;
 }
 ::slotted(day-list:last-of-type) {
-  border-right: 1px solid #000;
+  border-right: 1px solid var(--light-accent);
 }

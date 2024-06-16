@@ -4,6 +4,12 @@ import { minify } from 'html-minifier';
 
 export default defineConfig({
   plugins: [htmlMinify()],
+  build: {
+    target: 'esnext',
+  },
+  esbuild: {
+    treeShaking: true,
+  }
 });
 
 const htmlComponentFile = /\.component\.html\?inline$/;

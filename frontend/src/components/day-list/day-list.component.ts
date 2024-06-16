@@ -28,10 +28,23 @@ export default class DayListElement extends HTMLElement {
     if (header) {
       header.textContent = this.getAttribute('date') || '';
     }
-   this.EventData.forEach(element => {
+  }
+
+  static BuildElement(date: Date, events: EventData[]) {
+    const isToday = new Date().toDateString() === date.toDateString();
+    const dateString = date.toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    const item = new DayListElement();
+    item.setAttribute('date', dateString);
+    item.EventData = events;
+    if (isToday) {
+      item.classList.add('today');
+    }
+   events.forEach(element => {
       const eventItem = EventItem.BuildElement(element);
-      this.shadowRoot?.querySelector('.body')?.appendChild(eventItem);
+      eventItem.slot = 'body';
+      item.appendChild(eventItem);
     });
+    return item;
   }
 }
 

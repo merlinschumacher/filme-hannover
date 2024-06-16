@@ -5,16 +5,25 @@ import { EventData } from '../../models/EventData';
 import { SlotSpanFactory } from '../component-helpers';
 import { getShowTimeTypeString } from '../../models/ShowTimeType';
 import { getShowTimeLanguageString } from '../../models/ShowTimeLanguage';
+import { db } from '../../models/CinemaDb';
 
 const style = new CSSStyleSheet();
 style.replaceSync(css);
 const template = document.createElement('template');
 template.innerHTML = html;
 
+db.getAllCinemas().then(cinemas => {
+  cinemas.forEach(cinema => {
+    style.insertRule(
+      `.cinema-${cinema.id} { background-color: ${cinema.color}; }`
+    );
+  });
+});
+
 export default class EventItem extends HTMLElement {
 
   static get observedAttributes() {
-    return ['href', 'color'];
+    return ['href', 'dotClass'];
   }
 
   constructor() {
@@ -25,30 +34,28 @@ export default class EventItem extends HTMLElement {
   }
 
   connectedCallback() {
-    const dotElem = this.shadowRoot?.querySelector('.dot') as HTMLElement;
     const titleElem = this.shadowRoot?.querySelector('.title') as HTMLElement;
+    const dotElem = this.shadowRoot?.querySelector('.dot') as HTMLElement;
     if (titleElem && dotElem) {
-      dotElem.style.backgroundColor = this.getAttribute('color') || 'black';
       titleElem.setAttribute('href', this.getAttribute('href') || '#');
+      dotElem.classList.add(this.getAttribute('dotClass') || '');
     }
   }
 
   static BuildElement(event: EventData) {
-    const item = new EventItem();
-
-    const timeSpan = SlotSpanFactory(new Date(event.startTime).toLocaleTimeString([],{timeStyle: 'short'}), 'time');
+    const timeSpan = SlotSpanFactory(new Date(event.startTime).toLocaleTimeString([], { timeStyle: 'short' }), 'time');
     const titleSpan = SlotSpanFactory(event.displayName, 'title');
     const typeString = getShowTimeTypeString(event.type);
     const typeSpan = SlotSpanFactory(typeString, 'type');
     const languageString = getShowTimeLanguageString(event.language);
     const languageSpan = SlotSpanFactory(languageString, 'language');
-
+    const item = new EventItem();
+    item.setAttribute('href', event.url.toString());
+    item.setAttribute('dotClass', event.colorClass);
     item.appendChild(timeSpan);
     item.appendChild(titleSpan);
     item.appendChild(typeSpan);
     item.appendChild(languageSpan);
-    item.setAttribute('href', event.url.toString());
-    item.classList.add(event.colorClass);
     return item;
   }
 }

@@ -1,11 +1,31 @@
+:host(day-list) {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-self: stretch;
+  flex-direction: column;
+}
+
 .header {
   text-align: center;
   padding: .1em;
-  background-color: #f0f0f0;
-  border-bottom: 1px solid #000;
+  border-bottom: 1px solid var(--light-accent);
+  font-weight: bold;
 }
-
 .body {
-  padding: .1em .3em;
+  padding: .5em .5em;
+  flex: 1 1 0px;
 }
 
+.footer {
+  padding: .1em;
+  border-top: 1px solid var(--light-accent);
+}
+
+.footer:blank {
+  display: none;
+}
+
+:host(.today) .body{
+  background-color: var(--highlighted-day);
+}

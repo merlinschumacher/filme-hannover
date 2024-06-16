@@ -54,6 +54,10 @@ namespace kinohannover.Scrapers
             var doc = await HttpHelper.GetHtmlDocumentAsync(_dataUrl);
 
             var movieNodes = doc.DocumentNode.SelectNodes(_movieNodeSelector);
+            if (movieNodes is null)
+            {
+                return;
+            }
             foreach (var movieNode in movieNodes)
             {
                 var movie = await ProcessMovieAsync(movieNode);

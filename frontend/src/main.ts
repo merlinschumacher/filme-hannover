@@ -1,8 +1,12 @@
-import "@fontsource-variable/inter";
-import './style.css'
-import { db } from './models/CinemaDb'
+import "inter-ui/inter-variable-latin.css";
+import './style.css';
+import { db } from './models/CinemaDb';
 import DayListElement from './components/day-list/day-list.component';
-import DayListContainerElement from "./components/day-list-container/day-list-container.component";
+import { SwiperContainer, register } from "swiper/element";
+import { Grid, Keyboard } from "swiper/modules";
+import { SwiperOptions } from "swiper/types";
+import "swiper/element/css/grid";
+register();
 
 const daySizeMap = new Map<number, number>([
   [400, 1],
@@ -23,25 +27,44 @@ async function getVisibleDays() {
 }
 
 async function init() {
+  const swiperEl = document.querySelector('swiper-container')!;
+
   db.Init();
   const startDate = new Date();
   let endDate = new Date();
   const days = await getVisibleDays();
-  endDate = new Date(endDate.setDate(endDate.getDate() + days));
-
-  const app = document.querySelector<HTMLDivElement>('#app')!;
-
+  endDate = new Date(endDate.setDate(endDate.getDate() + (days * 2)));
   const eventDays = await db.getEventsForDateRangeSplitByDay(startDate, endDate);
-  const dayListContainer = new DayListContainerElement();
+  //const dayListContainer = new DayListContainerElement();
+  await initSwiper(swiperEl);
 
   eventDays.forEach((dayEvents, date) => {
-    const dayList = new DayListElement();
-    dayList.setAttribute('date', date);
-    dayList.slot = 'body';
-    dayList.EventData = dayEvents;
-    dayListContainer.appendChild(dayList);
+    const dayList = DayListElement.BuildElement(new Date(date), dayEvents);
+    const swiperSlide = document.createElement('swiper-slide');
+    swiperSlide.appendChild(dayList);
+    swiperEl.appendChild(swiperSlide);
+
   });
-  app.appendChild(dayListContainer);
+}
+
+async function initSwiper(swiperEl: SwiperContainer) {
+  const days = await getVisibleDays();
+  const swiperParams: SwiperOptions = {
+    modules: [Grid, Keyboard],
+    slidesPerView: days,
+    slidesPerGroup: days,
+    grid: {
+      rows: 1,
+      fill: 'column',
+    },
+    keyboard: {
+      enabled: true,
+    },
+
+  };
+  Object.assign(swiperEl, swiperParams);
+
+  swiperEl.initialize();
 }
 
 init().then(() => { });

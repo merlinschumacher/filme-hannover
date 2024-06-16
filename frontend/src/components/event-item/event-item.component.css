@@ -2,22 +2,31 @@
   padding-bottom: .2em;
   display: flex;
   gap: .5em;
+  font-size: .9em;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+a:hover {
+  text-decoration: underline;
 }
 
 .title {
   flex-grow: 1;
+  font-weight: bold;
 }
 
 .time {
-  font-weight: bold;
   font-variant-numeric: tabular-nums;
 }
 
 .dot {
   flex: 0 0 auto;
   border-radius: 50%;
-  background-color: #000;
-  margin-top: .2em;
-  height: 1em;
-  width: 1em;
+  margin-top: .4em;
+  height: .666em;
+  width: .666em;
 }

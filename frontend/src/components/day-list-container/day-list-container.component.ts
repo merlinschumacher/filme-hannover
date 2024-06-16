@@ -13,6 +13,18 @@ export default class DayListContainerElement extends HTMLElement {
     const shadow = this.attachShadow({ mode: 'open' });
     shadow.appendChild(template.content.cloneNode(true));
     shadow.adoptedStyleSheets = [style];
+    this.addEventListener('click', this.onClick);
+  }
+
+  onClick() {
+    console.log('clicked!');
+  }
+
+  connectedCallback() {
+  }
+
+  disconnectedCallback() {
+    this.removeEventListener('click', this.onClick);
   }
 }
 
