@@ -68,6 +68,7 @@ namespace kinohannover.Scrapers
         {
             _logger.LogInformation("Adding movie {Title}", movie.DisplayName);
             await Context.Movies.AddAsync(movie);
+            await Context.SaveChangesAsync();
             return movie;
         }
 

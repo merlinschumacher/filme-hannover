@@ -31,6 +31,7 @@ namespace kinohannover.Scrapers
                 {
                     DisplayName = record.Title,
                     Url = Cinema.Website,
+                    Cinemas = [Cinema],
                 };
 
                 movie = await CreateMovieAsync(movie);
@@ -45,6 +46,7 @@ namespace kinohannover.Scrapers
 
                 await CreateShowTimeAsync(showTime);
             }
+            await context.SaveChangesAsync();
         }
     }
 }
