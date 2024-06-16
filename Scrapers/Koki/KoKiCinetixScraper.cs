@@ -10,7 +10,7 @@ using TMDbLib.Client;
 
 namespace kinohannover.Scrapers
 {
-    public partial class KoKiScraper(KinohannoverContext context, ILogger<KoKiScraper> logger, TMDbClient tmdbClient) : ScraperBase(context, logger, tmdbClient, new()
+    public partial class KoKiCinetixScraper(KinohannoverContext context, ILogger<KoKiCinetixScraper> logger, TMDbClient tmdbClient) : ScraperBase(context, logger, tmdbClient, new()
     {
         DisplayName = "KoKi (Kino im Künstlerhaus)",
         Website = new("https://www.koki-hannover.de"),

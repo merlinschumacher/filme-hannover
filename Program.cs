@@ -47,7 +47,13 @@ await cleanupService.CleanupAsync();
 var scrapers = scope.ServiceProvider.GetServices<IScraper>().OrderByDescending(e => e.ReliableMetadata);
 foreach (var scraper in scrapers)
 {
-    await scraper.ScrapeAsync();
+    try
+    {
+        await scraper.ScrapeAsync();
+    }
+    catch (Exception e)
+    {
+    }
 }
 
 var renderers = scope.ServiceProvider.GetServices<IRenderer>();

@@ -22,6 +22,7 @@
         Japanese,
         Miscellaneous,
         Other,
+        Hindi,
     }
 
     public static class ShowTimeHelper
@@ -73,6 +74,9 @@
             { "Japanisch", ShowTimeLanguage.Japanese},
             { "Verschiedene", ShowTimeLanguage.Miscellaneous },
             { "Sonstige", ShowTimeLanguage.Other },
+            { "Hindi", ShowTimeLanguage.Hindi },
+            { "hin", ShowTimeLanguage.Hindi },
+            { "hind", ShowTimeLanguage.Hindi },
         };
 
         public static ShowTimeLanguage GetLanguage(string language)
