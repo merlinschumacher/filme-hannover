@@ -1,0 +1,23 @@
+:host {
+  padding-bottom: .2em;
+  display: flex;
+  gap: .5em;
+}
+
+.title {
+  flex-grow: 1;
+}
+
+.time {
+  font-weight: bold;
+  font-variant-numeric: tabular-nums;
+}
+
+.dot {
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background-color: #000;
+  margin-top: .2em;
+  height: 1em;
+  width: 1em;
+}

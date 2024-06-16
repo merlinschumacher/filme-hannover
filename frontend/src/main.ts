@@ -1,67 +1,47 @@
-// import 'sprucecss/css/spruce.min.css'
-
+import "@fontsource-variable/inter";
 import './style.css'
-import { cinemaDb } from './cinemaDb'
-import FilterButtonElement from './components/filterButtonElement';
-import { BuildSpanSlotElement } from './htmlTemplateHelpers';
-import EventItem from './components/eventItem/eventItem.component';
+import { db } from './models/CinemaDb'
+import DayListElement from './components/day-list/day-list.component';
+import DayListContainerElement from "./components/day-list-container/day-list-container.component";
 
-await cinemaDb.Init();
-var today = new Date();
-var tomorrow = new Date();
-tomorrow = new Date(tomorrow.setDate(tomorrow.getDate() + 1));
+const daySizeMap = new Map<number, number>([
+  [400, 1],
+  [600, 2],
+  [800, 3],
+  [1000, 4],
+  [1200, 5],
+]);
 
-cinemaDb.Init();
-const app = document.querySelector<HTMLDivElement>('#app')!;
-
-function getNextDay(today = new Date()) {
-    var tomorrow = new Date(today);
-    tomorrow = new Date(tomorrow.setDate(tomorrow.getDate() + 1));
-    return tomorrow;
-}
-const button = document.createElement('button');
-button.textContent = 'Refresh';
-button.onclick = async () => {
-
-
-    today = getNextDay(today);
-    const events = await cinemaDb.getAllEvents();
-const eventId= document.querySelector<HTMLDivElement>('#events')!;
-    eventId.innerHTML = '';
-   const dayList = document.createElement('day-list');
-   const header = BuildSpanSlotElement(today.toLocaleDateString(), 'header');
-    dayList.appendChild(header);
-   const eventListDiv = document.createElement('div');
-   eventListDiv.setAttribute('slot', 'body');
-
-   events.forEach(element => {
-    const eventListElement = new EventItem();
-    if (element.url !== undefined) {
-        eventListElement.setAttribute('href',element.url.toString());
+async function getVisibleDays() {
+  var width = window.innerWidth;
+  daySizeMap.forEach((value, key) => {
+    if (width < key) {
+      return value;
     }
-
-    const timeSpan = BuildSpanSlotElement(new Date(element.startTime).toLocaleTimeString(), 'time');
-    const typeSpan = BuildSpanSlotElement(element.type.toString(), 'type');
-    const languageSpan = BuildSpanSlotElement(element.language.toString(), 'language');
-
-    const titleSpan = BuildSpanSlotElement(element.displayName, 'title');
-
-    eventListElement.appendChild(timeSpan);
-    eventListElement.appendChild(titleSpan);
-    eventListElement.appendChild(typeSpan);
-    eventListElement.appendChild(languageSpan);
-
-    eventListElement.classList.add(element.colorClass);
-
-    eventListDiv.appendChild(eventListElement);
-   });
-    dayList.appendChild(eventListDiv);
-eventId.appendChild(dayList);
-
-
+  })
+  return 4;
 }
 
-app.appendChild(button);
-app.appendChild( new FilterButtonElement('Action'));
+async function init() {
+  db.Init();
+  const startDate = new Date();
+  let endDate = new Date();
+  const days = await getVisibleDays();
+  endDate = new Date(endDate.setDate(endDate.getDate() + days));
 
+  const app = document.querySelector<HTMLDivElement>('#app')!;
 
+  const eventDays = await db.getEventsForDateRangeSplitByDay(startDate, endDate);
+  const dayListContainer = new DayListContainerElement();
+
+  eventDays.forEach((dayEvents, date) => {
+    const dayList = new DayListElement();
+    dayList.setAttribute('date', date);
+    dayList.slot = 'body';
+    dayList.EventData = dayEvents;
+    dayListContainer.appendChild(dayList);
+  });
+  app.appendChild(dayListContainer);
+}
+
+init().then(() => { });

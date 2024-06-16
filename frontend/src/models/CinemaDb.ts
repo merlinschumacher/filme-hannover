@@ -1,8 +1,14 @@
 import Dexie, { type EntityTable } from 'dexie';
-import { JsonData, Configuration, Cinema, Movie, ShowTime, EventData } from './interfaces';
-
+import { ShowTime } from "./ShowTime";
+import { Movie } from "./Movie";
+import { Cinema } from "./Cinema";
+import { Configuration } from "./Configuration";
+import { JsonData } from "./JsonData";
+import { EventData } from "./EventData";
+import moment from 'moment';
 
 class HttpClient {
+    protected constructor() {}
 
     static async getData(url: string) {
         try {
@@ -45,7 +51,7 @@ class CinemaDb extends Dexie {
     cinemas!: EntityTable<Cinema, 'id'>;
     movies!: EntityTable<Movie, 'id'>;
     showTimes!: EntityTable<ShowTime, 'id'>;
-    private readonly dataVersionKey = 'dataVersion';
+    private readonly dataVersionKey: string = 'dataVersion';
     private readonly remoteDataUrl: string = '/data/data.json';
     private readonly remoteVersionDateUrl: string = '/data/data.json.update';
 
@@ -127,6 +133,21 @@ class CinemaDb extends Dexie {
         return this.getEventsForDateRange(date, endDate);
     }
 
+    // Splits events into days
+    async getEventsForDateRangeSplitByDay(startDate: Date, endDate: Date): Promise<Map<string, EventData[]>> {
+        const events = await this.getEventsForDateRange(startDate, endDate);
+        const eventsByDay = new Map<string, EventData[]>();
+
+        events.forEach(event => {
+            const day = new Date(new Date(event.startTime).setUTCHours(24,0,0,0)).toLocaleDateString([], {dateStyle: 'long'});
+            if (!eventsByDay.has(day)) {
+                eventsByDay.set(day, []);
+            }
+            eventsByDay.get(day)!.push(event);
+        });
+        return eventsByDay;
+    }
+
     async getEventsForDateRange(startDate: Date, endDate: Date): Promise<EventData[]> {
         const startDateString = startDate.toISOString();
         const endDateString = endDate.toISOString();
@@ -192,7 +213,7 @@ class CinemaDb extends Dexie {
     }
 }
 
-export const cinemaDb = new CinemaDb();
+export const db = new CinemaDb();
 
 // const dataUrlLastChange = new URL('/data.json.update');
 
