@@ -2,6 +2,7 @@ import html from './day-list.component.html?inline';
 import css from './day-list.component.css?inline';
 import { EventData } from "../../models/EventData";
 import EventItem from '../event-item/event-item.component';
+import { SlotSpanFactory } from '../component-helpers';
 
 const style = new CSSStyleSheet();
 style.replaceSync(css);
@@ -39,11 +40,20 @@ export default class DayListElement extends HTMLElement {
     if (isToday) {
       item.classList.add('today');
     }
-   events.forEach(element => {
+    let eventCumulativeDuration = 0;
+    events.forEach(element => {
       const eventItem = EventItem.BuildElement(element);
       eventItem.slot = 'body';
       item.appendChild(eventItem);
+      const runtime = element.runtime ?? 120;
+      eventCumulativeDuration = +runtime;
     });
+    const eventHours = eventCumulativeDuration / 60;
+    const footerText = `${events.length} Vorführungen, ca. ${eventHours.toString()} h`;
+    const footerSpan = SlotSpanFactory(footerText, 'footer');
+    footerSpan.slot = 'footer';
+    item.appendChild(footerSpan);
+
     return item;
   }
 }

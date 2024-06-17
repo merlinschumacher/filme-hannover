@@ -6,7 +6,7 @@ export interface EventData {
   startTime: Date;
   endTime: Date;
   displayName: string;
-  runtime: number | null;
+  runtime: number;
   cinema: string;
   colorClass: string;
   url: URL;
