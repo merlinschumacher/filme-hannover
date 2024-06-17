@@ -34,7 +34,7 @@ namespace kinohannover.Scrapers.AstorScraper
         {
             _logger = logger;
             _cinemaService = cinemaService;
-            _cinema = _cinemaService.CreateAsync(_cinema).Result;
+            _cinema = _cinemaService.Create(_cinema);
             _showTimeService = showTimeService;
             _movieService = movieService;
         }
@@ -66,23 +66,23 @@ namespace kinohannover.Scrapers.AstorScraper
 
         public async Task ScrapeAsync()
         {
-            var astorMovies = await GetMovieList();
+            var astorMovies = await GetMovieListAsync();
 
             foreach (var astorMovie in astorMovies)
             {
-                var movie = await ProcessMovie(astorMovie);
+                var movie = await ProcessMovieAsync(astorMovie);
                 foreach (var performance in astorMovie.performances)
                 {
                     // Skip performances that are not bookable and not reservable
                     if (performance is null || (!performance.bookable && !performance.reservable))
                         continue;
 
-                    await ProcessShowTime(movie, performance);
+                    await ProcessShowTimeAsync(movie, performance);
                 }
             }
         }
 
-        private async Task<Movie> ProcessMovie(AstorMovie astorMovie)
+        private async Task<Movie> ProcessMovieAsync(AstorMovie astorMovie)
         {
             var releaseYear = astorMovie.year;
             var title = astorMovie.name;
@@ -105,7 +105,7 @@ namespace kinohannover.Scrapers.AstorScraper
             return movie;
         }
 
-        private async Task ProcessShowTime(Movie movie, Performance performance)
+        private async Task ProcessShowTimeAsync(Movie movie, Performance performance)
         {
             var type = GetShowTimeType(performance);
             var language = ShowTimeHelper.GetLanguage(performance.language);
@@ -139,7 +139,7 @@ namespace kinohannover.Scrapers.AstorScraper
             return ShowTimeType.Regular;
         }
 
-        private async Task<IEnumerable<AstorMovie>> GetMovieList()
+        private async Task<IEnumerable<AstorMovie>> GetMovieListAsync()
         {
             IList<AstorMovie> astorMovies = [];
             try

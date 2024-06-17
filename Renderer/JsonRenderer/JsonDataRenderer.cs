@@ -36,8 +36,7 @@ namespace kinohannover.Renderer.JsonRenderer
         public int Cinema { get; init; }
         public ShowTimeLanguage Language { get; init; }
         public ShowTimeType Type { get; init; }
-
-        public Uri Url { get; init; }
+        public required Uri Url { get; init; }
     }
 
     public class JsonDataRenderer(KinohannoverContext context) : IRenderer

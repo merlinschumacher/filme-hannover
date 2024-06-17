@@ -1,22 +1,18 @@
-﻿using kinohannover.Services;
-using Microsoft.Extensions.Logging;
+﻿using kinohannover.Models;
+using kinohannover.Services;
 
 namespace kinohannover.Scrapers.FilmkunstKinos
 {
-    public class HochhausScraper : FilmkunstKinosScraper, IScraper
+    public class HochhausScraper(MovieService movieService, CinemaService cinemaService, ShowTimeService showTimeService) : FilmkunstKinosScraper(movieService, cinemaService, showTimeService, _cinema), IScraper
     {
-        public HochhausScraper(ILogger<HochhausScraper> logger, MovieService movieService, CinemaService cinemaService, ShowTimeService showTimeService) : base(logger, movieService, cinemaService, showTimeService)
+        private static readonly Cinema _cinema = new()
         {
-            _cinema = new()
-            {
-                DisplayName = "Hochhaus Lichtspiele",
-                Url = new("https://www.hochhaus-lichtspiele.de/pages/programm.php"),
-                ShopUrl = new("https://kinotickets.express/hannover-hls/movies"),
-                Color = "#ffc112",
-                HasShop = true,
-            };
-            _cinema = _cinemaService.CreateAsync(_cinema).Result;
-        }
+            DisplayName = "Hochhaus Lichtspiele",
+            Url = new("https://www.hochhaus-lichtspiele.de/pages/programm.php"),
+            ShopUrl = new("https://kinotickets.express/hannover-hls/movies"),
+            Color = "#ffc112",
+            HasShop = true,
+        };
 
         public bool ReliableMetadata => false;
     }

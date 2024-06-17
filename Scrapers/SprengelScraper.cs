@@ -32,17 +32,17 @@ namespace kinohannover.Scrapers
         {
             _logger = logger;
             _cinemaService = cinemaService;
-            _cinema = _cinemaService.CreateAsync(_cinema).Result;
+            _cinema = _cinemaService.Create(_cinema);
             _showTimeService = showTimeService;
             _movieService = movieService;
         }
 
         public async Task ScrapeAsync()
         {
-            var icalUris = await GetICalUris();
+            var icalUris = await GetICalUrisAsync();
             foreach (var icalUri in icalUris)
             {
-                var calendar = await GetCalendar(icalUri);
+                var calendar = await GetCalendarAsync(icalUri);
                 if (calendar is null) continue;
 
                 foreach (var calendarEvent in calendar.Events)
@@ -50,12 +50,12 @@ namespace kinohannover.Scrapers
                     var showDateTime = calendarEvent.Start.AsSystemLocal;
                     var movie = await ProcessMovieAsync(calendarEvent);
 
-                    await ProcessShowTime(showDateTime, movie);
+                    await ProcessShowTimeAsync(showDateTime, movie);
                 }
             }
         }
 
-        private async Task ProcessShowTime(DateTime showDateTime, Movie movie)
+        private async Task ProcessShowTimeAsync(DateTime showDateTime, Movie movie)
         {
             var showTime = new ShowTime()
             {
@@ -80,7 +80,7 @@ namespace kinohannover.Scrapers
             return movie;
         }
 
-        private async Task<Calendar?> GetCalendar(Uri icalUri)
+        private async Task<Calendar?> GetCalendarAsync(Uri icalUri)
         {
             try
             {
@@ -94,7 +94,7 @@ namespace kinohannover.Scrapers
             return null;
         }
 
-        private async Task<IEnumerable<Uri>> GetICalUris()
+        private async Task<IEnumerable<Uri>> GetICalUrisAsync()
         {
             var content = new StringContent(_postData, Encoding.UTF8, "application/x-www-form-urlencoded");
             var doc = await HttpHelper.GetHtmlDocumentAsync(_dataUrl, content);

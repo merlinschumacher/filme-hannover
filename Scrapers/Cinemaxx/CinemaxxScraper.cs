@@ -1,7 +1,6 @@
 ﻿using kinohannover.Helpers;
 using kinohannover.Models;
 using kinohannover.Services;
-using Microsoft.Extensions.Logging;
 using System.Globalization;
 
 namespace kinohannover.Scrapers.Cinemaxx
@@ -25,16 +24,14 @@ namespace kinohannover.Scrapers.Cinemaxx
         private readonly List<string> _specialEventTitles = ["Maxxi Mornings:", "Mini Mornings:", "Sharkweek:", "Shark Week:"];
         private readonly Uri _weeklyProgramDataUrl = GetScraperUrl("jetzt-im-kino");
         private readonly Uri _presaleDataUrl = GetScraperUrl("Vorverkauf");
-        private readonly ILogger<CinemaxxScraper> _logger;
         private readonly CinemaService _cinemaService;
         private readonly ShowTimeService _showTimeService;
         private readonly MovieService _movieService;
 
-        public CinemaxxScraper(ILogger<CinemaxxScraper> logger, MovieService movieService, ShowTimeService showTimeService, CinemaService cinemaService)
+        public CinemaxxScraper(MovieService movieService, ShowTimeService showTimeService, CinemaService cinemaService)
         {
-            _logger = logger;
             _cinemaService = cinemaService;
-            _cinema = _cinemaService.CreateAsync(_cinema).Result;
+            _cinema = _cinemaService.Create(_cinema);
             _showTimeService = showTimeService;
             _movieService = movieService;
         }

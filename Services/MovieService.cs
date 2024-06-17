@@ -18,16 +18,16 @@ namespace kinohannover.Services
         public async Task<Movie> CreateAsync(Movie movie)
         {
             // Check if the movie is already in the database
-            var existingMovie = await FindMovie(movie);
+            var existingMovie = await FindMovieAsync(movie);
             if (existingMovie is not null)
             {
                 return existingMovie;
             }
             // If it's not in the database, query TMDb
-            movie = await QueryTmdb(movie);
+            movie = await QueryTmdbAsync(movie);
 
             // If we found a match in TMDb, check again if the movie is in the database
-            existingMovie = await FindMovie(movie);
+            existingMovie = await FindMovieAsync(movie);
             if (existingMovie is not null)
             {
                 return existingMovie;
@@ -46,7 +46,7 @@ namespace kinohannover.Services
             return movie;
         }
 
-        private async Task<Movie?> FindMovie(Movie movie)
+        private async Task<Movie?> FindMovieAsync(Movie movie)
         {
             var query = context.Movies.Include(m => m.Cinemas).Include(e => e.Aliases).AsQueryable();
 
@@ -82,7 +82,7 @@ namespace kinohannover.Services
             return similiarMovies.OrderByDescending(e => e.Value).FirstOrDefault().Key;
         }
 
-        private async Task<Movie> QueryTmdb(Movie movie, bool guessHarder = true)
+        private async Task<Movie> QueryTmdbAsync(Movie movie, bool guessHarder = true)
         {
             try
             {

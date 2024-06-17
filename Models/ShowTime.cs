@@ -44,7 +44,7 @@
 
         public override string ToString()
         {
-            return $"{Movie} at {StartTime.ToString("u")} at {Cinema}";
+            return $"{Movie} at {StartTime:u} at {Cinema}";
         }
     }
 }

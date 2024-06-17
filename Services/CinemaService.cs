@@ -1,6 +1,5 @@
 ﻿using kinohannover.Data;
 using kinohannover.Models;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace kinohannover.Services
@@ -24,9 +23,9 @@ namespace kinohannover.Services
             await context.SaveChangesAsync();
         }
 
-        public async Task<Cinema> CreateAsync(Cinema cinema)
+        public Cinema Create(Cinema cinema)
         {
-            var existingCinema = await context.Cinema.FirstOrDefaultAsync(c => c.DisplayName == cinema.DisplayName);
+            var existingCinema = context.Cinema.FirstOrDefault(c => c.DisplayName == cinema.DisplayName);
 
             if (existingCinema is not null)
             {
@@ -35,10 +34,10 @@ namespace kinohannover.Services
             else
             {
                 logger.LogInformation("Creating cinema {Cinema}", cinema);
-                await context.Cinema.AddAsync(cinema);
+                context.Cinema.Add(cinema);
             }
 
-            await context.SaveChangesAsync();
+            context.SaveChanges();
             return cinema;
         }
     }

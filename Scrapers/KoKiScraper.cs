@@ -2,7 +2,6 @@
 using kinohannover.Helpers;
 using kinohannover.Models;
 using kinohannover.Services;
-using Microsoft.Extensions.Logging;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Web;
@@ -22,7 +21,6 @@ namespace kinohannover.Scrapers
 
         private readonly Uri _dataUrl = new("https://booking.cinetixx.de/Program?cinemaId=2995877579");
         private readonly Uri _shopUrlBase = new("https://booking.cinetixx.de/frontend/#/movie/2995877579/");
-        private readonly ILogger<KoKiScraper> _logger;
         private readonly CinemaService _cinemaService;
         private readonly ShowTimeService _showTimeService;
         private readonly MovieService _movieService;
@@ -38,11 +36,10 @@ namespace kinohannover.Scrapers
         private const string _eventTimeNodeSelector = ".//td[contains(@class, 'date-picker-shows')]";
         private const string _spanNodeSelector = ".//span";
 
-        public KoKiScraper(ILogger<KoKiScraper> logger, MovieService movieService, ShowTimeService showTimeService, CinemaService cinemaService)
+        public KoKiScraper(MovieService movieService, ShowTimeService showTimeService, CinemaService cinemaService)
         {
-            _logger = logger;
             _cinemaService = cinemaService;
-            _cinema = _cinemaService.CreateAsync(_cinema).Result;
+            _cinema = _cinemaService.Create(_cinema);
             _showTimeService = showTimeService;
             _movieService = movieService;
         }

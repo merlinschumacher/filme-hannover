@@ -3,7 +3,6 @@ using kinohannover.Extensions;
 using kinohannover.Helpers;
 using kinohannover.Models;
 using kinohannover.Services;
-using Microsoft.Extensions.Logging;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
@@ -25,7 +24,6 @@ namespace kinohannover.Scrapers.FilmkunstKinos
         private readonly List<string> _specialEventTitles = ["MonGay-Filmnacht", "WoMonGay"];
         private readonly ShowTimeService _showTimeService;
         private readonly MovieService _movieService;
-        private readonly ILogger<ApolloScraper> _logger;
         private readonly CinemaService _cinemaService;
         private const string _titleRegexString = @"^(.*) [-––\u0096] (.*\.?) (OmU|OV).*$";
         private const string _dateFormat = "dd.MM.yyyy";
@@ -34,11 +32,10 @@ namespace kinohannover.Scrapers.FilmkunstKinos
         private const string _tableDataNodesSelector = ".//td";
         private const string _linkNodeSelector = ".//a";
 
-        public ApolloScraper(ILogger<ApolloScraper> logger, MovieService movieService, CinemaService cinemaService, ShowTimeService showTimeService)
+        public ApolloScraper(MovieService movieService, CinemaService cinemaService, ShowTimeService showTimeService)
         {
-            _logger = logger;
             _cinemaService = cinemaService;
-            _cinema = _cinemaService.CreateAsync(_cinema).Result;
+            _cinema = _cinemaService.Create(_cinema);
             _showTimeService = showTimeService;
             _movieService = movieService;
         }

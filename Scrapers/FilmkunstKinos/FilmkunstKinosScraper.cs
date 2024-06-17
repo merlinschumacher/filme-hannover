@@ -2,15 +2,14 @@
 using kinohannover.Helpers;
 using kinohannover.Models;
 using kinohannover.Services;
-using Microsoft.Extensions.Logging;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace kinohannover.Scrapers.FilmkunstKinos
 {
-    public abstract partial class FilmkunstKinosScraper(ILogger<FilmkunstKinosScraper> logger, MovieService movieService, CinemaService cinemaService, ShowTimeService showTimeService)
+    public abstract partial class FilmkunstKinosScraper(MovieService movieService, CinemaService cinemaService, ShowTimeService showTimeService, Cinema cinema)
     {
-        protected Cinema _cinema;
+        private readonly Cinema _cinema = cinemaService.Create(cinema);
         private const string _contentBoxSelector = "//div[contains(concat(' ', normalize-space(@class), ' '), ' contentbox ')]";
         private const string _movieSelector = ".//table";
         private const string _titleSelector = ".//h3";
@@ -29,17 +28,17 @@ namespace kinohannover.Scrapers.FilmkunstKinos
             foreach (var movieNode in contentBox.SelectNodes(_movieSelector))
             {
                 if (movieNode is null) continue;
-                var (movie, type, language) = await ProcessMovie(movieNode);
+                var (movie, type, language) = await ProcessMovieAsync(movieNode);
 
                 foreach (var filmTagNode in movieNode.SelectNodes(_filmTagSelector))
                 {
                     if (filmTagNode is null) continue;
-                    await ProcessShowTimes(filmTagNode, movie, type, language);
+                    await ProcessShowTimesAsync(filmTagNode, movie, type, language);
                 }
             }
         }
 
-        private async Task<(Movie, ShowTimeType, ShowTimeLanguage)> ProcessMovie(HtmlNode movieNode)
+        private async Task<(Movie, ShowTimeType, ShowTimeLanguage)> ProcessMovieAsync(HtmlNode movieNode)
         {
             var title = movieNode.SelectSingleNode(_titleSelector).InnerText;
             var movieUriString = movieNode.SelectSingleNode(_titleSelector).SelectSingleNode(_aElemeSelector).GetAttributeValue("href", "");
@@ -66,7 +65,7 @@ namespace kinohannover.Scrapers.FilmkunstKinos
             return (movie, type, language);
         }
 
-        private async Task ProcessShowTimes(HtmlNode filmTagNode, Movie movie, ShowTimeType type, ShowTimeLanguage language)
+        private async Task ProcessShowTimesAsync(HtmlNode filmTagNode, Movie movie, ShowTimeType type, ShowTimeLanguage language)
         {
             var dateString = filmTagNode.SelectSingleNode(_dateSelector).InnerText;
             var date = DateOnly.ParseExact(dateString, _dateFormat, CultureInfo.CurrentCulture);

@@ -6,7 +6,7 @@
 
         public required string Value { get; set; }
 
-        public Movie Movie { get; set; }
+        public Movie Movie { get; set; } = null!;
 
         public override string ToString() => Value;
 

@@ -6,7 +6,6 @@ namespace kinohannover.Helpers
 {
     internal static partial class MovieTitleHelper
     {
-        private static readonly char[] _delimiterCharacters = [':', '(', ')', '[', ']', '{', '}', '<', '>', '|', '/', '\\', '!', '?', '.', ',', ';', ' ', '\t', '\n', '\r'];
         private const string _translationConst = "Translation";
 
         public static string DetermineMovieTitle(string title, TMDbLib.Objects.Movies.Movie tmdbMovieDetails, bool guessHarder = true)
@@ -70,11 +69,7 @@ namespace kinohannover.Helpers
             }
 
             tmdbTitle = tmdbMovieDetails.AlternativeTitles.Titles.Find(e => e.Title.NormalizeDashes().DistancePercentageFrom(title) > 0.9)?.Title;
-            if (tmdbTitle is not null)
-            {
-                return tmdbTitle;
-            }
-            return GetAlternativeTitle(tmdbMovieDetails, "EN");
+            return tmdbTitle ?? GetAlternativeTitle(tmdbMovieDetails, "EN");
         }
 
         public static string NormalizeTitle(string title)
