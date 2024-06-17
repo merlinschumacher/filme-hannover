@@ -10,8 +10,8 @@ export function getShowTimeTypeString(showTimeType: ShowTimeType): string {
     case ShowTimeType.Regular:
       return '';
     case ShowTimeType.OriginalVersion:
-      return '(OV)';
+      return 'OV';
     case ShowTimeType.Subtitled:
-      return '(OmU)';
+      return 'OmU';
   }
 }

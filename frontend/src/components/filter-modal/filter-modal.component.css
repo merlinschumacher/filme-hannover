@@ -1,0 +1,18 @@
+button {
+  appearance: none;
+  margin: 0;
+  padding: 1em 0.5em;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: center;
+  border: 2px solid var(--dark-accent);
+  border-radius: 2px;
+  font-family: var(--font-family);
+  transition: background 0.1s, color 0.1s;
+}
+
+button:hover {
+  background: var(--dark-accent);
+  color: white;
+}

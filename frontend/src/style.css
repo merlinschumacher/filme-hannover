@@ -1,6 +1,8 @@
 :root {
   --light-accent: #ddd;
+  --dark-accent: #707070;
   --highlighted-day: #fffadf;
+  --font-family: "Inter", "Inter Variable", "InterVariable", "Helvetica Neue", "Roboto", "Arial" , sans-serif;
 }
 
 /* Box sizing rules */
@@ -33,9 +35,6 @@ ol[role='list'] {
 body {
   min-height: 100vh;
   line-height: 1.5;
-  font-family: "Inter Variable", "Helvetica Neue", "Roboto", "Arial" , sans-serif;
-  font-size: 13px;
-  padding: 1em;
   margin: 0;
 }
 
@@ -105,4 +104,10 @@ swiper-slide {
   border: 1px solid var(--light-accent);
   align-self: stretch;
   height: auto;
+}
+
+body {
+  font-family: var(--font-family);
+  font-size: 13px;
+  padding: 1em;
 }

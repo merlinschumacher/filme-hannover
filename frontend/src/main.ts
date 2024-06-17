@@ -6,6 +6,7 @@ import { SwiperContainer, register } from "swiper/element";
 import { Grid, Keyboard } from "swiper/modules";
 import { SwiperOptions } from "swiper/types";
 import "swiper/element/css/grid";
+import FilterModal from "./components/filter-modal/filter-modal.component";
 register();
 
 const daySizeMap = new Map<number, number>([
@@ -30,12 +31,16 @@ async function init() {
   const swiperEl = document.querySelector('swiper-container')!;
 
   db.Init();
+  const app = document.querySelector('#app-root')!;
+  const filterEl = new FilterModal();
+  app.prepend(filterEl);
+
+
   const startDate = new Date();
   let endDate = new Date();
   const days = await getVisibleDays();
   endDate = new Date(endDate.setDate(endDate.getDate() + (days * 2)));
   const eventDays = await db.getEventsForDateRangeSplitByDay(startDate, endDate);
-  //const dayListContainer = new DayListContainerElement();
   await initSwiper(swiperEl);
 
   eventDays.forEach((dayEvents, date) => {
@@ -43,7 +48,6 @@ async function init() {
     const swiperSlide = document.createElement('swiper-slide');
     swiperSlide.appendChild(dayList);
     swiperEl.appendChild(swiperSlide);
-
   });
 }
 
@@ -65,6 +69,10 @@ async function initSwiper(swiperEl: SwiperContainer) {
   Object.assign(swiperEl, swiperParams);
 
   swiperEl.initialize();
+}
+
+async function initFilter(filterEl: FilterModal) {
+
 }
 
 init().then(() => { });

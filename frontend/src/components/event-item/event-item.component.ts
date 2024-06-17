@@ -42,20 +42,35 @@ export default class EventItem extends HTMLElement {
     }
   }
 
+  private static BuildSuffixString(type: string, language: string) {
+    if (!type && !language) {
+      return ''
+    }
+    let suffix = type;
+    if (suffix && language) {
+      suffix += ',\xa0';
+    };
+    if (language) {
+      suffix += language;
+    }
+    return '(' + suffix + ')';
+  }
+
   static BuildElement(event: EventData) {
     const timeSpan = SlotSpanFactory(new Date(event.startTime).toLocaleTimeString([], { timeStyle: 'short' }), 'time');
     const titleSpan = SlotSpanFactory(event.displayName, 'title');
     const typeString = getShowTimeTypeString(event.type);
-    const typeSpan = SlotSpanFactory(typeString, 'type');
     const languageString = getShowTimeLanguageString(event.language);
-    const languageSpan = SlotSpanFactory(languageString, 'language');
+    const suffixString = EventItem.BuildSuffixString(typeString, languageString);
+
+    const suffixSpan = SlotSpanFactory(suffixString, 'suffix');
+
     const item = new EventItem();
     item.setAttribute('href', event.url.toString());
     item.setAttribute('dotClass', event.colorClass);
     item.appendChild(timeSpan);
     item.appendChild(titleSpan);
-    item.appendChild(typeSpan);
-    item.appendChild(languageSpan);
+    item.appendChild(suffixSpan);
     return item;
   }
 }
