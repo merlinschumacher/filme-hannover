@@ -24,7 +24,7 @@ namespace kinohannover.Renderer.JsonRenderer
         public DateTime? ReleaseDate { get; init; }
         public IEnumerable<int> Cinemas { get; init; } = [];
 
-        public TimeSpan? Runtime { get; init; }
+        public double Runtime { get; init; } = 120;
     }
 
     public record ShowTimeDto
@@ -68,7 +68,7 @@ namespace kinohannover.Renderer.JsonRenderer
                     DisplayName = m.DisplayName,
                     ReleaseDate = m.ReleaseDate,
                     Cinemas = m.Cinemas.Select(c => c.Id),
-                    Runtime = m.Runtime
+                    Runtime = m.Runtime.GetValueOrDefault(Constants.AverageMovieRuntime).TotalMinutes,
                 }),
                 ShowTimes = context.ShowTime.OrderBy(e => e.StartTime).Select(s => new ShowTimeDto
                 {

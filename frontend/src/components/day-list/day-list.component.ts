@@ -40,16 +40,18 @@ export default class DayListElement extends HTMLElement {
     if (isToday) {
       item.classList.add('today');
     }
-    let eventCumulativeDuration = 0;
+    let eventCumulativeDuration: number = 0;
+    let eventElements: EventItem[] = [];
     events.forEach(element => {
       const eventItem = EventItem.BuildElement(element);
       eventItem.slot = 'body';
-      item.appendChild(eventItem);
       const runtime = element.runtime ?? 120;
-      eventCumulativeDuration = +runtime;
+      eventCumulativeDuration += +runtime;
+      eventElements.push(eventItem);
     });
-    const eventHours = eventCumulativeDuration / 60;
-    const footerText = `${events.length} Vorführungen, ca. ${eventHours.toString()} h`;
+    item.append(...eventElements);
+    let eventHours = eventCumulativeDuration / 60;
+    const footerText = `${events.length} Vorführungen, ca. ${eventHours.toFixed(0)} h`;
     const footerSpan = SlotSpanFactory(footerText, 'footer');
     footerSpan.slot = 'footer';
     item.appendChild(footerSpan);

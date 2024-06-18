@@ -8,11 +8,31 @@ button {
   text-align: center;
   border: 2px solid var(--dark-accent);
   border-radius: 2px;
-  font-family: var(--font-family);
   transition: background 0.1s, color 0.1s;
 }
 
 button:hover {
   background: var(--dark-accent);
   color: white;
+}
+
+
+.cinema-selection-input {
+  appearance: none;
+}
+.cinema-selection-input+label {
+  padding: .5em 1em;
+  border: 2px solid var(--light-accent);
+  border-radius: 5px;
+  user-select: none;
+  cursor: pointer;
+  transition: background 0.1s, border 0.1s;
+}
+.cinema-selection-input+label:hover {
+  background-color: #f0f0f0;
+
+}
+.cinema-selection-input:checked+label {
+  background-color: #adb4f2;
+  box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.2);
 }
