@@ -31,9 +31,12 @@ async function init() {
   const swiperEl = document.querySelector('swiper-container')!;
 
   db.Init();
+
+  const updateEl = document.querySelector('#lastUpdate');
+  updateEl!.textContent = db.dataVersionDate.toLocaleString();
+
   const app = document.querySelector('#app-root')!;
-  const filterEl = new FilterModal();
-  app.prepend(filterEl);
+  initFilter();
 
 
   const startDate = new Date();
@@ -64,14 +67,22 @@ async function initSwiper(swiperEl: SwiperContainer) {
     keyboard: {
       enabled: true,
     },
-
   };
   Object.assign(swiperEl, swiperParams);
 
   swiperEl.initialize();
 }
 
-async function initFilter(filterEl: FilterModal) {
+async function initFilter() {
+  const cinemas = await db.getAllCinemas();
+  const movies = await db.getAllMoviesOrderedByShowTimeCount();
+  const filterModal = FilterModal.BuildElement(cinemas, movies);
+  const app = document.querySelector('#app-root')!;
+  app.prepend(filterModal);
+
+
+
+
 
 }
 

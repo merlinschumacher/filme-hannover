@@ -33,12 +33,19 @@ export default class DayListElement extends HTMLElement {
 
   static BuildElement(date: Date, events: EventData[]) {
     const isToday = new Date().toDateString() === date.toDateString();
+    const isSundayOrHoliday = date.getDay() === 0;
     const dateString = date.toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
     const item = new DayListElement();
     item.setAttribute('date', dateString);
     item.EventData = events;
     if (isToday) {
       item.classList.add('today');
+    }
+    if (isSundayOrHoliday) {
+      item.classList.add('sunday');
+    }
+    if (date.getDay() === 6) {
+      item.classList.add('saturday');
     }
     let eventCumulativeDuration: number = 0;
     let eventElements: EventItem[] = [];

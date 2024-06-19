@@ -1,7 +1,11 @@
 :root {
   --light-accent: #ddd;
   --dark-accent: #707070;
-  --highlighted-day: #fffadf;
+  --highlighted-color: #fffadf;
+  --background-lightblue: #f0ffff;
+  --background-mediumblue: #E3F5FF;
+  --background-mediumblue2: #d5ebff;
+  --light-text: #626262;
   --font-family: "Inter", "Inter Variable", "InterVariable", "Helvetica Neue", "Roboto", "Arial" , sans-serif;
 }
 
@@ -110,4 +114,8 @@ body {
   font-family: var(--font-family);
   font-size: 13px;
   padding: 1em;
+}
+
+swiper-container {
+  margin-top: 2em;
 }
