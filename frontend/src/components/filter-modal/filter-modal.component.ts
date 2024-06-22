@@ -29,6 +29,7 @@ export default class FilterModal extends HTMLElement {
         cinemaButton.setAttribute('label', cinema.displayName);
         cinemaButton.setAttribute('value', cinema.id.toString());
         cinemaButton.setAttribute('color', cinema.color);
+        cinemaButton.setAttribute('checked', '');
         this.append(cinemaButton);
       });
 

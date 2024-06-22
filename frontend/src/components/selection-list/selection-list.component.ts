@@ -1,6 +1,7 @@
 import html from './selection-list.component.html?inline';
 import css from './selection-list.component.css?inline';
 import { Movie } from '../../models/Movie';
+import CheckableButtonElement from '../checkable-button/checkable-button.component';
 
 const style = new CSSStyleSheet();
 style.replaceSync(css);
@@ -19,20 +20,19 @@ export default class SelectionListElement extends HTMLElement {
   }
 
   connectedCallback() {
-      var options: HTMLOptionElement[] = [];
-      this.Movies.forEach(movie => {
-        const movieOption = document.createElement('option');
-        movieOption.textContent = movie.displayName;
-        movieOption.value = movie.id.toString();
-        options.push(movieOption);
-      });
-      var select = this.shadowRoot?.querySelector('select') as HTMLSelectElement;
-      select.append(...options);
   }
 
   public static BuildElement(movies: Movie[]): SelectionListElement {
     var item = new SelectionListElement();
-    item.Movies = movies;
+    var options: CheckableButtonElement[] = [];
+      movies.forEach(movie => {
+        const movieButton = new CheckableButtonElement();
+        movieButton.slot = 'selection-list';
+        movieButton.setAttribute('label', movie.displayName);
+        movieButton.setAttribute('value', movie.id.toString());
+        options.push(movieButton);
+      });
+      item.append(...options);
     return item;
   }
 }

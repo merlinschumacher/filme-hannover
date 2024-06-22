@@ -9,7 +9,31 @@ template.innerHTML = html;
 export default class CheckableButtonElement extends HTMLElement {
 
   static get observedAttributes() {
-    return ['label', 'value', 'color'];
+    return ['label', 'value', 'color', 'checked'];
+  }
+
+  public value: string = '';
+  public label: string = '';
+  public checked: boolean = false;
+  public color: string = '#000000';
+
+  private updateStyle() {
+    this.label = this.getAttribute('label') || '';
+    this.color = this.getAttribute('color') || '';
+    if (this.hasAttribute('checked')) {
+      this.checked = true;
+    } else {
+      this.checked = false;
+    }
+    const labelEl = this.shadowRoot?.querySelector('label') as HTMLLabelElement;
+    labelEl.textContent = this.label;
+    labelEl.style.borderColor = this.color;
+    const input = this.shadowRoot?.querySelector('input') as HTMLInputElement;
+    input.setAttribute('value', this.label);
+  }
+
+  attributeChangedCallback(name: string, oldValue: string, newValue: string) {
+    this.updateStyle();
   }
 
   constructor() {
@@ -20,9 +44,18 @@ export default class CheckableButtonElement extends HTMLElement {
   }
 
   connectedCallback() {
-    const input = this.shadowRoot?.querySelector('label') as HTMLElement;
-      input.textContent = this.getAttribute('label') || '';
-      input.style.borderColor = this.getAttribute('color') || '';
+    this.updateStyle();
+    const input = this.shadowRoot?.querySelector('input') as HTMLInputElement;
+    if (this.checked) {
+      input.setAttribute('checked', '');
+    }
+    input.addEventListener('change', (e) => {
+      if (e.target instanceof HTMLInputElement && !e.target.checked) {
+        this.removeAttribute('checked');
+      } else {
+        this.setAttribute('checked', '');
+      }
+    });
   }
 
 }

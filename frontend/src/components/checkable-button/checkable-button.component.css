@@ -15,8 +15,7 @@
   font-weight: 500;
 }
 .cinema-selection-input+label:hover {
-  background-color: var(--background-lightblue);
-
+  background-color: var(--light-accent);
 }
 .cinema-selection-input:checked+label {
   background-color: var(--background-mediumblue);
