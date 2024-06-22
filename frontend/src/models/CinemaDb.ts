@@ -101,7 +101,7 @@ class CinemaDb extends Dexie {
   }
 
   async getAllCinemas(): Promise<Cinema[]> {
-    return this.cinemas.toArray();
+    return this.cinemas.orderBy('displayName').toArray();
   }
 
   async getAllMovies(): Promise<Movie[]> {

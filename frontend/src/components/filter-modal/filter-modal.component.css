@@ -1,22 +1,17 @@
-button {
-  appearance: none;
-  margin: 0;
-  padding: 1em 0.5em;
-  border: none;
-  background: none;
-  cursor: pointer;
-  text-align: center;
-  border: 2px solid var(--dark-accent);
-  border-radius: 2px;
-  transition: background 0.1s, color 0.1s;
-}
-
-button:hover {
-  background: var(--dark-accent);
-  color: white;
-}
-
 .cinema-selection {
   display: flex;
-  gap: 0.5em;
+  flex-wrap: wrap;
+  gap: 2%;
+}
+
+.cinema-selection,
+.movie-selection,
+.date-selection {
+  margin-bottom: 1em;
+}
+h4 {
+  margin-bottom: 0.5em;
+  font-weight: 700;
+  display: block;
+  width: 100%;
 }

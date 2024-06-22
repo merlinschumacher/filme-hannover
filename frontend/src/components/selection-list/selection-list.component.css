@@ -1,0 +1,42 @@
+label {
+  display: block;
+  margin-bottom: 0.5em;
+  font-weight: 700;
+}
+
+select {
+  display: block;
+  appearance: none;
+  padding: .5em;
+  border: 2px solid var(--dark-accent);
+  border-radius: 5px;
+  user-select: none;
+  cursor: pointer;
+  transition: background 0.1s, border 0.1s;
+  font-weight: 700;
+  outline: none;
+  width: 100%;
+  font-size: initial;
+}
+:host {
+  display: inline-block;
+  width: 100%;
+}
+
+:host::after {
+  content: "▼";
+  margin: -2em;
+}
+
+select > option {
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: fit-content;
+}
+
+select > option:checked {
+  font-weight: 700;
+  background-color: var(--background-mediumblue);
+}
