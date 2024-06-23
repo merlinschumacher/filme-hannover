@@ -18,21 +18,33 @@ export default class CheckableButtonElement extends HTMLElement {
   public color: string = '#000000';
 
   private updateStyle() {
-    this.label = this.getAttribute('label') || '';
-    this.color = this.getAttribute('color') || '';
-    if (this.hasAttribute('checked')) {
-      this.checked = true;
-    } else {
-      this.checked = false;
-    }
     const labelEl = this.shadowRoot?.querySelector('label') as HTMLLabelElement;
     labelEl.textContent = this.label;
     labelEl.style.borderColor = this.color;
     const input = this.shadowRoot?.querySelector('input') as HTMLInputElement;
-    input.setAttribute('value', this.label);
+    input.setAttribute('value', this.value);
+    if (this.checked) {
+      input.setAttribute('checked', '');
+    } else {
+      input.removeAttribute('checked');
+    }
   }
 
   attributeChangedCallback(name: string, oldValue: string, newValue: string) {
+    switch (name) {
+      case 'label':
+          this.label = newValue || '';
+        break;
+      case 'value':
+        this.value = newValue || '';
+        break;
+      case 'color':
+        this.color = newValue || '';
+        break;
+      case 'checked':
+        this.checked = newValue !== null;
+        break;
+    }
     this.updateStyle();
   }
 
