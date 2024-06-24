@@ -12,12 +12,14 @@ export default class SelectionListElement extends HTMLElement {
 
   public Movies: Movie[] = [];
   public SelectedMovies: Movie[] = [];
+  private allMoviesButton: CheckableButtonElement;
 
   constructor() {
     super();
     const shadow = this.attachShadow({ mode: 'open' });
     shadow.appendChild(template.content.cloneNode(true));
     shadow.adoptedStyleSheets = [style];
+    this.allMoviesButton = this.buildAllMoviesButton();
   }
   private buildMovieButtons(movies: Movie[]): CheckableButtonElement[] {
     var options: CheckableButtonElement[] = [];
@@ -26,9 +28,16 @@ export default class SelectionListElement extends HTMLElement {
       movieButton.slot = 'selection-list';
       movieButton.setAttribute('label', movie.displayName);
       movieButton.setAttribute('value', movie.id.toString());
+      movieButton.addEventListener('click', (e: MouseEvent) => this.uncheckAllMoviesButton(e, this.allMoviesButton));
       options.push(movieButton);
     });
     return options;
+  }
+
+  private uncheckAllMoviesButton(e: MouseEvent, btn: CheckableButtonElement) {
+    if (e.target instanceof CheckableButtonElement && !e.target.checked) {
+      btn.removeAttribute('checked');
+    }
   }
 
   private buildAllMoviesButton(): CheckableButtonElement {
@@ -43,26 +52,19 @@ export default class SelectionListElement extends HTMLElement {
 
   connectedCallback() {
     var options: CheckableButtonElement[] = [];
-    var allAllMoviesButton = this.buildAllMoviesButton();
-    options.push(allAllMoviesButton);
     var movieButtons = this.buildMovieButtons(this.Movies);
+    this.allMoviesButton.addEventListener('click', (e: MouseEvent) => this.uncheckMovieButtons(e, movieButtons), false);
+    options.push(this.allMoviesButton);
     options.push(...movieButtons);
     this.append(...options);
-    options.forEach(option => {
-      option.addEventListener('click', (e) => {
-        if (e.target instanceof CheckableButtonElement && !e.target.checked) {
-          if (e.target.value === '0') {
-            this.querySelectorAll('checkable-button').forEach((element) => {
-              element.removeAttribute('checked');
-            })
-          } else {
-            this.querySelectorAll('.all-movies').forEach((element) => {
-              element.removeAttribute('checked');
-            })
-          }
-        }
+  };
+
+  private uncheckMovieButtons(e: MouseEvent, options: CheckableButtonElement[]) {
+    if (e.target instanceof CheckableButtonElement && !e.target.checked) {
+      options.forEach((option: Element) => {
+        option.removeAttribute('checked');
       });
-    });
+    }
   }
 
   public static BuildElement(movies: Movie[]): SelectionListElement {

@@ -8,21 +8,30 @@ template.innerHTML = html;
 
 export default class CheckableButtonElement extends HTMLElement {
 
-  static get observedAttributes() {
+  static get observedAttributes(): string[] {
     return ['label', 'value', 'color', 'checked'];
   }
+
+  private shadow: ShadowRoot;
 
   public value: string = '';
   public label: string = '';
   public checked: boolean = false;
   public color: string = '#000000';
 
+  private handleClick(e: MouseEvent) {
+    if (e.target instanceof CheckableButtonElement) {
+      this.toggleAttribute('checked');
+      e.preventDefault();
+    }
+  }
+
   private updateStyle() {
-    const labelEl = this.shadowRoot?.querySelector('label') as HTMLLabelElement;
+    const labelEl = this.shadow?.querySelector('label') as HTMLLabelElement;
     labelEl.textContent = this.label;
     labelEl.style.borderColor = this.color;
-    const input = this.shadowRoot?.querySelector('input') as HTMLInputElement;
-    input.setAttribute('value', this.value);
+    const input = this.shadow?.querySelector('input') as HTMLInputElement;
+    input.value = this.value;
     if (this.checked) {
       input.setAttribute('checked', '');
     } else {
@@ -31,18 +40,26 @@ export default class CheckableButtonElement extends HTMLElement {
   }
 
   attributeChangedCallback(name: string, oldValue: string, newValue: string) {
+    if (oldValue === newValue) {
+      return;
+    }
     switch (name) {
       case 'label':
-          this.label = newValue || '';
+        this.label = newValue;
         break;
       case 'value':
-        this.value = newValue || '';
+        this.value = newValue;
         break;
       case 'color':
-        this.color = newValue || '';
+        this.color = newValue;
         break;
       case 'checked':
-        this.checked = newValue !== null;
+        if (newValue === null) {
+          this.checked = false;
+        } else {
+          this.checked = true;
+        }
+
         break;
     }
     this.updateStyle();
@@ -50,24 +67,18 @@ export default class CheckableButtonElement extends HTMLElement {
 
   constructor() {
     super();
-    const shadow = this.attachShadow({ mode: 'open' });
-    shadow.appendChild(template.content.cloneNode(true));
-    shadow.adoptedStyleSheets = [style];
+    this.shadow = this.attachShadow({ mode: 'open' });
+    this.shadow.appendChild(template.content.cloneNode(true));
+    this.shadow.adoptedStyleSheets = [style];
   }
 
   connectedCallback() {
     this.updateStyle();
-    const input = this.shadowRoot?.querySelector('input') as HTMLInputElement;
-    if (this.checked) {
-      input.setAttribute('checked', '');
-    }
-    input.addEventListener('change', (e) => {
-      if (e.target instanceof HTMLInputElement && !e.target.checked) {
-        this.removeAttribute('checked');
-      } else {
-        this.setAttribute('checked', '');
-      }
-    });
+    this.addEventListener('click', this.handleClick);
+  }
+
+  disconnectedCallback() {
+    this.removeEventListener('click', this.handleClick);
   }
 
 }
