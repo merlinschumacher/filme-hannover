@@ -1,5 +1,7 @@
 import html from './checkable-button.component.html?inline';
 import css from './checkable-button.component.css?inline';
+import Checkbox from '@material-symbols/svg-400/outlined/check_circle.svg?raw'
+import CheckboxChecked from '@material-symbols/svg-400/outlined/check_circle-fill.svg?raw'
 
 const style = new CSSStyleSheet();
 style.replaceSync(css);
@@ -27,11 +29,18 @@ export default class CheckableButtonElement extends HTMLElement {
   }
 
   private updateStyle() {
-    const labelEl = this.shadow?.querySelector('label') as HTMLLabelElement;
-    labelEl.textContent = this.label;
-    labelEl.style.borderColor = this.color;
+    const icon = this.checked ? CheckboxChecked : Checkbox;
+    const iconEl = this.shadow?.querySelector('.icon') as HTMLElement;
+    iconEl.innerHTML = icon;
+    const textEl = this.shadow?.querySelector('.text') as HTMLLabelElement;
+    textEl.textContent = this.label;
     const input = this.shadow?.querySelector('input') as HTMLInputElement;
     input.value = this.value;
+    const colorStyle = new CSSStyleSheet();
+    colorStyle.insertRule(`:host { --color: ${this.color}; }`);
+    this.shadow.adoptedStyleSheets = [style, colorStyle];
+
+
     if (this.checked) {
       input.setAttribute('checked', '');
     } else {
