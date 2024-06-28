@@ -1,31 +1,29 @@
+
 :host {
   flex: 1 1 49%;
 }
 
-.checkable-button-input {
+.selection-list-item-input {
   appearance: none;
   display: none;
 }
 
-.checkable-button-input + label {
+.selection-list-item-input + label {
   display: flex;
   align-items: center;
-  border: 1px solid black;
-  border-radius: 8px;
   user-select: none;
   cursor: pointer;
   transition: background 0.1s, border 0.1s;
   white-space: nowrap;
   font-weight: 700;
   position: relative;
-  overflow: hidden;
 }
 
-.checkable-button-input + label:hover {
+.selection-list-item-input + label:hover {
   background-color: var(--light-accent);
 }
 
-.checkable-button-input:checked + label {
+.selection-list-item-input:checked + label {
   background-color: var(--background-mediumblue);
   font-weight: 700;
 }

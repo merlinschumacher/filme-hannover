@@ -1,7 +1,7 @@
 import html from './selection-list.component.html?inline';
 import css from './selection-list.component.css?inline';
 import { Movie } from '../../models/Movie';
-import CheckableButtonElement from '../checkable-button/checkable-button.component';
+import SelectionListItemElement from './selection-list-item.component';
 
 const style = new CSSStyleSheet();
 style.replaceSync(css);
@@ -12,7 +12,7 @@ export default class SelectionListElement extends HTMLElement {
 
   public Movies: Movie[] = [];
   public SelectedMovies: Movie[] = [];
-  private allMoviesButton: CheckableButtonElement;
+  private allMoviesButton: SelectionListItemElement;
 
   constructor() {
     super();
@@ -21,10 +21,10 @@ export default class SelectionListElement extends HTMLElement {
     shadow.adoptedStyleSheets = [style];
     this.allMoviesButton = this.buildAllMoviesButton();
   }
-  private buildMovieButtons(movies: Movie[]): CheckableButtonElement[] {
-    var options: CheckableButtonElement[] = [];
+  private buildMovieButtons(movies: Movie[]): SelectionListItemElement[] {
+    var options: SelectionListItemElement[] = [];
     movies.forEach(movie => {
-      const movieButton = new CheckableButtonElement();
+      const movieButton = new SelectionListItemElement();
       movieButton.slot = 'selection-list';
       movieButton.setAttribute('label', movie.displayName);
       movieButton.setAttribute('value', movie.id.toString());
@@ -34,14 +34,14 @@ export default class SelectionListElement extends HTMLElement {
     return options;
   }
 
-  private uncheckAllMoviesButton(e: MouseEvent, btn: CheckableButtonElement) {
-    if (e.target instanceof CheckableButtonElement && !e.target.checked) {
+  private uncheckAllMoviesButton(e: MouseEvent, btn: SelectionListItemElement) {
+    if (e.target instanceof SelectionListItemElement && !e.target.checked) {
       btn.removeAttribute('checked');
     }
   }
 
-  private buildAllMoviesButton(): CheckableButtonElement {
-    const allMoviesButton = new CheckableButtonElement();
+  private buildAllMoviesButton(): SelectionListItemElement {
+    const allMoviesButton = new SelectionListItemElement();
     allMoviesButton.slot = 'selection-list';
     allMoviesButton.classList.add('all-movies');
     allMoviesButton.setAttribute('label', 'Alle Filme');
@@ -51,7 +51,7 @@ export default class SelectionListElement extends HTMLElement {
   }
 
   connectedCallback() {
-    var options: CheckableButtonElement[] = [];
+    var options: SelectionListItemElement[] = [];
     var movieButtons = this.buildMovieButtons(this.Movies);
     this.allMoviesButton.addEventListener('click', (e: MouseEvent) => this.uncheckMovieButtons(e, movieButtons), false);
     options.push(this.allMoviesButton);
@@ -59,8 +59,8 @@ export default class SelectionListElement extends HTMLElement {
     this.append(...options);
   };
 
-  private uncheckMovieButtons(e: MouseEvent, options: CheckableButtonElement[]) {
-    if (e.target instanceof CheckableButtonElement && !e.target.checked) {
+  private uncheckMovieButtons(e: MouseEvent, options: SelectionListItemElement[]) {
+    if (e.target instanceof SelectionListItemElement && !e.target.checked) {
       options.forEach((option: Element) => {
         option.removeAttribute('checked');
       });

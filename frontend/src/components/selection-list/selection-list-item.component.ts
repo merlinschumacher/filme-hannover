@@ -1,5 +1,5 @@
-import html from './checkable-button.component.html?inline';
-import css from './checkable-button.component.css?inline';
+import html from './selection-list-item.component.html?inline';
+import css from './selection-list-item.component.css?inline';
 import Checkbox from '@material-symbols/svg-400/outlined/circle.svg?raw'
 import CheckboxChecked from '@material-symbols/svg-400/outlined/check_circle.svg?raw'
 
@@ -8,7 +8,7 @@ style.replaceSync(css);
 const template = document.createElement('template');
 template.innerHTML = html;
 
-export default class CheckableButtonElement extends HTMLElement {
+export default class SelectionListItemElement extends HTMLElement {
 
   static get observedAttributes(): string[] {
     return ['label', 'value', 'color', 'checked'];
@@ -22,7 +22,7 @@ export default class CheckableButtonElement extends HTMLElement {
   public color: string = '#000000';
 
   private handleClick(e: MouseEvent) {
-    if (e.target instanceof CheckableButtonElement) {
+    if (e.target instanceof SelectionListItemElement) {
       this.toggleAttribute('checked');
       e.preventDefault();
     }
@@ -92,5 +92,5 @@ export default class CheckableButtonElement extends HTMLElement {
 
 }
 
-customElements.define('checkable-button', CheckableButtonElement);
+customElements.define('selection-list-item', SelectionListItemElement);
 

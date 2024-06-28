@@ -4,6 +4,10 @@
   gap: 2%;
 }
 
+.cinema-selection  >  ::slotted(*){
+  margin-bottom: 1em;
+}
+
 .cinema-selection,
 .movie-selection,
 .date-selection {
