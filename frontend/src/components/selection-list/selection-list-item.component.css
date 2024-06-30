@@ -1,4 +1,3 @@
-
 :host {
   flex: 1 1 49%;
 }
@@ -8,7 +7,7 @@
   display: none;
 }
 
-.selection-list-item-input + label {
+.selection-list-item-input+label {
   display: flex;
   align-items: center;
   user-select: none;
@@ -19,31 +18,35 @@
   position: relative;
 }
 
-.selection-list-item-input + label:hover {
+.selection-list-item-input+label:hover,
+.selection-list-item-input:checked+label:hover {
   background-color: var(--light-accent);
 }
 
-.selection-list-item-input:checked + label {
+.selection-list-item-input:checked+label {
   background-color: var(--background-mediumblue);
   font-weight: 700;
 }
 
-.border{
+.border {
   background-color: var(--color);
   height: 100%;
   position: absolute;
   width: .666em;
 }
 
-.text, .icon {
-  padding: 1em 0em;
+.text,
+.icon {
+  padding: .2em 0em;
 }
+
 .icon {
   margin-left: 1.3em;
   margin-right: 0.5em;
 }
 
-.icon, .icon > svg {
+.icon,
+.icon>svg {
   height: 2em;
   width: 2em;
 }

@@ -13,12 +13,13 @@ export default class SelectionListElement extends HTMLElement {
   public Movies: Movie[] = [];
   public SelectedMovies: Movie[] = [];
   private allMoviesButton: SelectionListItemElement;
+  private shadow: ShadowRoot;
 
   constructor() {
     super();
-    const shadow = this.attachShadow({ mode: 'open' });
-    shadow.appendChild(template.content.cloneNode(true));
-    shadow.adoptedStyleSheets = [style];
+    this.shadow = this.attachShadow({ mode: 'open' });
+    this.shadow.appendChild(template.content.cloneNode(true));
+    this.shadow.adoptedStyleSheets = [style];
     this.allMoviesButton = this.buildAllMoviesButton();
   }
   private buildMovieButtons(movies: Movie[]): SelectionListItemElement[] {
@@ -42,7 +43,6 @@ export default class SelectionListElement extends HTMLElement {
 
   private buildAllMoviesButton(): SelectionListItemElement {
     const allMoviesButton = new SelectionListItemElement();
-    allMoviesButton.slot = 'selection-list';
     allMoviesButton.classList.add('all-movies');
     allMoviesButton.setAttribute('label', 'Alle Filme');
     allMoviesButton.setAttribute('value', '0');
@@ -54,9 +54,14 @@ export default class SelectionListElement extends HTMLElement {
     var options: SelectionListItemElement[] = [];
     var movieButtons = this.buildMovieButtons(this.Movies);
     this.allMoviesButton.addEventListener('click', (e: MouseEvent) => this.uncheckMovieButtons(e, movieButtons), false);
-    options.push(this.allMoviesButton);
+    this.append(this.allMoviesButton);
+
     options.push(...movieButtons);
     this.append(...options);
+
+    const searchInput = this.shadow.querySelector('input') as HTMLInputElement;
+    searchInput.addEventListener('input', (e: Event) => this.searchMovies(searchInput.value));
+
   };
 
   private uncheckMovieButtons(e: MouseEvent, options: SelectionListItemElement[]) {
@@ -65,6 +70,17 @@ export default class SelectionListElement extends HTMLElement {
         option.removeAttribute('checked');
       });
     }
+  }
+
+  private searchMovies(searchTerm: string) {
+    var options = this.querySelectorAll('selection-list-item') as NodeListOf<SelectionListItemElement>;
+    options.forEach((option: SelectionListItemElement) => {
+      if (option.label.toLowerCase().includes(searchTerm.toLowerCase())) {
+        option.style.display = 'block';
+      } else {
+        option.style.display = 'none';
+      }
+    });
   }
 
   public static BuildElement(movies: Movie[]): SelectionListElement {

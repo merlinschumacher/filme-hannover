@@ -8,6 +8,7 @@
 }
 
 .checkable-button-input + label {
+  height: 4em;
   display: flex;
   align-items: center;
   border: 1px solid black;
@@ -37,9 +38,6 @@
   width: .666em;
 }
 
-.text, .icon {
-  padding: 1em 0em;
-}
 .icon {
   margin-left: 1.3em;
   margin-right: 0.5em;
