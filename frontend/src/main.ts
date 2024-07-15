@@ -1,12 +1,13 @@
 import "inter-ui/inter-variable-latin.css";
 import './style.css';
-import { db } from './models/CinemaDb';
 import DayListElement from './components/day-list/day-list.component';
 import { SwiperContainer, register } from "swiper/element";
 import { Grid, Keyboard } from "swiper/modules";
 import { SwiperOptions } from "swiper/types";
 import "swiper/element/css/grid";
 import FilterModal from "./components/filter-modal/filter-modal.component";
+import FilterService from "./services/FilterService";
+import { Cinema } from "./models/Cinema";
 register();
 
 const daySizeMap = new Map<number, number>([
@@ -17,7 +18,9 @@ const daySizeMap = new Map<number, number>([
   [1200, 5],
 ]);
 
-async function getVisibleDays() {
+const filterService = new FilterService();
+
+function getVisibleDays() {
   var width = window.innerWidth;
   daySizeMap.forEach((value, key) => {
     if (width < key) {
@@ -27,35 +30,25 @@ async function getVisibleDays() {
   return 4;
 }
 
-async function init() {
-  const swiperEl = document.querySelector('swiper-container')!;
-
-  db.Init();
-
+async function setUpdateEl() {
   const updateEl = document.querySelector('#lastUpdate');
-  updateEl!.textContent = db.dataVersionDate.toLocaleString();
-
-  const app = document.querySelector('#app-root')!;
-  initFilter();
-
-
-  const startDate = new Date();
-  let endDate = new Date();
-  const days = await getVisibleDays();
-  endDate = new Date(endDate.setDate(endDate.getDate() + (days * 2)));
-  const eventDays = await db.getEventsForDateRangeSplitByDay(startDate, endDate);
-  await initSwiper(swiperEl);
-
-  eventDays.forEach((dayEvents, date) => {
-    const dayList = DayListElement.BuildElement(new Date(date), dayEvents);
-    const swiperSlide = document.createElement('swiper-slide');
-    swiperSlide.appendChild(dayList);
-    swiperEl.appendChild(swiperSlide);
-  });
+  if (updateEl) {
+    updateEl.textContent =  await filterService.getDataVersion();
+  }
 }
 
-async function initSwiper(swiperEl: SwiperContainer) {
-  const days = await getVisibleDays();
+async function init() {
+  const swiperEl = document.querySelector('swiper-container')!;
+  initSwiper(swiperEl);
+  await setUpdateEl();
+  const cinemas = await filterService.getCinemas();
+  const style = buildCinemaStyleSheet(cinemas);
+  document.adoptedStyleSheets.push(style);
+  initFilter();
+}
+
+function initSwiper(swiperEl: SwiperContainer) {
+  const days = getVisibleDays();
   const swiperParams: SwiperOptions = {
     modules: [Grid, Keyboard],
     slidesPerView: days,
@@ -73,17 +66,51 @@ async function initSwiper(swiperEl: SwiperContainer) {
   swiperEl.initialize();
 }
 
-async function initFilter() {
-  const cinemas = await db.getAllCinemas();
-  const movies = await db.getAllMoviesOrderedByShowTimeCount();
-  const filterModal = FilterModal.BuildElement(cinemas, movies);
-  const app = document.querySelector('#app-root')!;
-  app.prepend(filterModal);
+function buildCinemaStyleSheet(cinemas: Cinema[]) {
+  const style = new CSSStyleSheet();
+  cinemas.forEach(cinema => {
+    style.insertRule(`.cinema-${cinema.id} { background-color: ${cinema.color}; }`);
+  });
+  return style;
+};
 
-
-
-
-
+function getDateRange(): { startDate: Date, endDate: Date }{
+    const startDate = new Date();
+    const days = getVisibleDays();
+    let endDate = new Date();
+    endDate = new Date(endDate.setDate(endDate.getDate() + (days * 2)));
+    return {startDate, endDate};
 }
 
-init().then(() => { });
+async function initFilter() : Promise<void> {
+  var cinemas = await filterService.getCinemas();
+  var movies = await filterService.getMovies();
+  const filterModal = FilterModal.BuildElement(cinemas, movies);
+  filterModal.onFilterChanged = async (cinemas, movies) => {
+    filterService.setSelectedCinemas(cinemas);
+    filterService.setSelectedMovies(movies);
+    updateEvents();
+  }
+  updateEvents();
+  const app = document.querySelector('#app-root')!;
+  app.prepend(filterModal);
+}
+
+async function updateEvents() : Promise<void> {
+    const { startDate, endDate } = getDateRange();
+    const eventDays = await filterService.getEvents(startDate, endDate);
+    const swiperEl = document.querySelector('swiper-container')!;
+    const slides: HTMLElement[] = [];
+    eventDays.forEach((dayEvents, date) => {
+      const dayList = DayListElement.BuildElement(new Date(date), dayEvents);
+      const swiperSlide = document.createElement('swiper-slide');
+      swiperSlide.appendChild(dayList);
+      slides.push(swiperSlide);
+    });
+    swiperEl.querySelectorAll('swiper-slide').forEach(el => el.remove());
+    swiperEl.append(...slides);
+}
+
+init().then((): void => {
+  console.log('App initialized.');
+});

@@ -11,8 +11,10 @@ template.innerHTML = html;
 export default class SelectionListElement extends HTMLElement {
 
   public Movies: Movie[] = [];
-  public SelectedMovies: Movie[] = [];
+  private SelectedMovies: Movie[] = [];
   private allMoviesButton: SelectionListItemElement;
+  public onSelectionChanged?: (movies: Movie[]) => void;
+
   private shadow: ShadowRoot;
 
   constructor() {
@@ -29,7 +31,19 @@ export default class SelectionListElement extends HTMLElement {
       movieButton.slot = 'selection-list';
       movieButton.setAttribute('label', movie.displayName);
       movieButton.setAttribute('value', movie.id.toString());
-      movieButton.addEventListener('click', (e: MouseEvent) => this.uncheckAllMoviesButton(e, this.allMoviesButton));
+      movieButton.addEventListener('click', (e: MouseEvent) => {
+
+        if (this.SelectedMovies.some(m => m.id === movie.id)) {
+          this.SelectedMovies = this.SelectedMovies.filter(m => m.id !== movie.id);
+        } else {
+          this.SelectedMovies.push(movie);
+        }
+
+        this.uncheckAllMoviesButton(e, this.allMoviesButton);
+        if (!this.onSelectionChanged)
+          return;
+        this.onSelectionChanged(this.SelectedMovies);
+      });
       options.push(movieButton);
     });
     return options;
@@ -40,6 +54,7 @@ export default class SelectionListElement extends HTMLElement {
       btn.removeAttribute('checked');
     }
   }
+
 
   private buildAllMoviesButton(): SelectionListItemElement {
     const allMoviesButton = new SelectionListItemElement();

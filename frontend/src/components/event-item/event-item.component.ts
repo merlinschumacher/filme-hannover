@@ -5,25 +5,16 @@ import { EventData } from '../../models/EventData';
 import { SlotSpanFactory } from '../component-helpers';
 import { getShowTimeTypeString } from '../../models/ShowTimeType';
 import { getShowTimeLanguageString } from '../../models/ShowTimeLanguage';
-import { db } from '../../models/CinemaDb';
 
 const style = new CSSStyleSheet();
 style.replaceSync(css);
 const template = document.createElement('template');
 template.innerHTML = html;
 
-db.getAllCinemas().then(cinemas => {
-  cinemas.forEach(cinema => {
-    style.insertRule(
-      `.cinema-${cinema.id} { background-color: ${cinema.color}; }`
-    );
-  });
-});
-
 export default class EventItem extends HTMLElement {
 
   static get observedAttributes() {
-    return ['href', 'dotClass'];
+    return ['href', 'dotColor'];
   }
 
   constructor() {
@@ -38,7 +29,7 @@ export default class EventItem extends HTMLElement {
     const dotElem = this.shadowRoot?.querySelector('.dot') as HTMLElement;
     if (titleElem && dotElem) {
       titleElem.setAttribute('href', this.getAttribute('href') || '#');
-      dotElem.classList.add(this.getAttribute('dotClass') || '');
+      dotElem.style.backgroundColor = this.getAttribute('dotColor') || 'black';
     }
   }
 
@@ -67,7 +58,7 @@ export default class EventItem extends HTMLElement {
 
     const item = new EventItem();
     item.setAttribute('href', event.url.toString());
-    item.setAttribute('dotClass', event.colorClass);
+    item.setAttribute('dotColor', event.color);
     item.appendChild(timeSpan);
     item.appendChild(titleSpan);
     item.appendChild(suffixSpan);
