@@ -119,3 +119,12 @@ body {
 swiper-container {
   margin-top: 2em;
 }
+
+.placeholder {
+  background-color: var(--background-lightblue);
+  border: 1px solid var(--light-accent);
+  border-radius: 8px;
+  padding: 1em;
+  margin-bottom: 1em;
+  width: 10%;
+}

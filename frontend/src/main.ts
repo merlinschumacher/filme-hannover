@@ -2,8 +2,8 @@ import "inter-ui/inter-variable-latin.css";
 import './style.css';
 import DayListElement from './components/day-list/day-list.component';
 import { SwiperContainer, register } from "swiper/element";
-import { Grid, Keyboard } from "swiper/modules";
-import { SwiperOptions } from "swiper/types";
+import { Grid, Keyboard, Manipulation, Virtual } from "swiper/modules";
+import { Swiper, SwiperOptions } from "swiper/types";
 import "swiper/element/css/grid";
 import FilterModal from "./components/filter-modal/filter-modal.component";
 import FilterService from "./services/FilterService";
@@ -19,6 +19,8 @@ const daySizeMap = new Map<number, number>([
 ]);
 
 const filterService = new FilterService();
+let swiper: Swiper = null!;
+let lastVisibleDate = new Date();
 
 function getVisibleDays() {
   var width = window.innerWidth;
@@ -33,37 +35,52 @@ function getVisibleDays() {
 async function setUpdateEl() {
   const updateEl = document.querySelector('#lastUpdate');
   if (updateEl) {
-    updateEl.textContent =  await filterService.getDataVersion();
+    updateEl.textContent = await filterService.getDataVersion();
   }
 }
 
 async function init() {
-  const swiperEl = document.querySelector('swiper-container')!;
-  initSwiper(swiperEl);
   await setUpdateEl();
+  initSwiper();
   const cinemas = await filterService.getCinemas();
-  const style = buildCinemaStyleSheet(cinemas);
-  document.adoptedStyleSheets.push(style);
+  const cinemaStyle = buildCinemaStyleSheet(cinemas);
+  document.adoptedStyleSheets.push(cinemaStyle);
+  const slideStyle = buildSlideStyleSheet();
+  document.adoptedStyleSheets.push(slideStyle);
   initFilter();
 }
 
-function initSwiper(swiperEl: SwiperContainer) {
-  const days = getVisibleDays();
+function initSwiper() {
+
+  const swiperEl = document.querySelector('swiper-container') as SwiperContainer;
+  // const days = getVisibleDays();
   const swiperParams: SwiperOptions = {
-    modules: [Grid, Keyboard],
-    slidesPerView: days,
-    slidesPerGroup: days,
-    grid: {
-      rows: 1,
-      fill: 'column',
-    },
-    keyboard: {
-      enabled: true,
-    },
+    modules: [Manipulation],
+    slidesPerView: "auto"
+    // slidesPerGroup: days,
+    // grid: {
+    //   rows: 1,
+    //   fill: 'column',
+    // },
+    // keyboard: {
+    //   enabled: true,
+    // },
   };
   Object.assign(swiperEl, swiperParams);
 
   swiperEl.initialize();
+  swiper = swiperEl.swiper;
+  swiper.on('reachEnd', async () => {
+    await updateEvents();
+  });
+}
+
+function buildSlideStyleSheet() : CSSStyleSheet{
+  const slideStyle = new CSSStyleSheet();
+  const swiperSlideDefaultWidth = 100 / getVisibleDays();
+  slideStyle.insertRule(`swiper-slide.default-slide { width: ${swiperSlideDefaultWidth}%; }`);
+  slideStyle.insertRule(`swiper-slide.placeholder-slide { width: 3em; }`);
+  return slideStyle;
 }
 
 function buildCinemaStyleSheet(cinemas: Cinema[]) {
@@ -74,21 +91,23 @@ function buildCinemaStyleSheet(cinemas: Cinema[]) {
   return style;
 };
 
-function getDateRange(): { startDate: Date, endDate: Date }{
-    const startDate = new Date();
-    const days = getVisibleDays();
-    let endDate = new Date();
-    endDate = new Date(endDate.setDate(endDate.getDate() + (days * 2)));
-    return {startDate, endDate};
+function getNextDateRange(): { startDate: Date, endDate: Date } {
+  let startDate = lastVisibleDate;
+  const days = getVisibleDays();
+  let endDate = new Date(lastVisibleDate.getTime());
+  endDate = new Date(endDate.setDate(endDate.getDate() + (days * 2)));
+  lastVisibleDate = endDate;
+  return { startDate, endDate };
 }
 
-async function initFilter() : Promise<void> {
+async function initFilter(): Promise<void> {
   var cinemas = await filterService.getCinemas();
   var movies = await filterService.getMovies();
   const filterModal = FilterModal.BuildElement(cinemas, movies);
   filterModal.onFilterChanged = async (cinemas, movies) => {
     filterService.setSelectedCinemas(cinemas);
     filterService.setSelectedMovies(movies);
+    swiper.removeAllSlides();
     updateEvents();
   }
   updateEvents();
@@ -96,19 +115,32 @@ async function initFilter() : Promise<void> {
   app.prepend(filterModal);
 }
 
-async function updateEvents() : Promise<void> {
-    const { startDate, endDate } = getDateRange();
-    const eventDays = await filterService.getEvents(startDate, endDate);
-    const swiperEl = document.querySelector('swiper-container')!;
-    const slides: HTMLElement[] = [];
-    eventDays.forEach((dayEvents, date) => {
-      const dayList = DayListElement.BuildElement(new Date(date), dayEvents);
+async function updateEvents(): Promise<void> {
+  const { startDate, endDate } = getNextDateRange();
+  await addEventSlides(startDate, endDate);
+}
+async function addEventSlides(startDate: Date, endDate: Date): Promise<void> {
+  const eventDays = await filterService.getEvents(startDate, endDate);
+  let lastDate = new Date(eventDays.keys().next().value).getTime();
+  eventDays.forEach((dayEvents, date) => {
+    const dateTime = new Date(date).getTime()
+    const dateDiff = dateTime - lastDate;
+    lastDate = dateTime;
+    if (dateDiff > 86400000) {
+      const placeholder = document.createElement('div');
+      placeholder.classList.add('placeholder');
       const swiperSlide = document.createElement('swiper-slide');
-      swiperSlide.appendChild(dayList);
-      slides.push(swiperSlide);
-    });
-    swiperEl.querySelectorAll('swiper-slide').forEach(el => el.remove());
-    swiperEl.append(...slides);
+      swiperSlide.classList.add('placeholder-slide');
+      swiperSlide.appendChild(placeholder);
+      swiper.appendSlide(swiperSlide);
+    }
+
+    const dayList = DayListElement.BuildElement(new Date(date), dayEvents);
+    const swiperSlide = document.createElement('swiper-slide');
+    swiperSlide.classList.add('default-slide');
+    swiperSlide.appendChild(dayList);
+    swiper.appendSlide(swiperSlide);
+  });
 }
 
 init().then((): void => {
