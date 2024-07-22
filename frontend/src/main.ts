@@ -107,6 +107,7 @@ async function initFilter(): Promise<void> {
   filterModal.onFilterChanged = async (cinemas, movies) => {
     filterService.setSelectedCinemas(cinemas);
     filterService.setSelectedMovies(movies);
+    lastVisibleDate = new Date();
     swiper.removeAllSlides();
     updateEvents();
   }
@@ -118,6 +119,7 @@ async function initFilter(): Promise<void> {
 async function updateEvents(): Promise<void> {
   const { startDate, endDate } = getNextDateRange();
   await addEventSlides(startDate, endDate);
+  swiper.update();
 }
 async function addEventSlides(startDate: Date, endDate: Date): Promise<void> {
   const eventDays = await filterService.getEvents(startDate, endDate);
