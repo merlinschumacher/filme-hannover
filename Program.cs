@@ -47,6 +47,8 @@ await cleanupService.CleanupAsync();
 
 var scrapers = scope.ServiceProvider.GetServices<IScraper>().OrderByDescending(e => e.ReliableMetadata);
 var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+var exceptions = new List<Exception>();
 foreach (var scraper in scrapers)
 {
     try
@@ -56,7 +58,13 @@ foreach (var scraper in scrapers)
     catch (Exception e)
     {
         logger.LogError(e, "The {ScraperName} failed due to an exception.", scraper.GetType().Name);
+        exceptions.Add(e);
     }
+}
+
+if (exceptions.Count != 0)
+{
+    throw new AggregateException("One or more scrapers failed.", exceptions);
 }
 
 var renderers = scope.ServiceProvider.GetServices<IRenderer>();
