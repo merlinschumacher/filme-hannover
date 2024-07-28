@@ -1,16 +1,23 @@
 ﻿using HtmlAgilityPack;
-using kinohannover.Data;
 using kinohannover.Helpers;
 using kinohannover.Models;
-using kinohannover.Scrapers.Koki;
+using kinohannover.Services;
 using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
-using TMDbLib.Client;
 
 namespace kinohannover.Scrapers
 {
-    public partial class KoKIJsonScraper(KinohannoverContext context, ILogger<KoKIJsonScraper> logger, TMDbClient tmdbClient) : ScraperBase(context, logger, tmdbClient, KokiCinema.Cinema), IScraper
+    public partial class KoKiJsonScraper : IScraper
     {
+        private readonly Cinema _cinema = new()
+        {
+            DisplayName = "Kommunales Kino",
+            Url = new("https://www.hannover.de/Kommunales-Kino/"),
+            ShopUrl = new("https://www.hannover.de/Kommunales-Kino/"),
+            Color = "#2c2e35",
+            HasShop = false,
+        };
+
         private const string _eventDetailElementsSelector = ".//span[contains(@class, 'react-ical')]";
 
         private const string _eventElementSelector = "//div[contains(@class, 'interesting-single__content')]";
@@ -24,14 +31,28 @@ namespace kinohannover.Scrapers
         private readonly string _shopLink = "https://www.hannover.de/Kommunales-Kino/";
 
         private readonly Regex _titleRegex = TitleRegex();
+        private readonly MovieService _movieService;
+        private readonly CinemaService _cinemaService;
+        private readonly ShowTimeService _showTimeService;
+        private readonly ILogger<KoKiJsonScraper> _logger;
+
+        public KoKiJsonScraper(ILogger<KoKiJsonScraper> logger, MovieService movieService, ShowTimeService showTimeService, CinemaService cinemaService)
+        {
+            _cinemaService = cinemaService;
+            _cinema = _cinemaService.Create(_cinema);
+            _movieService = movieService;
+            _showTimeService = showTimeService;
+            _logger = logger;
+        }
 
         public bool ReliableMetadata => false;
 
         public async Task ScrapeAsync()
         {
-            var eventHtml = await GetEventElements();
+            var eventHtml = await GetEventElementsAsync();
             if (eventHtml is null)
             {
+                _logger.LogWarning("Failed to get event elements.");
                 return;
             }
             var eventElements = eventHtml.DocumentNode.SelectNodes(_eventElementSelector);
@@ -67,8 +88,8 @@ namespace kinohannover.Scrapers
                     DisplayName = movieTitle,
                     Runtime = eventJson.EndDate - eventJson.StartDate,
                 };
-                movie.Cinemas.Add(Cinema);
-                movie = await CreateMovieAsync(movie);
+                movie = await _movieService.CreateAsync(movie);
+                await _cinemaService.AddMovieToCinemaAsync(movie, _cinema);
 
                 var showTime = new ShowTime()
                 {
@@ -77,18 +98,16 @@ namespace kinohannover.Scrapers
                     Type = ShowTimeType.Regular,
                     Language = ShowTimeLanguage.German,
                     Url = new Uri(readMoreUrlString),
-                    Cinema = Cinema,
+                    Cinema = _cinema,
                 };
-
-                await CreateShowTimeAsync(showTime);
+                await _showTimeService.CreateAsync(showTime);
             }
-            await Context.SaveChangesAsync();
         }
 
         [GeneratedRegex(@"\d{1,2}.\d{2}\s*Uhr:\s*(.*)")]
         private static partial Regex TitleRegex();
 
-        private async Task<HtmlDocument?> GetEventElements()
+        private async Task<HtmlDocument?> GetEventElementsAsync()
         {
             var eventHtmlJson = await HttpHelper.GetJsonAsync<EventHtmlJson>(_dataUrl);
 
@@ -106,17 +125,17 @@ namespace kinohannover.Scrapers
         /// <summary>
         /// The JSON object returned by the event detail API.
         /// </summary>
-        private class EventDetailJson()
+        public sealed record EventDetailJson()
         {
-            public DateTime EndDate { get; set; }
-            public string Name { get; set; }
-            public DateTime StartDate { get; set; }
+            public required DateTime EndDate { get; set; } = DateTime.MinValue;
+            public required string Name { get; set; } = "";
+            public required DateTime StartDate { get; set; } = DateTime.MinValue;
         }
 
         /// <summary>
         /// The JSON object returned by the event HTML API.
         /// </summary>
-        private sealed class EventHtmlJson
+        public sealed record EventHtmlJson
         {
             public required string[] Items { get; set; } = [];
             public bool Success { get; set; }

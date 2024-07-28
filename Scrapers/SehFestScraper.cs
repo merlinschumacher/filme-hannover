@@ -1,21 +1,25 @@
-﻿using kinohannover.Data;
-using kinohannover.Models;
+﻿using kinohannover.Services;
 using Microsoft.Extensions.Logging;
-using TMDbLib.Client;
 
 namespace kinohannover.Scrapers.Koki
 {
-    public class SehFestScraper(KinohannoverContext context, ILogger<SehFestScraper> logger, TMDbClient tmdbClient)
-        : CsvScraper("sehfest.csv", context, logger, tmdbClient, Cinema), IScraper
+    public class SehFestScraper : CsvScraper, IScraper
     {
-        public static readonly Cinema Cinema = new()
-        {
-            DisplayName = "Seh-Fest",
-            HasShop = false,
-            Website = new Uri("https://www.seh-fest.de/"),
-            Color = "#003eaa",
-        };
-
         public bool ReliableMetadata => false;
+
+        private readonly Uri _uri = new("https://www.seh-fest.de/");
+
+        public SehFestScraper(ILogger<SehFestScraper> logger, MovieService movieService, ShowTimeService showTimeService, CinemaService cinemaService) :
+            base("sehfest.csv", logger, movieService, showTimeService, cinemaService)
+        {
+            _cinema = new()
+            {
+                DisplayName = "Seh-Fest",
+                HasShop = false,
+                Url = _uri,
+                ShopUrl = _uri,
+                Color = "#003eaa",
+            };
+        }
     }
 }

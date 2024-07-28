@@ -1,23 +1,36 @@
 ﻿using CsvHelper;
-using kinohannover.Data;
 using kinohannover.Models;
+using kinohannover.Services;
 using Microsoft.Extensions.Logging;
 using System.Globalization;
-using TMDbLib.Client;
 
 namespace kinohannover.Scrapers
 {
     /// <summary>
-    /// Entry in a CSV file
+    /// A scraper that reads showtimes from a CSV file
     /// </summary>
-    /// <param name="Time">The time of the show</param>
-    /// <param name="Title">The title of the show</param>
-    public record CsvEntry(DateTime Time, string Title);
-
-    public abstract class CsvScraper(string fileName, KinohannoverContext context, ILogger<CsvScraper> logger, TMDbClient tmdbClient, Cinema cinema) : ScraperBase(context, logger, tmdbClient, cinema)
+    public abstract class CsvScraper(
+        string fileName,
+        ILogger<CsvScraper> logger,
+        MovieService movieService,
+        ShowTimeService showTimeService,
+        CinemaService cinemaService)
     {
+        /// <summary>
+        /// Entry in a CSV file
+        /// </summary>
+        /// <param name="Time">The time of the show</param>
+        /// <param name="Title">The title of the show</param>
+        private sealed record CsvEntry(DateTime Time, string Title);
+
+        /// <summary>
+        /// The cinema this scraper is for
+        /// </summary>
+        protected Cinema? _cinema;
+
         public async Task ScrapeAsync()
         {
+            ArgumentNullException.ThrowIfNull(_cinema);
             fileName = Path.Combine("csv", fileName);
 
             if (!File.Exists(fileName))
@@ -30,29 +43,34 @@ namespace kinohannover.Scrapers
             using CsvReader csv = new(reader, CultureInfo.InvariantCulture);
 
             var records = csv.GetRecords<CsvEntry>();
+            if (!records.Any())
+            {
+                logger.LogError("Failed to read records from {FileName}", fileName);
+                return;
+            }
+
+            cinemaService.Create(_cinema);
 
             foreach (var record in records)
             {
                 var movie = new Movie()
                 {
                     DisplayName = record.Title,
-                    Url = Cinema.Website,
-                    Cinemas = [Cinema],
                 };
 
-                movie = await CreateMovieAsync(movie);
+                movie = await movieService.CreateAsync(movie);
+                await cinemaService.AddMovieToCinemaAsync(movie, _cinema);
 
                 var showTime = new ShowTime()
                 {
                     Movie = movie,
                     StartTime = record.Time,
                     Url = movie.Url,
-                    Cinema = Cinema,
+                    Cinema = _cinema
                 };
 
-                await CreateShowTimeAsync(showTime);
+                await showTimeService.CreateAsync(showTime);
             }
-            await context.SaveChangesAsync();
         }
     }
 }
