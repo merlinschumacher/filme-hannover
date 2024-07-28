@@ -10,8 +10,8 @@ namespace kinohannover.Scrapers
     /// <summary>
     /// Entry in a CSV file
     /// </summary>
-    /// <param name="Time"></param>
-    /// <param name="Title"></param>
+    /// <param name="Time">The time of the show</param>
+    /// <param name="Title">The title of the show</param>
     public record CsvEntry(DateTime Time, string Title);
 
     public abstract class CsvScraper(string fileName, KinohannoverContext context, ILogger<CsvScraper> logger, TMDbClient tmdbClient, Cinema cinema) : ScraperBase(context, logger, tmdbClient, cinema)
@@ -19,6 +19,12 @@ namespace kinohannover.Scrapers
         public async Task ScrapeAsync()
         {
             fileName = Path.Combine("csv", fileName);
+
+            if (!File.Exists(fileName))
+            {
+                logger.LogError("File {FileName} does not exist", fileName);
+                return;
+            }
 
             using StreamReader reader = new(fileName);
             using CsvReader csv = new(reader, CultureInfo.InvariantCulture);
