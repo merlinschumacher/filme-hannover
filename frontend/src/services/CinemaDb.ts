@@ -151,10 +151,40 @@ export default class CinemaDb extends Dexie {
     return movies;
   }
 
+private async getFirstShowTimeDate(selectedCinemas: Cinema[], selectedMovies: Movie[]): Promise<Date> {
+    let showTimesQuery = this.showTimes.where('startTime').above(new Date().toISOString());
+    if (selectedCinemas.length > 0)
+      showTimesQuery = showTimesQuery.and(item => selectedCinemas.some(e => e.id == item.cinema));
+    if (selectedMovies.length > 0)
+      showTimesQuery = showTimesQuery.and(item => selectedMovies.some(e => e.id == item.movie));
 
-  async getEvents(startDate: Date, endDate: Date, selectedCinemas: Cinema[], selectedMovies: Movie[]): Promise<Map<string, EventData[]>> {
+    const showTimes = await showTimesQuery.toArray();
+    const firstShowTime = showTimes.reduce((prev, current) => {
+      return (prev.startTime < current.startTime) ? prev : current;
+    });
+    return new Date(firstShowTime.startTime);
+
+}
+
+
+
+  async getEvents(startDate: Date, visibleDays: number, selectedCinemas: Cinema[], selectedMovies: Movie[]): Promise<Map<string, EventData[]>> {
+
+    // Get the first showtime date, if the start date is before the first showtime date, set the start date to the first showtime date
+    const firstShowTimeDate = await this.getFirstShowTimeDate(selectedCinemas, selectedMovies);
+    if (startDate < firstShowTimeDate) {
+      startDate = firstShowTimeDate;
+    }
+
+    // Calculate the end date
+    let endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + visibleDays);
+
+    // Convert the dates to ISO strings for querying the database
     const startDateString = startDate.toISOString();
     const endDateString = endDate.toISOString();
+
+    // Query the database for showtimes between the start and end date
     let showTimesQuery = this.showTimes.where('startTime').between(startDateString, endDateString);
     if (selectedCinemas.length > 0)
       showTimesQuery = showTimesQuery.and(item => selectedCinemas.some(e => e.id == item.cinema));
@@ -162,6 +192,8 @@ export default class CinemaDb extends Dexie {
       showTimesQuery = showTimesQuery.and(item => selectedMovies.some(e => e.id == item.movie));
 
     const showTimes = await showTimesQuery.toArray();
+
+    // Get the movie and cinema data for the showtimes
     let events = await Promise.all(showTimes.map(async st => {
       const movie = await this.movies.get(st.movie);
       const cinema = await this.cinemas.get(st.cinema);
@@ -178,7 +210,23 @@ export default class CinemaDb extends Dexie {
       )
     }));
 
-    return this.splitEventsByDay(events);
+    var eventDays = await this.splitEventsByDay(events);
+
+    if (eventDays.values.length > 0 && eventDays.size < visibleDays) {
+      // Fill up the missing days
+      const lastEventDay = Array.from(eventDays.keys()).sort().pop();
+      let lastDate = new Date(lastEventDay!);
+      lastDate.setDate(lastDate.getDate() + 1);
+      while (eventDays.size < visibleDays) {
+        const newEvents = await this.getEvents(lastDate, visibleDays, selectedCinemas, selectedMovies);
+        newEvents.forEach((value, key) => {
+          eventDays.set(key, value);
+        });
+      }
+
+    }
+
+    return eventDays;
   }
 
   // Splits events into days

@@ -68,9 +68,9 @@ export default class FilterService {
     }
   }
 
-  public async getEvents(startDate: Date, endDate: Date): Promise<Map<string, EventData[]>> {
+  public async getEvents(startDate: Date, visibleDays: number): Promise<Map<string, EventData[]>> {
     await this.initializationPromise;
-    return this.db.getEvents(startDate, endDate, this.selectedCinemas, this.selectedMovies);
+    return this.db.getEvents(startDate, visibleDays, this.selectedCinemas, this.selectedMovies);
   }
 
   public async getDataVersion(): Promise<string> {

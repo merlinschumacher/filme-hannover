@@ -2,7 +2,7 @@ import "inter-ui/inter-variable-latin.css";
 import './style.css';
 import DayListElement from './components/day-list/day-list.component';
 import { SwiperContainer, register } from "swiper/element";
-import { Grid, Keyboard, Manipulation, Virtual } from "swiper/modules";
+import { Manipulation } from "swiper/modules";
 import { Swiper, SwiperOptions } from "swiper/types";
 import "swiper/element/css/grid";
 import FilterModal from "./components/filter-modal/filter-modal.component";
@@ -75,7 +75,7 @@ function initSwiper() {
   });
 }
 
-function buildSlideStyleSheet() : CSSStyleSheet{
+function buildSlideStyleSheet(): CSSStyleSheet {
   const slideStyle = new CSSStyleSheet();
   const swiperSlideDefaultWidth = 100 / getVisibleDays();
   slideStyle.insertRule(`swiper-slide.default-slide { width: ${swiperSlideDefaultWidth}%; }`);
@@ -91,13 +91,14 @@ function buildCinemaStyleSheet(cinemas: Cinema[]) {
   return style;
 };
 
-function getNextDateRange(): { startDate: Date, endDate: Date } {
+function getNextDateRange(): { startDate: Date, visibleDays: number } {
   let startDate = lastVisibleDate;
-  const days = getVisibleDays();
+  const visibleDays = getVisibleDays();
   let endDate = new Date(lastVisibleDate.getTime());
-  endDate = new Date(endDate.setDate(endDate.getDate() + (days * 2)));
+  // Get the next visible days but multiply by 2 to allow for a buffer
+  endDate = new Date(endDate.setDate(endDate.getDate() + (visibleDays * 2)));
   lastVisibleDate = endDate;
-  return { startDate, endDate };
+  return { startDate, visibleDays };
 }
 
 async function initFilter(): Promise<void> {
@@ -117,12 +118,12 @@ async function initFilter(): Promise<void> {
 }
 
 async function updateEvents(): Promise<void> {
-  const { startDate, endDate } = getNextDateRange();
-  await addEventSlides(startDate, endDate);
+  const { startDate, visibleDays } = getNextDateRange();
+  await addEventSlides(startDate, visibleDays);
   swiper.update();
 }
-async function addEventSlides(startDate: Date, endDate: Date): Promise<void> {
-  const eventDays = await filterService.getEvents(startDate, endDate);
+async function addEventSlides(startDate: Date, visibleDays: number): Promise<void> {
+  const eventDays = await filterService.getEvents(startDate, visibleDays);
   let lastDate = new Date(eventDays.keys().next().value).getTime();
   eventDays.forEach((dayEvents, date) => {
     const dateTime = new Date(date).getTime()
