@@ -87,6 +87,10 @@ namespace kinohannover.Scrapers
             var doc = await HttpHelper.GetHtmlDocumentAsync(_dataUrl, content);
 
             var icalLinkNodes = doc.DocumentNode.SelectNodes(_icalLinkSelector);
+            if (icalLinkNodes is null)
+            {
+                return Array.Empty<Uri>();
+            }
             var result = new List<Uri>();
             foreach (var icalLinkNode in icalLinkNodes)
             {
