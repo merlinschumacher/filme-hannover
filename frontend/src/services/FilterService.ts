@@ -70,7 +70,9 @@ export default class FilterService {
 
   public async getEvents(startDate: Date, visibleDays: number): Promise<Map<string, EventData[]>> {
     await this.initializationPromise;
-    return this.db.getEvents(startDate, visibleDays, this.selectedCinemas, this.selectedMovies);
+    var selectedCinemaIds = this.selectedCinemas.map(c => c.id);
+    var selectedMovieIds = this.selectedMovies.map(m => m.id);
+    return this.db.getEvents(startDate, visibleDays, selectedCinemaIds, selectedMovieIds);
   }
 
   public async getDataVersion(): Promise<string> {
