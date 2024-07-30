@@ -86,7 +86,6 @@ namespace kinohannover.Scrapers.Cinemaxx
             var movie = new Movie()
             {
                 DisplayName = title,
-                Url = new Uri(Cinema.Website, film.FilmUrl),
             };
 
             movie.Cinemas.Add(Cinema);

@@ -36,7 +36,6 @@ namespace kinohannover.Scrapers
                 var movie = new Movie()
                 {
                     DisplayName = record.Title,
-                    Url = Cinema.Website,
                     Cinemas = [Cinema],
                 };
 
@@ -46,7 +45,7 @@ namespace kinohannover.Scrapers
                 {
                     Movie = movie,
                     StartTime = record.Time,
-                    Url = movie.Url,
+                    Url = Cinema.Website,
                     Cinema = Cinema,
                 };
 

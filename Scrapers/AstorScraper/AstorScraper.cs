@@ -82,7 +82,6 @@ namespace kinohannover.Scrapers.AstorScraper
             var movie = new Movie()
             {
                 DisplayName = title,
-                Url = movieUrl
             };
 
             movie.SetReleaseDateFromYear(releaseYear);

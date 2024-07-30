@@ -37,6 +37,10 @@ namespace kinohannover.Renderer.JsonRenderer
                         {
                             newEvent.Url = showTime.Url;
                         }
+                        else if (!cinema.HasShop && showTime.Url is null)
+                        {
+                            newEvent.Url = cinema.Website;
+                        }
                         else if (showTime.Url is not null)
                         {
                             newEvent.Url = showTime.Url;

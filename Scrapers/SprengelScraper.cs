@@ -37,19 +37,19 @@ namespace kinohannover.Scrapers
                     var showDateTime = calendarEvent.Start.AsSystemLocal;
                     var movie = await ProcessMovieAsync(calendarEvent);
 
-                    await ProcessShowTime(showDateTime, movie);
+                    await ProcessShowTime(showDateTime, movie, calendarEvent.Url);
                 }
             }
             await Context.SaveChangesAsync();
         }
 
-        private async Task ProcessShowTime(DateTime showDateTime, Movie movie)
+        private async Task ProcessShowTime(DateTime showDateTime, Movie movie, Uri url)
         {
             var showTime = new ShowTime()
             {
                 Movie = movie,
                 StartTime = showDateTime,
-                Url = movie.Url,
+                Url = url,
                 Cinema = Cinema,
             };
 
@@ -61,7 +61,6 @@ namespace kinohannover.Scrapers
             var movie = new Movie()
             {
                 DisplayName = calendarEvent.Summary,
-                Url = calendarEvent.Url
             };
             movie.Cinemas.Add(Cinema);
             return await CreateMovieAsync(movie);
