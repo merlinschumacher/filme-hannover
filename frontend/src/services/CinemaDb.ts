@@ -61,7 +61,7 @@ export default class CinemaDb extends Dexie {
     this.version(1).stores({
       cinemas: 'id, displayName, url, shopUrl, color',
       movies: 'id, displayName, releaseDate, runtime',
-      showTimes: 'id, startTime, endTime, movie, cinema, language, type, [startTime+cinema+movie]',
+      showTimes: 'id, startTime, endTime, movie, cinema, language, type, [startTime+cinema+movie], url',
       configurations: 'key, value'
     });
 
