@@ -1,4 +1,4 @@
-import Dexie, { Table, type EntityTable } from 'dexie';
+import Dexie, { IndexableTypePart, Table, type EntityTable } from 'dexie';
 import { ShowTime } from "../models/ShowTime";
 import { Movie } from "../models/Movie";
 import { Cinema } from "../models/Cinema";
@@ -61,7 +61,7 @@ export default class CinemaDb extends Dexie {
     this.version(1).stores({
       cinemas: 'id, displayName, url, shopUrl, color',
       movies: 'id, displayName, releaseDate, runtime',
-      showTimes: 'id, startTime, endTime, movie, cinema, language, type, [startTime+cinema+movie], url',
+      showTimes: 'id, date, startTime, endTime, movie, cinema, language, type, [startTime+cinema+movie], url',
       configurations: 'key, value'
     });
 
@@ -152,18 +152,23 @@ export default class CinemaDb extends Dexie {
     return movies;
   }
 
-  private async getFirstShowTimeDate(selectedCinemaIds: number[], selectedMovieIds: number[]): Promise<Date> {
-    let showTimesQuery = this.showTimes.where('startTime').above(new Date().toISOString());
-    if (selectedCinemaIds.length > 0)
-      showTimesQuery = showTimesQuery.and(item => selectedCinemaIds.some(e => e == item.cinema));
-    // if (selectedMovieIds.length > 0)
-    //   showTimesQuery = showTimesQuery.and(item => selectedMovieIds.some(e => e == item.movie));
+  public async getFirstShowTimeDate(selectedCinemaIds: number[], selectedMovieIds: number[]): Promise<Date> {
 
-    const showTimes = await showTimesQuery.toArray();
-    const firstShowTime = showTimes.reduce((prev, current) => {
-      return (prev.startTime < current.startTime) ? prev : current;
-    });
-    return new Date(firstShowTime.startTime);
+    // If all cinemas and movies are selected, return the current date
+    if (selectedCinemaIds.length == await this.cinemas.count() && selectedMovieIds.length == await this.movies.count()) {
+      return new Date();
+    }
+    // get the first showtime date for the selected cinemas and movies
+    let earliestShowTime = await this.showTimes.orderBy('startTime')
+      .and(item => selectedCinemaIds.some(e => e == item.cinema) && selectedMovieIds.some(e => e == item.movie))
+      .and(item => new Date(item.startTime) > new Date())
+      .first();
+
+    if (!earliestShowTime) {
+      return new Date();
+    }
+
+    return new Date(earliestShowTime.startTime);
 
   }
 
@@ -259,25 +264,38 @@ export default class CinemaDb extends Dexie {
     // return eventDays;
 
     // Get the first showtime date, if the start date is before the first showtime date, set the start date to the first showtime date
-    const firstShowTimeDate = await this.getFirstShowTimeDate(selectedCinemaIds, selectedMovieIds);
-    if (startDate < firstShowTimeDate) {
-      startDate = firstShowTimeDate;
-    }
-
     // Calculate the end date
-    let endDate = new Date(startDate);
-    endDate.setDate(endDate.getDate() + visibleDays);
+
+
+    // To fill up the requested visible days, we need to get the nth day for that range.
+    let lastShowTimeDate: Date | undefined;
+    const fallBackDate = new Date(startDate.getDate() + visibleDays);
+
+    await this.showTimes
+      .orderBy('date')
+      .and(showtime => selectedCinemaIds.includes(showtime.cinema) && selectedMovieIds.includes(showtime.movie))
+      .uniqueKeys(e => {
+
+        let element: IndexableTypePart | undefined;
+        if (e.length <= visibleDays) {
+          element = e.at(e.length - 1);
+        } else {
+          element = e.at(visibleDays - 1);
+        }
+        lastShowTimeDate = new Date(element?.toString() ?? fallBackDate);
+
+      });
+
+
+    console.log(lastShowTimeDate);
+
+    let endDate: Date = lastShowTimeDate ?? new Date(startDate.getDate() + visibleDays);
 
     let showTimesQuery = this.showTimes
       .orderBy('[startTime+cinema+movie]')
-      .and(showtime => new Date(showtime.startTime) >= startDate);
-    if (selectedCinemaIds.length > 0) {
-      showTimesQuery = showTimesQuery.and(showtime => selectedCinemaIds.includes(showtime.cinema))
-    }
-    // if (selectedMovieIds.length > 0) {
-    //   showTimesQuery = showTimesQuery.and(showtime => selectedMovieIds.includes(showtime.movie))
-    // }
-const    showTimes= await showTimesQuery.toArray();
+      .and(showtime => showtime.startTime >= startDate && showtime.endTime < endDate)
+      .and(showtime => selectedCinemaIds.includes(showtime.cinema) && selectedMovieIds.includes(showtime.movie));
+    const showTimes = await showTimesQuery.toArray();
 
     const events: EventData[] = await Promise.all(showTimes.map(async st => {
 
@@ -295,8 +313,6 @@ const    showTimes= await showTimesQuery.toArray();
         st.type,
       );
     }));
-
-    console.log(events);
 
     return this.splitEventsByDay(events);
 

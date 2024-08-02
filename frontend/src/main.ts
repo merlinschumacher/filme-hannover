@@ -22,7 +22,7 @@ const filterService = new FilterService();
 let swiper: Swiper = null!;
 let lastVisibleDate = new Date();
 
-function getVisibleDays() {
+function getVisibleDays(): number {
   var width = window.innerWidth;
   daySizeMap.forEach((value, key) => {
     if (width < key) {
@@ -93,11 +93,7 @@ function buildCinemaStyleSheet(cinemas: Cinema[]) {
 
 function getNextDateRange(): { startDate: Date, visibleDays: number } {
   let startDate = lastVisibleDate;
-  const visibleDays = getVisibleDays();
-  let endDate = new Date(lastVisibleDate.getTime());
-  // Get the next visible days but multiply by 2 to allow for a buffer
-  endDate = new Date(endDate.setDate(endDate.getDate() + (visibleDays * 2)));
-  lastVisibleDate = endDate;
+  const visibleDays = getVisibleDays() * 2;
   return { startDate, visibleDays };
 }
 
@@ -106,11 +102,11 @@ async function initFilter(): Promise<void> {
   var movies = await filterService.getMovies();
   const filterModal = FilterModal.BuildElement(cinemas, movies);
   filterModal.onFilterChanged = async (cinemas, movies) => {
-    filterService.setSelectedCinemas(cinemas);
-    filterService.setSelectedMovies(movies);
+    await filterService.setSelectedCinemas(cinemas);
+    await filterService.setSelectedMovies(movies);
     lastVisibleDate = new Date();
     swiper.removeAllSlides();
-    updateEvents();
+    await updateEvents();
   }
   updateEvents();
   const app = document.querySelector('#app-root')!;
@@ -124,7 +120,10 @@ async function updateEvents(): Promise<void> {
 }
 async function addEventSlides(startDate: Date, visibleDays: number): Promise<void> {
   const eventDays = await filterService.getEvents(startDate, visibleDays);
-  let lastDate = new Date(eventDays.keys().next().value).getTime();
+  // Get last date in the event list
+  let lastDate = new Date([...eventDays.keys()].pop() ?? startDate).getTime();
+  // Set the last visible date to the last date in the event list
+  lastVisibleDate = new Date(lastDate);
   eventDays.forEach((dayEvents, date) => {
     const dateTime = new Date(date).getTime()
     const dateDiff = dateTime - lastDate;

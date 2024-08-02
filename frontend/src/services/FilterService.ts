@@ -22,6 +22,7 @@ export default class FilterService {
     this.availableMovies = await this.db.getAllMovies();
     this.availableCinemas = await this.db.getAllCinemas();
     this.selectedCinemas = this.availableCinemas;
+    this.selectedMovies = this.availableMovies;
   }
 
   public async getMovies(): Promise<Movie[]> {
@@ -70,8 +71,16 @@ export default class FilterService {
 
   public async getEvents(startDate: Date, visibleDays: number): Promise<Map<string, EventData[]>> {
     await this.initializationPromise;
+
     var selectedCinemaIds = this.selectedCinemas.map(c => c.id);
     var selectedMovieIds = this.selectedMovies.map(m => m.id);
+    const firstShowTimeDate = await this.db.getFirstShowTimeDate(selectedCinemaIds, selectedMovieIds);
+
+    if (startDate < firstShowTimeDate) {
+      startDate = firstShowTimeDate;
+    }
+
+
     return this.db.getEvents(startDate, visibleDays, selectedCinemaIds, selectedMovieIds);
   }
 

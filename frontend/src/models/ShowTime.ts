@@ -4,6 +4,7 @@ import { ShowTimeType } from "./ShowTimeType";
 
 export interface ShowTime {
   id: number;
+  date: Date;
   startTime: Date;
   endTime: Date;
   movie: number;

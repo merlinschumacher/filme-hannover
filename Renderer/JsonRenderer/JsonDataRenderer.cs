@@ -30,6 +30,7 @@ namespace kinohannover.Renderer.JsonRenderer
     public record ShowTimeDto
     {
         public required int Id { get; init; }
+        public DateTime Date { get; init; }
         public DateTime StartTime { get; init; }
         public DateTime EndTime { get; init; }
         public int Movie { get; init; }
@@ -73,6 +74,7 @@ namespace kinohannover.Renderer.JsonRenderer
                 ShowTimes = context.ShowTime.OrderBy(e => e.StartTime).Select(s => new ShowTimeDto
                 {
                     Id = s.Id,
+                    Date = s.StartTime.ToUniversalTime().Date,
                     StartTime = s.StartTime.ToUniversalTime(),
                     EndTime = s.StartTime.Add(s.Movie.Runtime ?? Constants.AverageMovieRuntime).ToUniversalTime(),
                     Movie = s.Movie.Id,
