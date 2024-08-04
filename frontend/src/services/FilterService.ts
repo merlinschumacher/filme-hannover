@@ -5,41 +5,42 @@ import { Movie } from '../models/Movie';
 import CinemaDb from './CinemaDb';
 
 export default class FilterService {
-  private db = new CinemaDb();
+  private db: CinemaDb = null!
   private availableMovies: Movie[] = [];
   private availableCinemas: Cinema[] = [];
   private selectedMovies: Movie[] = [];
   private selectedCinemas: Cinema[] = [];
-  private initializationPromise: Promise<void>;
   public resultListChanged?: () => void;
 
-  constructor() {
-    this.initializationPromise = this.initialize();
+  private constructor(CinemaDb: CinemaDb) {
+    this.db = CinemaDb;
+    this.initialize();
+  }
+
+  public static async Init(): Promise<FilterService> {
+    const db = await CinemaDb.Create();
+    return new FilterService(db);
   }
 
   private async initialize(): Promise<void> {
-    await this.db.open();
     this.availableMovies = await this.db.getAllMovies();
     this.availableCinemas = await this.db.getAllCinemas();
     this.selectedCinemas = this.availableCinemas;
     this.selectedMovies = this.availableMovies;
   }
 
-  public async getMovies(): Promise<Movie[]> {
-    await this.initializationPromise;
+  public async getAllMovies(): Promise<Movie[]> {
     if (this.selectedMovies.length === 0) {
       return this.availableMovies;
     }
     return this.availableMovies;
   }
 
-  public async getCinemas(): Promise<Cinema[]> {
-    await this.initializationPromise;
+  public async getAllCinemas(): Promise<Cinema[]> {
     return this.availableCinemas;
   }
 
   public async setSelectedMovies(movies: Movie[]): Promise<void> {
-    await this.initializationPromise;
     if (movies.length === 0 && this.selectedCinemas.length === 0) {
       this.selectedMovies = await this.db.getAllMovies();
     } else if (movies.length === 0) {
@@ -55,7 +56,6 @@ export default class FilterService {
   }
 
   public async setSelectedCinemas(cinemas: Cinema[]): Promise<void> {
-    await this.initializationPromise;
     if (cinemas.length === 0 && this.selectedMovies.length === 0) {
       this.selectedCinemas = await this.db.getAllCinemas();
     } else if (cinemas.length === 0) {
@@ -69,8 +69,7 @@ export default class FilterService {
     }
   }
 
-  public async getEvents(startDate: Date, visibleDays: number): Promise<Map<string, EventData[]>> {
-    await this.initializationPromise;
+  public async getEvents(startDate: Date, visibleDays: number): Promise<Map<Date, EventData[]>> {
 
     var selectedCinemaIds = this.selectedCinemas.map(c => c.id);
     var selectedMovieIds = this.selectedMovies.map(m => m.id);
@@ -80,12 +79,10 @@ export default class FilterService {
       startDate = firstShowTimeDate;
     }
 
-
     return this.db.getEvents(startDate, visibleDays, selectedCinemaIds, selectedMovieIds);
   }
 
   public async getDataVersion(): Promise<string> {
-    await this.initializationPromise;
     return this.db.dataVersionDate.toLocaleString();
   }
 }

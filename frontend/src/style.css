@@ -97,19 +97,31 @@ body > h1:first-of-type {
   font-size: 1.25em;
 }
 
-xswiper-slide {
+/* xswiper-slide {
   height: auto;
   align-self: stretch;
   border: 1px solid var(--light-accent);
   display: flex;
   align-items: stretch;
 }
+*/
 swiper-slide {
   border: 1px solid var(--light-accent);
   align-self: stretch;
   height: auto;
 }
 
+@media (max-width: 320px) {
+  swiper-slide {
+    width: 100%;
+  }
+}
+
+@media (min-width: 321px) {
+  swiper-slide {
+    max-width: 300px;
+  }
+}
 body {
   font-family: var(--font-family);
   font-size: 13px;
