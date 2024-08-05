@@ -1,17 +1,17 @@
-import Dexie, { IndexableTypePart, Table, type EntityTable } from 'dexie';
-import { ShowTime } from "../models/ShowTime";
-import { Movie } from "../models/Movie";
-import { Cinema } from "../models/Cinema";
-import { Configuration } from "../models/Configuration";
+import Dexie, { EntityTable, IndexableTypePart } from 'dexie';
 import { JsonData } from "../models/JsonData";
 import { EventData } from "../models/EventData";
 import HttpClient from './HttpClient';
+import Configuration from '../models/Configuration';
+import Cinema from '../models/Cinema';
+import Movie from '../models/Movie';
+import ShowTime from '../models/ShowTime';
 
 export default class CinemaDb extends Dexie {
-  configurations!: EntityTable<Configuration, 'key'>;
-  cinemas!: Table<Cinema, number>;
-  movies!: Table<Movie, number>;
-  showTimes!: Table<ShowTime, number>;
+  configurations!: EntityTable<Configuration, 'id'>;
+  cinemas!: EntityTable<Cinema, 'id'>;
+  movies!: EntityTable<Movie, 'id'>;
+  showTimes!: EntityTable<ShowTime, 'id'>;
   private readonly dataVersionKey: string = 'dataVersion';
   private readonly remoteDataUrl: string = '/data/data.json';
   private readonly remoteVersionDateUrl: string = '/data/data.json.update';
@@ -21,18 +21,22 @@ export default class CinemaDb extends Dexie {
   private constructor() {
     super('CinemaDb');
     this.version(1).stores({
-      cinemas: 'id, displayName, url, shopUrl, color',
-      movies: 'id, displayName, releaseDate, runtime',
-      showTimes: 'id, date, startTime, endTime, movie, cinema, language, type, [startTime+cinema+movie], url',
-      configurations: 'key, value'
+      cinemas: 'id, displayName',
+      movies: 'id, displayName',
+      showTimes: 'id, date, startTime, endTime, movie, cinema, language, type, [startTime+cinema+movie] ',
+      configurations: 'id'
     });
+
+    this.cinemas.mapToClass(Cinema);
+    this.movies.mapToClass(Movie);
+    this.showTimes.mapToClass(ShowTime);
+    this.configurations.mapToClass(Configuration);
   }
 
   private async init() {
+    console.log('Opening database');
     await this.open();
     await this.checkDataVersion();
-    const dataVersion = await this.configurations.get(this.dataVersionKey);
-    this.dataVersionDate = new Date(dataVersion?.value || 0);
     console.log('Data version: ' + this.dataVersionDate);
     console.log('Cinemas loaded: ' + await this.cinemas.count());
     console.log('Movies loaded: ' + await this.movies.count());
@@ -42,24 +46,29 @@ export default class CinemaDb extends Dexie {
 
   public static async Create() {
     const db = new CinemaDb();
-    return await db.init();
+    await db.init();
+    return db;
   }
 
-
   private async checkDataVersion() {
-    const dataVersionChanged = await this.dataLoadingRequired();
-    if (dataVersionChanged) {
+    const dataVersion = await this.configurations.get(this.dataVersionKey);
+    this.dataVersionDate = new Date(dataVersion?.value || 0);
+    const dataReloadRequired = await this.dataReloadRequired(this.dataVersionDate);
+    if (dataReloadRequired) {
       console.log('Data version changed, loading data.');
       await this.loadData();
     }
   }
 
-  async dataLoadingRequired() {
-    const dateString = await this.configurations.get(this.dataVersionKey);
-    const currentVersionDate = dateString ? new Date(dateString.value) : undefined;
-    const remoteVersionDate = await HttpClient.getDate(this.remoteVersionDateUrl);
-    if (currentVersionDate == undefined || currentVersionDate !== remoteVersionDate) {
-      await this.configurations.put({ key: this.dataVersionKey, value: remoteVersionDate });
+  async dataReloadRequired(currentDataVersion: Date): Promise<boolean> {
+    const remoteVersionText = await (await HttpClient.getData(this.remoteVersionDateUrl))?.text() ?? '0';
+    const remoteVersionDate = new Date(remoteVersionText);
+    if (currentDataVersion.toDateString() !== remoteVersionDate.toDateString()) {
+      try {
+        await this.configurations.put({ id: this.dataVersionKey, value: remoteVersionDate });
+      } catch (error) {
+        console.error(error);
+      }
       return true;
     }
     return false;
@@ -68,32 +77,28 @@ export default class CinemaDb extends Dexie {
   async loadData() {
     const response = await fetch(new URL(this.remoteDataUrl, window.location.href));
     const data: JsonData = await response.json();
-    this.delete({ disableAutoOpen: false });
-    this.cinemas.bulkAdd(data.cinemas);
-    this.movies.bulkAdd(data.movies);
-    this.showTimes.bulkAdd(data.showTimes);
+    try {
+      await this.transaction('rw', this.cinemas, this.movies, this.showTimes, async () => {
+        await this.cinemas.clear();
+        await this.cinemas.bulkAdd(data.cinemas);
+        await this.movies.clear();
+        await this.movies.bulkAdd(data.movies);
+        await this.showTimes.clear();
+        await this.showTimes.bulkAdd(data.showTimes);
+      });
+    } catch (error) {
+      console.error(error);
+    };
+    return Promise.resolve();
   }
 
-  async getCinemasForMovies(movies: Movie[]): Promise<Cinema[]> {
-    const movieIds = movies.map(m => m.id);
-    const showTimes = await this.showTimes.where('movie').anyOf(movieIds).toArray();
-    const cinemaIds = showTimes.map(st => st.cinema);
-    return this.cinemas.where('id').anyOf(cinemaIds).toArray();
-  }
-
-  async getMoviesForCinemas(cinemas: Cinema[]): Promise<Movie[]> {
-    const cinemaIds = cinemas.map(c => c.id);
-    const showTimes = await this.showTimes.where('cinema').anyOf(cinemaIds).toArray();
-    const movieIds = showTimes.map(st => st.movie);
-    return this.movies.where('id').anyOf(movieIds).toArray();
-  }
 
   async getAllCinemas(): Promise<Cinema[]> {
     return this.cinemas.orderBy('displayName').toArray();
   }
 
   async getAllMovies(): Promise<Movie[]> {
-    return this.movies.toArray();
+    return this.movies.orderBy('displayName').toArray();
   }
   async getAllMoviesOrderedByShowTimeCount(): Promise<Movie[]> {
     const startDateString = new Date().toISOString();

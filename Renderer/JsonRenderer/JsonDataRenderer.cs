@@ -101,8 +101,8 @@ namespace kinohannover.Renderer.JsonRenderer
             {
                 ContractResolver = contractResolver,
                 Formatting = Formatting.None,
-                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                PreserveReferencesHandling = PreserveReferencesHandling.Objects,
+                //ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                //PreserveReferencesHandling = PreserveReferencesHandling.Objects,
                 DateTimeZoneHandling = DateTimeZoneHandling.Utc,
             });
             File.WriteAllText(path, serializedEventSources);

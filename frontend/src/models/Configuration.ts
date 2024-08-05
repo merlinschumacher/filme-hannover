@@ -1,5 +1,7 @@
+import { Entity } from "dexie";
+import CinemaDb from "../services/CinemaDb";
 
-export interface Configuration {
-  key: string;
-  value: any;
+export default class Configuration extends Entity<CinemaDb> {
+  id!: string;
+  value!: any;
 }

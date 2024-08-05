@@ -1,9 +1,9 @@
 import html from './filter-modal.component.html?inline';
 import css from './filter-modal.component.css?inline';
-import { Cinema } from '../../models/Cinema';
 import CheckableButtonElement from '../checkable-button/checkable-button.component';
-import { Movie } from '../../models/Movie';
 import SelectionListElement from '../selection-list/selection-list.component';
+import Cinema from '../../models/Cinema';
+import Movie from '../../models/Movie';
 
 const style = new CSSStyleSheet();
 style.replaceSync(css);

@@ -3,10 +3,10 @@ import './style.css';
 import "swiper/element/css/grid";
 import FilterModal from "./components/filter-modal/filter-modal.component";
 import FilterService from "./services/FilterService";
-import { Cinema } from "./models/Cinema";
 import ViewPortService from "./services/ViewPortService";
 import { EventData } from "./models/EventData";
 import SwiperService from "./services/SwiperService";
+import Cinema from "./models/Cinema";
 
 export class Application {
   private filterService: FilterService = null!;
@@ -16,23 +16,25 @@ export class Application {
   private visibleDays: number = this.viewPortService.getVisibleDays();
 
   private constructor() {
-    this.init().then(() => {
-      this.updateSwiper();
-    });
   }
 
   private async init() {
-    this.filterService = await FilterService.Init();
-    document.adoptedStyleSheets = [this.buildSlideStyleSheet(), this.buildCinemaStyleSheet(await this.filterService.getAllCinemas())];
-    const filterModal = await this.initFilter();
+    console.log('Initializing application...');
+    this.filterService = await FilterService.Create();
+    const cinemas = await this.filterService.getAllCinemas();
+    document.adoptedStyleSheets = [this.buildSlideStyleSheet(), this.buildCinemaStyleSheet(cinemas)]
     const filterModalEl = document.querySelector('#filterModal')!;
+    const filterModal = await this.initFilter();
     filterModalEl.replaceWith(filterModal);
-    // document.querySelector('#lastUpdate')!.textContent = await this.filterService.getDataVersion();
+    document.querySelector('#lastUpdate')!.textContent = await this.filterService.getDataVersion();
     this.swiper.onReachEnd = this.updateSwiper;
+    await this.updateSwiper();
   }
 
   public static async Init(): Promise<Application> {
-    return new Application();
+    const app = new Application();
+    await app.init();
+    return app;
   }
 
   private async initFilter() {
@@ -78,4 +80,4 @@ export class Application {
 
 }
 
-Application.Init().then(app => console.log('Application initialized.', app));
+Application.Init().then(() => console.log('Application running.'));

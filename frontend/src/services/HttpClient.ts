@@ -22,15 +22,4 @@ export default class HttpClient {
       return null;
     }
   }
-
-  static async getDate(url: string) {
-    try {
-      let response = await this.getData(url);
-      if (!response) return null;
-      return new Date(await response.text());
-    } catch (e) {
-      console.error(e);
-      return null;
-    }
-  }
 }

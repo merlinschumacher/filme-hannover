@@ -1,7 +1,7 @@
 
-import { Cinema } from '../models/Cinema';
+import Cinema from '../models/Cinema';
 import { EventData } from '../models/EventData';
-import { Movie } from '../models/Movie';
+import Movie from '../models/Movie';
 import CinemaDb from './CinemaDb';
 
 export default class FilterService {
@@ -14,12 +14,13 @@ export default class FilterService {
 
   private constructor(CinemaDb: CinemaDb) {
     this.db = CinemaDb;
-    this.initialize();
   }
 
-  public static async Init(): Promise<FilterService> {
+  public static async Create(): Promise<FilterService> {
     const db = await CinemaDb.Create();
-    return new FilterService(db);
+    const service = new FilterService(db);
+    await service.initialize();
+    return service;
   }
 
   private async initialize(): Promise<void> {
@@ -48,7 +49,6 @@ export default class FilterService {
     } else {
       this.selectedMovies = movies;
     }
-    this.availableCinemas = await this.db.getCinemasForMovies(this.selectedMovies);
 
     if (this.resultListChanged) {
       this.resultListChanged();
@@ -63,7 +63,6 @@ export default class FilterService {
     } else {
       this.selectedCinemas = cinemas;
     }
-    this.availableMovies = await this.db.getMoviesForCinemas(this.selectedCinemas);
     if (this.resultListChanged) {
       this.resultListChanged();
     }
