@@ -49,7 +49,7 @@ namespace kinohannover.Scrapers
                 return;
             }
 
-            cinemaService.Create(_cinema);
+            _cinema = cinemaService.Create(_cinema);
 
             foreach (var record in records)
             {
