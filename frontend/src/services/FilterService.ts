@@ -70,8 +70,8 @@ export default class FilterService {
 
   public async getEvents(startDate: Date, visibleDays: number): Promise<Map<Date, EventData[]>> {
 
-    var selectedCinemaIds = this.selectedCinemas.map(c => c.id);
-    var selectedMovieIds = this.selectedMovies.map(m => m.id);
+    const selectedCinemaIds = this.selectedCinemas.map(c => c.id);
+    const selectedMovieIds = this.selectedMovies.map(m => m.id);
     const firstShowTimeDate = await this.db.getFirstShowTimeDate(selectedCinemaIds, selectedMovieIds);
 
     if (startDate < firstShowTimeDate) {

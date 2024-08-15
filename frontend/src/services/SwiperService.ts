@@ -34,8 +34,9 @@ export default class SwiperService {
   public async SetEvents(eventDays: Map<Date, EventData[]>): Promise<void> {
     this.swiper.removeAllSlides();
     let lastDate = new Date();
-    eventDays.forEach((dayEvents, date) => {
 
+    eventDays.forEach((dayEvents, dateString) => {
+      const date = new Date(dateString);
       if (!this.isConsecutiveDate(date, lastDate)) {
         this.addSlide(new EmptyDayElement());
       }
@@ -47,7 +48,7 @@ export default class SwiperService {
   }
 
   private isConsecutiveDate(first: Date, second: Date): boolean {
-    const diff = first.getTime() - second.getTime();
+    const diff = new Date(first).getTime() - new Date(second).getTime();
     return Math.abs(diff) < 86400000;
   }
 

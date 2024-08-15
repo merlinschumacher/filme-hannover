@@ -51,6 +51,7 @@ export class Application {
 
   private updateSwiper = async () => {
     const eventDays = await this.getEvents(this.lastVisibleDate, this.visibleDays);
+    console.log('Updating swiper with', eventDays.size);
     await this.swiper.SetEvents(eventDays);
   };
 
