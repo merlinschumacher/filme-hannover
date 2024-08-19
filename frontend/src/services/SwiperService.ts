@@ -8,32 +8,42 @@ import { EventData } from "../models/EventData";
 register();
 
 export default class SwiperService {
-
   public onReachEnd?: () => void;
 
   private swiper: Swiper;
 
   constructor() {
-    const swiperEl = document.querySelector('swiper-container') as SwiperContainer;
+    const swiperEl = document.querySelector(
+      "swiper-container"
+    ) as SwiperContainer;
     const swiperParams: SwiperOptions = {
       modules: [Manipulation],
-      slidesPerView: "auto"
+      slidesPerView: "auto",
     };
     Object.assign(swiperEl, swiperParams);
 
     swiperEl.initialize();
     this.swiper = swiperEl.swiper;
+
+    this.swiper.on("reachEnd", () => {
+      if (this.onReachEnd) {
+        this.onReachEnd();
+      }
+    });
+  }
+
+  public ClearSlider(): void {
+    this.swiper.removeAllSlides();
   }
 
   private addSlide(slideContent: HTMLElement): void {
-    const swiperSlide = document.createElement('swiper-slide');
+    const swiperSlide = document.createElement("swiper-slide");
     swiperSlide.appendChild(slideContent);
     this.swiper.appendSlide(swiperSlide);
   }
 
   public async SetEvents(eventDays: Map<Date, EventData[]>): Promise<void> {
-    this.swiper.removeAllSlides();
-    let lastDate = new Date();
+    let lastDate = eventDays.keys().next().value;
 
     eventDays.forEach((dayEvents, dateString) => {
       const date = new Date(dateString);
@@ -42,14 +52,19 @@ export default class SwiperService {
       }
       const dayList = DayListElement.BuildElement(date, dayEvents);
       this.addSlide(dayList);
+      lastDate = date;
     });
     this.swiper.update();
     return Promise.resolve();
   }
 
   private isConsecutiveDate(first: Date, second: Date): boolean {
-    const diff = new Date(first).getTime() - new Date(second).getTime();
-    return Math.abs(diff) < 86400000;
+    const firstDate = new Date(first.getFullYear(), first.getMonth(), first.getDate());
+    const secondDate = new Date(second.getFullYear(), second.getMonth(), second.getDate());
+    const diff = (firstDate.getTime() - secondDate.getTime()) / (1000 * 60 * 60 * 24);
+    if (diff === 0) {
+      return true;
+    }
+    return Math.abs(diff) === 1;
   }
-
 }

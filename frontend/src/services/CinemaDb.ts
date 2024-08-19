@@ -36,7 +36,7 @@ export default class CinemaDb extends Dexie {
   }
 
   private async init() {
-    console.log("Opening database");
+    console.log("Opening database...");
     await this.open();
     await this.checkDataVersion();
     console.log("Data version: " + this.dataVersionDate);
@@ -155,7 +155,7 @@ export default class CinemaDb extends Dexie {
     return movies;
   }
 
-  public async getFirstShowTimeDate(
+  public async GetFirstShowTimeDate(
     selectedCinemaIds: number[],
     selectedMovieIds: number[]
   ): Promise<Date> {
@@ -184,60 +184,15 @@ export default class CinemaDb extends Dexie {
     return new Date(earliestShowTime.startTime);
   }
 
-  async getEvents(
+
+  public async GetEvents(
     startDate: Date,
-    visibleDays: number,
+    endDate: Date,
     selectedCinemaIds: number[],
     selectedMovieIds: number[]
-  ): Promise<Map<Date, EventData[]>> {
-    // Get the first showtime date, if the start date is before the first showtime date, set the start date to the first showtime date
-    const firstShowTimeDate = await this.getFirstShowTimeDate(
-      selectedCinemaIds,
-      selectedMovieIds
-    );
-    if (startDate < firstShowTimeDate) {
-      startDate = firstShowTimeDate;
-    }
-
-    // To fill up the requested visible days, we need to get the nth day for that range.
-    const endDate: Date = await this.getEndDate(
-      startDate,
-      selectedCinemaIds,
-      selectedMovieIds,
-      visibleDays
-    );
-
-    let eventData: EventData[] = await this.getEventData(startDate, endDate, selectedCinemaIds, selectedMovieIds);
-
-    // Split the events into days
-    let eventsByDay = new Map<string, EventData[]>();
-    eventData.forEach((event) => {
-      const date = event.startTime;
-      if (!eventsByDay.has(date.toISOString())) {
-        eventsByDay.set(date.toISOString(), []);
-      }
-      eventsByDay.get(date.toISOString())?.push(event);
-    });
-
-    console.log(eventsByDay);
-
-    let eventsByDayDateKey = new Map<Date, EventData[]>();
-    eventsByDay.forEach((value, key) => {
-      eventsByDayDateKey.set(new Date(key), value);
-    });
-
-    console.log(eventsByDayDateKey);
-
-    return eventsByDayDateKey;
-
-    // Get the movie and cinema data for the showtimes
-
-    // .and(showtime => selectedCinemaIds.includes(showtime.cinema) && selectedMovieIds.includes(showtime.movie));
-  }
-
-  private async getEventData(startDate: Date, endDate: Date, selectedCinemaIds: number[], selectedMovieIds: number[]) {
+  ) {
     let eventData: EventData[] = [];
-   await this.transaction(
+    await this.transaction(
       "r",
       this.showTimes,
       this.cinemas,
@@ -247,7 +202,8 @@ export default class CinemaDb extends Dexie {
           .where("startTime")
           .between(startDate, endDate)
           .and(
-            (showtime) => selectedCinemaIds.includes(showtime.cinema) &&
+            (showtime) =>
+              selectedCinemaIds.includes(showtime.cinema) &&
               selectedMovieIds.includes(showtime.movie)
           )
           .sortBy("startTime");
@@ -267,7 +223,7 @@ export default class CinemaDb extends Dexie {
     return eventData;
   }
 
-  private async getEndDate(
+  public async getEndDate(
     startDate: Date,
     selectedCinemaIds: number[],
     selectedMovieIds: number[],
@@ -277,12 +233,12 @@ export default class CinemaDb extends Dexie {
     endDate.setDate(startDate.getDate() + visibleDays);
     await this.showTimes
       .orderBy("date")
-      .and((st) => st.date >= startDate)
-      .and(
-        (showtime) =>
-          selectedCinemaIds.includes(showtime.cinema) &&
-          selectedMovieIds.includes(showtime.movie)
-      )
+          .and(
+            (showtime) =>
+              showtime.startTime >= startDate &&
+              selectedCinemaIds.includes(showtime.cinema) &&
+              selectedMovieIds.includes(showtime.movie)
+          )
       .uniqueKeys((e) => {
         let element: IndexableTypePart | undefined;
         if (e.length < visibleDays) {
@@ -290,11 +246,11 @@ export default class CinemaDb extends Dexie {
         } else {
           element = e.at(visibleDays - 1);
         }
-        endDate = element as Date;
+        if (element) {
+          endDate = element as Date;
+        }
       });
 
-    // Set the end date to the end of the day, so that it includes all showtimes on the last day
-    endDate.setUTCHours(23, 59, 59, 999);
     return endDate;
   }
 }
