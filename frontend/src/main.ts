@@ -19,7 +19,7 @@ export class Application {
   private async init() {
     console.log("Initializing application...");
     this.filterService = await FilterService.Create();
-    const cinemas = await this.filterService.getAllCinemas();
+    const cinemas = await this.filterService.GetAllCinemas();
     document.adoptedStyleSheets = [
       this.buildSlideStyleSheet(),
       this.buildCinemaStyleSheet(cinemas),
@@ -29,8 +29,8 @@ export class Application {
     filterModalEl.replaceWith(filterModal);
     document.querySelector("#lastUpdate")!.textContent =
       await this.filterService.getDataVersion();
-    this.swiper.onReachEnd = this.UpdateSwiper;
-    await this.UpdateSwiper();
+    this.swiper.onReachEnd = this.updateSwiper;
+    await this.updateSwiper();
   }
 
   public static async Init(): Promise<Application> {
@@ -40,21 +40,21 @@ export class Application {
   }
 
   private async initFilter() {
-    const movies = await this.filterService.getAllMovies();
-    const cinemas = await this.filterService.getAllCinemas();
+    const movies = await this.filterService.GetAllMovies();
+    const cinemas = await this.filterService.GetAllCinemas();
     const filterModal = FilterModal.BuildElement(cinemas, movies);
     filterModal.onFilterChanged = async (cinemas, movies) => {
       this.lastVisibleDate = new Date();
-      await this.filterService.setSelection(cinemas, movies);
+      await this.filterService.SetSelection(cinemas, movies);
     };
     this.filterService.resultListChanged = async () => {
       this.swiper.ClearSlider();
-      return this.UpdateSwiper();
+      return this.updateSwiper();
     };
     return filterModal;
   }
 
-  private UpdateSwiper = async () => {
+  private updateSwiper = async () => {
     const eventDataResult = await this.filterService.GetEvents(
       this.lastVisibleDate,
       this.visibleDays

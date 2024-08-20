@@ -11,6 +11,7 @@ export default class SwiperService {
   public onReachEnd?: () => void;
 
   private swiper: Swiper;
+  private onReachendEnabled: boolean = false;
 
   constructor() {
     const swiperEl = document.querySelector(
@@ -26,13 +27,14 @@ export default class SwiperService {
     this.swiper = swiperEl.swiper;
 
     this.swiper.on("reachEnd", () => {
-      if (this.onReachEnd) {
+      if (this.onReachEnd && this.onReachendEnabled) {
         this.onReachEnd();
       }
     });
   }
 
   public ClearSlider(): void {
+    this.onReachendEnabled = false;
     this.swiper.removeAllSlides();
   }
 
@@ -55,6 +57,7 @@ export default class SwiperService {
       lastDate = date;
     });
     this.swiper.update();
+    this.onReachendEnabled = true;
     return Promise.resolve();
   }
 
