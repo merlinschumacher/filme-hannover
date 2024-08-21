@@ -1,9 +1,10 @@
 // vite.config.js
 import { defineConfig } from 'vite'
 import { minify } from 'html-minifier';
+import eslintPlugin from "@nabla/vite-plugin-eslint";
 
 export default defineConfig({
-  plugins: [htmlMinify()],
+  plugins: [htmlMinify(), eslintPlugin()],
   build: {
     target: 'esnext',
   },
