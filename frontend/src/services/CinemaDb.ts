@@ -1,4 +1,6 @@
-import Dexie, { EntityTable, IndexableTypePart } from "dexie";
+import Dexie, {
+  EntityTable,
+} from "dexie";
 import { JsonData } from "../models/JsonData";
 import { EventData } from "../models/EventData";
 import HttpClient from "./HttpClient";
@@ -25,7 +27,7 @@ export default class CinemaDb extends Dexie {
       cinemas: "id, displayName",
       movies: "id, displayName",
       showTimes:
-        "id, date, startTime, endTime, movie, cinema, language, type",
+        "id, date, startTime, endTime, movie, cinema, language, type, [movie+cinema]",
       configurations: "id",
     });
 
@@ -139,7 +141,7 @@ export default class CinemaDb extends Dexie {
     let earliestShowTime = await this.showTimes
       .orderBy("startTime")
       .and(
-        showTime =>
+        (showTime) =>
           showTime.startTime.getTime() >= new Date().getTime() &&
           selectedCinemaIds.some((e) => e == showTime.cinema) &&
           selectedMovieIds.some((e) => e == showTime.movie)
@@ -167,9 +169,10 @@ export default class CinemaDb extends Dexie {
       this.movies,
       async () => {
         const showTimeResults = await this.showTimes
-          .where("startTime")
+          .where("date")
           .between(startDate, endDate)
-          .and(showtime =>
+          .and(
+            (showtime) =>
               selectedCinemaIds.includes(showtime.cinema) &&
               selectedMovieIds.includes(showtime.movie)
           )
@@ -200,28 +203,29 @@ export default class CinemaDb extends Dexie {
     endDate.setDate(startDate.getDate() + visibleDays);
     await this.showTimes
       .orderBy("date")
-      .uniqueKeys((e) => {
-        console.log(e);
-      });
-    await this.showTimes
-      .orderBy("date")
-      .and(showtime =>
-          showtime.startTime.getTime() >= startDate.getTime() &&
+      .filter(
+        (showtime) =>
+          showtime.date.getTime() >= startDate.getTime() &&
           selectedCinemaIds.includes(showtime.cinema) &&
           selectedMovieIds.includes(showtime.movie)
       )
-      .uniqueKeys((e) => {
-        let element: IndexableTypePart | undefined;
-        if (e.length < visibleDays) {
-          element = e.at(e.length - 1);
+      .keys((e) => {
+        const uniqueDates = Array.from(
+          new Set(e.map((d) => (d as Date).getTime()))
+        );
+        let result: Date | undefined;
+        if (uniqueDates.length === 0) {
+          return startDate;
+        } else if (uniqueDates.length < visibleDays) {
+          result = new Date(uniqueDates[uniqueDates.length - 1]);
         } else {
-          element = e.at(visibleDays - 1);
+          result = new Date(uniqueDates[visibleDays - 1]);
         }
-        if (element) {
-          endDate = element as Date;
+        if (result) {
+          endDate = result;
         }
       });
-
+    endDate.setUTCHours(23, 59, 59, 999);
     return endDate;
   }
 }
