@@ -1,5 +1,6 @@
 import Dexie, {
   EntityTable,
+  IndexableTypePart,
 } from "dexie";
 import { JsonData } from "../models/JsonData";
 import { EventData } from "../models/EventData";
@@ -155,41 +156,36 @@ export default class CinemaDb extends Dexie {
     return earliestShowTime.startTime;
   }
 
-  public async GetEvents(
+  public async GetEventData(
     startDate: Date,
     endDate: Date,
     selectedCinemaIds: number[],
     selectedMovieIds: number[]
-  ) {
-    let eventData: EventData[] = [];
-    await this.transaction(
-      "r",
-      this.showTimes,
-      this.cinemas,
-      this.movies,
-      async () => {
-        const showTimeResults = await this.showTimes
-          .where("date")
-          .between(startDate, endDate)
-          .and(
-            (showtime) =>
-              selectedCinemaIds.includes(showtime.cinema) &&
-              selectedMovieIds.includes(showtime.movie)
-          )
-          .sortBy("startTime");
+  ): Promise<EventData[]> {
+    const showTimeResults = await this.showTimes
+      .where("startTime")
+      .between(startDate, endDate)
+      .and(showtime =>
+        selectedCinemaIds.includes(showtime.cinema) &&
+        selectedMovieIds.includes(showtime.movie)
+      )
+      .sortBy("startTime");
 
-        showTimeResults.forEach(async (st) => {
-          const cinema = await this.cinemas.get(st.cinema);
-          const movie = await this.movies.get(st.movie);
+    const eventDataPromises = showTimeResults.map(async (st) => {
+      const cinema = await this.cinemas.get(st.cinema);
+      const movie = await this.movies.get(st.movie);
 
-          if (!cinema || !movie) {
-            return;
-          }
-
-          eventData.push(new EventData(st, movie, cinema));
-        });
+      if (!cinema || !movie) {
+        return null;
       }
-    );
+
+      return new EventData(st, movie, cinema);
+    });
+
+    const eventData = (await Promise.all(eventDataPromises)).filter(
+      (data) => data !== null
+    ) as EventData[];
+
     return eventData;
   }
 
@@ -199,9 +195,8 @@ export default class CinemaDb extends Dexie {
     selectedMovieIds: number[],
     visibleDays: number
   ): Promise<Date> {
-    let endDate = new Date();
-    endDate.setDate(startDate.getDate() + visibleDays);
-    await this.showTimes
+
+    const showTimes = await this.showTimes
       .orderBy("date")
       .filter(
         (showtime) =>
@@ -209,22 +204,21 @@ export default class CinemaDb extends Dexie {
           selectedCinemaIds.includes(showtime.cinema) &&
           selectedMovieIds.includes(showtime.movie)
       )
-      .keys((e) => {
-        const uniqueDates = Array.from(
-          new Set(e.map((d) => (d as Date).getTime()))
-        );
-        let result: Date | undefined;
-        if (uniqueDates.length === 0) {
-          return startDate;
-        } else if (uniqueDates.length < visibleDays) {
-          result = new Date(uniqueDates[uniqueDates.length - 1]);
-        } else {
-          result = new Date(uniqueDates[visibleDays - 1]);
-        }
-        if (result) {
-          endDate = result;
-        }
-      });
+      .keys();
+
+    const uniqueDates = Array.from(
+      new Set(showTimes.map((d: IndexableTypePart) => (d as Date).getTime()))
+    );
+
+    let endDate = new Date(startDate);
+    if (uniqueDates.length === 0) {
+      endDate.setDate(startDate.getDate() + visibleDays);
+    } else if (uniqueDates.length < visibleDays) {
+      endDate = new Date(uniqueDates[uniqueDates.length - 1]);
+    } else {
+      endDate = new Date(uniqueDates[visibleDays - 1]);
+    }
+
     endDate.setUTCHours(23, 59, 59, 999);
     return endDate;
   }

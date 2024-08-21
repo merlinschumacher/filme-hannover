@@ -87,7 +87,7 @@ export default class FilterService {
       visibleDays
     );
 
-    const events = await this.db.GetEvents(startDate, endDate, selectedCinemaIds, selectedMovieIds);
+    const events = await this.db.GetEventData(startDate, endDate, selectedCinemaIds, selectedMovieIds);
     const lastEventTime = events[events.length - 1].startTime;
     const splitEvents = await this.splitEventsIntoDays(events);
 
