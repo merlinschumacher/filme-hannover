@@ -7,9 +7,12 @@ export default defineConfig({
   plugins: [htmlMinify(), eslintPlugin()],
   build: {
     target: 'esnext',
+    minify: 'esbuild',
   },
   esbuild: {
     treeShaking: true,
+    pure: [ 'console.log' ],
+    minifyIdentifiers: true,
   }
 });
 

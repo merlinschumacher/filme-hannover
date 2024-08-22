@@ -1,6 +1,5 @@
 import "inter-ui/inter-variable-latin.css";
 import "./style.css";
-import "swiper/element/css/grid";
 import FilterModal from "./components/filter-modal/filter-modal.component";
 import FilterService from "./services/FilterService";
 import ViewPortService from "./services/ViewPortService";
