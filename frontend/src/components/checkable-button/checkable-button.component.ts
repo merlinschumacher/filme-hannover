@@ -1,4 +1,4 @@
-import html from './checkable-button.component.html?inline';
+import html from './checkable-button.component.html?raw';
 import css from './checkable-button.component.css?inline';
 import Checkbox from '@material-symbols/svg-400/outlined/circle.svg?raw'
 import CheckboxChecked from '@material-symbols/svg-400/outlined/check_circle.svg?raw'

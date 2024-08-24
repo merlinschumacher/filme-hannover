@@ -2,8 +2,6 @@
   display: flex;
   height: 100%;
   flex-direction: column;
-  align-self: stretch;
-  max-width: 320px;
   border: 1px solid var(--light-accent);
 
 }

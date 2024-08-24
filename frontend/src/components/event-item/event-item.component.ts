@@ -1,5 +1,5 @@
 
-import html from './event-item.component.html?inline';
+import html from './event-item.component.html?raw';
 import css from './event-item.component.css?inline';
 import { EventData } from '../../models/EventData';
 import { SlotSpanFactory } from '../component-helpers';

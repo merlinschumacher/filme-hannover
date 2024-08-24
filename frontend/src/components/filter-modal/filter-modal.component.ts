@@ -1,4 +1,4 @@
-import html from './filter-modal.component.html?inline';
+import html from './filter-modal.component.html?raw';
 import css from './filter-modal.component.css?inline';
 import CheckableButtonElement from '../checkable-button/checkable-button.component';
 import SelectionListElement from '../selection-list/selection-list.component';

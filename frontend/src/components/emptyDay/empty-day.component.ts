@@ -1,4 +1,4 @@
-import html from './empty-day.component.html?inline';
+import html from './empty-day.component.html?raw';
 import css from './empty-day.component.css?inline';
 
 const style = new CSSStyleSheet();

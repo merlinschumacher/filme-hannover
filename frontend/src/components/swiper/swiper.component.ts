@@ -1,4 +1,4 @@
-import html from "./swiper.component.html?inline";
+import html from "./swiper.component.html?raw";
 import css from "./swiper.component.css?inline";
 import { ScrollSnapDraggable, ScrollSnapSlider } from "scroll-snap-slider";
 
@@ -23,10 +23,19 @@ export default class Swiper extends HTMLElement {
     this.scrollSnapSliderEl = this.shadow.querySelector(".scroll-snap-slider") as HTMLElement;
     this.scrollSnapSlider = new ScrollSnapSlider({
       element: this.scrollSnapSliderEl,
+      sizingMethod (slider) {
+        if (slider.element.firstElementChild) {
+          return slider.element.firstElementChild.clientWidth;
+        }
+        return 0;
+      }
     }).with([
       new ScrollSnapDraggable
     ]);
-    this.scrollSnapSlider.addEventListener("slide-start", function (event: Event) {
+    this.scrollSnapSlider.addEventListener("slide-stop", function (event: Event) {
+      console.log("slide-end", event);
+      console.log(event.target);
+      event.preventDefault();
     });
     this.removeAllSlides();
   }
@@ -42,9 +51,7 @@ export default class Swiper extends HTMLElement {
   }
 
   public removeAllSlides(): void {
-    this.scrollSnapSliderEl.childNodes.forEach((child) => {
-      this.scrollSnapSliderEl.removeChild(child);
-    });
+    this.scrollSnapSliderEl.replaceChildren();
   }
 
   public static BuildElement(): Swiper {

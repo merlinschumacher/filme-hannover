@@ -1,10 +1,13 @@
 // vite.config.js
 import { defineConfig } from 'vite'
-import { minify } from 'html-minifier';
-import eslintPlugin from "@nabla/vite-plugin-eslint";
+import htmlMinifier from 'vite-plugin-html-minifier'
 
 export default defineConfig({
-  plugins: [htmlMinify(), eslintPlugin()],
+  plugins: [
+    htmlMinifier({
+      minify: true,
+    })
+  ],
   build: {
     target: 'esnext',
     minify: 'esbuild',
@@ -13,7 +16,8 @@ export default defineConfig({
     treeShaking: true,
     pure: [ 'console.log' ],
     minifyIdentifiers: true,
-  }
+  },
+  assetsInclude: ['**/*.html'],
 });
 
 const htmlComponentFile = /\.component\.html\?inline$/;
@@ -34,19 +38,20 @@ const minifyHTMLConfig = {
   sortClassName: true,
 };
 
-function htmlMinify() {
-  return {
-    name: 'html-minify',
+// function htmlMinify() {
+//   return {
+//     name: 'html-minify',
 
-    transform(src: string, id: string) {
-      if (htmlComponentFile.test(id)) {
-        return {
-          code: `export default \`${minify(src, minifyHTMLConfig)}\``,
-          map: null,
-        };
-      } else {
-        return;
-      }
-    },
-  };
-}
+//     transform(src: string, id: string) {
+//       if (htmlComponentFile.test(id)) {
+//         return {
+//           code: `export default \`${minify(src, minifyHTMLConfig)}\``,
+//           map: null,
+//         };
+//       } else {
+//         return;
+//       }
+//     },
+//   };
+// }
+

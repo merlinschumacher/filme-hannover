@@ -9,12 +9,10 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@nabla/vite-plugin-eslint": "^2.0.4",
-    "@types/html-minifier": "^4.0.0",
     "eslint": "^9.9.0",
-    "html-minifier": "^4.0.0",
     "typescript": "^5.2.2",
-    "vite": "^5.2.0"
+    "vite": "^5.2.0",
+    "vite-plugin-html-minifier": "^1.0.4"
   },
   "dependencies": {
     "@material-symbols/svg-400": "^0.20.0",

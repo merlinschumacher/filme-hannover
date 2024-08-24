@@ -1,4 +1,4 @@
-import html from './selection-list-item.component.html?inline';
+import html from './selection-list-item.component.html?raw';
 import css from './selection-list-item.component.css?inline';
 import Checkbox from '@material-symbols/svg-400/outlined/circle.svg?raw'
 import CheckboxChecked from '@material-symbols/svg-400/outlined/check_circle.svg?raw'

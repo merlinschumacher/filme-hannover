@@ -1,7 +1,42 @@
 @import 'scroll-snap-slider';
+
+:root {
+  --slide-width: 100%;
+}
+
+@media (min-width: 640px) {
+  :root {
+    --slide-width: 320px;
+  }
+}
+
+.scroll-snap-slider {
+  overscroll-behavior-x: none;
+  overscroll-behavior-y: auto;
+}
+
 .scroll-snap-slide {
-  max-width: 320px;
-  scroll-snap-align: start;
+  width: var(--slide-width);
   flex: 0 0 auto;
   height: auto;
+  scroll-snap-stop: always;
+}
+
+.scroll-snap-slide:last-of-type {
+  scroll-snap-align: end;
+  margin-right: calc(var(--slide-width) / 2);
+}
+
+@media screen and (min-width: 640px) {
+  .scroll-snap-slide {
+    max-width: var(--slide-width);
+  }
+}
+
+.-dragging {
+  cursor: grabbing;
+}
+
+.-dragging a {
+  pointer-events: none;
 }

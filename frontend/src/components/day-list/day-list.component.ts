@@ -1,4 +1,4 @@
-import html from './day-list.component.html?inline';
+import html from './day-list.component.html?raw';
 import css from './day-list.component.css?inline';
 import { EventData } from "../../models/EventData";
 import EventItem from '../event-item/event-item.component';
