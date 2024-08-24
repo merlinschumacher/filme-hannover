@@ -24,13 +24,16 @@ namespace kinohannover.Scrapers
 
         private const string _readMoreSelector = ".//a[contains(@class, 'content__read-more')]";
 
+        private const string _moreButtonSelector = "//button[contains(@class, 'more-items')]";
+
         private readonly Uri _baseUrl = new("https://www.hannover.de/");
 
-        private readonly Uri _dataUrl = new("https://www.hannover.de/Kommunales-Kino/api/v2/view/1274220/0/100/line?identifiers=event&sortField=2&sortOrder=1");
+        private readonly string _dataUrlString = "https://www.hannover.de/Kommunales-Kino/api/v2/view/{0}/0/100/line?identifiers=event&sortField=2&sortOrder=1";
 
         private readonly string _shopLink = "https://www.hannover.de/Kommunales-Kino/";
 
         private readonly Regex _titleRegex = TitleRegex();
+        private readonly Regex _viewIdRegex = ViewIdRegex();
         private readonly MovieService _movieService;
         private readonly CinemaService _cinemaService;
         private readonly ShowTimeService _showTimeService;
@@ -109,7 +112,10 @@ namespace kinohannover.Scrapers
 
         private async Task<HtmlDocument?> GetEventElementsAsync()
         {
-            var eventHtmlJson = await HttpHelper.GetJsonAsync<EventHtmlJson>(_dataUrl);
+            var viewId = await GetViewIdAsync();
+
+            var dataUrl = new Uri(string.Format(_dataUrlString, viewId));
+            var eventHtmlJson = await HttpHelper.GetJsonAsync<EventHtmlJson>(dataUrl);
 
             if (eventHtmlJson?.Success == true)
             {
@@ -120,6 +126,22 @@ namespace kinohannover.Scrapers
             }
 
             return null;
+        }
+
+        private async Task<string> GetViewIdAsync()
+        {
+            var pageHtml = await HttpHelper.GetHtmlDocumentAsync(new Uri(_shopLink));
+
+            var moreButton = pageHtml.DocumentNode.SelectNodes(_moreButtonSelector).FirstOrDefault();
+
+            if (moreButton is null)
+            {
+                throw new InvalidOperationException("Could not find the more button to get the view id");
+            }
+
+            var viewQuery = moreButton.GetAttributeValue("data-tile_query", "");
+
+            return _viewIdRegex.Match(viewQuery).Groups[1].Value;
         }
 
         /// <summary>
@@ -141,5 +163,8 @@ namespace kinohannover.Scrapers
             public bool Success { get; set; }
             public required int TotalItems { get; set; } = 0;
         }
+
+        [GeneratedRegex(@"view\/(.*)\/\d\/\d")]
+        private static partial Regex ViewIdRegex();
     }
 }
