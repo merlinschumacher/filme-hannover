@@ -19,6 +19,7 @@
   "dependencies": {
     "@material-symbols/svg-400": "^0.20.0",
     "dexie": "^4.0.7",
-    "inter-ui": "^4.0.2"
+    "inter-ui": "^4.0.2",
+    "scroll-snap-slider": "^3.3.1"
   }
 }

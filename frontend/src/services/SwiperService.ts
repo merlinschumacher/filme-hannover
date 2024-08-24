@@ -11,10 +11,11 @@ export default class SwiperService {
   private onReachendEnabled: boolean = false;
 
   constructor() {
-    const swiperEl = document.querySelector(
+    const swiperContainerEl = document.querySelector(
       "swiper-container"
     );
-    swiperEl?.appendChild(this.swiper);
+    swiperContainerEl?.appendChild(this.swiper);
+    this.swiper.removeAllSlides();
   }
 
   public ClearSlider(): void {
@@ -24,7 +25,6 @@ export default class SwiperService {
 
   public async SetEvents(eventDays: Map<Date, EventData[]>): Promise<void> {
     let lastDate = eventDays.keys().next().value;
-
     eventDays.forEach((dayEvents, dateString) => {
       const date = new Date(dateString);
       if (!this.isConsecutiveDate(date, lastDate)) {

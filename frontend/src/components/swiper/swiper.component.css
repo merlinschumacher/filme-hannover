@@ -1,12 +1,6 @@
-:host {
-  display: flex;
-  overflow-x: scroll;
-  scroll-snap-type: x mandatory;
-  scroll-snap-stop: always;
-  scroll-behavior: smooth;
-}
-
-::slotted(*) {
+@import 'scroll-snap-slider';
+.scroll-snap-slide {
+  max-width: 320px;
   scroll-snap-align: start;
   flex: 0 0 auto;
   height: auto;

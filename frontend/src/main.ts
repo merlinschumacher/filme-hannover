@@ -9,11 +9,18 @@ import Cinema from "./models/Cinema";
 export class Application {
   private filterService: FilterService = null!;
   private viewPortService: ViewPortService = new ViewPortService();
-  private swiper: SwiperService = new SwiperService();
+  private swiper: SwiperService = null!;
   private lastVisibleDate: Date = new Date();
   private visibleDays: number = this.viewPortService.getVisibleDays() * 2;
 
-  private constructor() {}
+  private constructor() {
+    this.init().then(() => {
+      this.swiper = new SwiperService();
+    this.swiper.onReachEnd = this.updateSwiper;
+    this.updateSwiper().then(() => {
+    });
+    });
+  }
 
   private async init() {
     console.log("Initializing application...");
@@ -28,13 +35,10 @@ export class Application {
     filterModalEl.replaceWith(filterModal);
     document.querySelector("#lastUpdate")!.textContent =
       await this.filterService.getDataVersion();
-    this.swiper.onReachEnd = this.updateSwiper;
-    await this.updateSwiper();
   }
 
   public static async Init(): Promise<Application> {
     const app = new Application();
-    await app.init();
     return app;
   }
 

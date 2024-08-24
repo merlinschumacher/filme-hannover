@@ -1,18 +1,14 @@
-:host(day-list) {
+:host  {
   display: flex;
-  max-width: 320px;
   height: 100%;
-  align-self: stretch;
   flex-direction: column;
+  align-self: stretch;
+  max-width: 320px;
   border: 1px solid var(--light-accent);
+
 }
-
-@media screen and (max-width: 639px) {
-  :host(day-list) {
-    max-width: unset;
-    width: 100%;
-  }
-
+:host > * {
+  align-self: stretch;
 }
 
 .header {
