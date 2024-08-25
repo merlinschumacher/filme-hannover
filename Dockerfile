@@ -17,6 +17,12 @@ FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
 RUN dotnet publish "./kinohannover.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
+FROM node:lts AS node-build
+WORKDIR /src/
+COPY . .
+RUN cd frontend && npm install && npm run build
+
+
 FROM base AS final
 USER root
 ENV TZ=Europe/Berlin
@@ -26,5 +32,6 @@ ENV LC_ALL ${LANG}
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 USER app
 WORKDIR /app
+COPY --from=node-build /src/frontend/dist ./wwwroot
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "kinohannover.dll"]

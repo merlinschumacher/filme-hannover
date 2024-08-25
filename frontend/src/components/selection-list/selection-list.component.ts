@@ -75,7 +75,7 @@ export default class SelectionListElement extends HTMLElement {
     this.append(...options);
 
     const searchInput = this.shadow.querySelector('input') as HTMLInputElement;
-    searchInput.addEventListener('input', (e: Event) => this.searchMovies(searchInput.value));
+    searchInput.addEventListener('input', () => this.searchMovies(searchInput.value));
 
   };
 
