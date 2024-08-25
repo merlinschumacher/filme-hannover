@@ -76,6 +76,9 @@ export default class FilterService {
     const selectedMovieIds = this.selectedMovies.map(m => m.id);
     // Get the first showtime date, if the start date is before the first showtime date, set the start date to the first showtime date
     const firstShowTimeDate = await this.db.GetEarliestShowTimeDate(selectedCinemaIds, selectedMovieIds);
+    if (!firstShowTimeDate) {
+      return new EventDataResult(new Map<Date, EventData[]>(), null);
+    }
     if (startDate.getTime() < firstShowTimeDate.getTime()) {
       startDate = firstShowTimeDate;
     }
@@ -88,6 +91,9 @@ export default class FilterService {
     );
 
     const events = await this.db.GetEventData(startDate, endDate, selectedCinemaIds, selectedMovieIds);
+    if (events.length === 0) {
+      return new EventDataResult(new Map<Date, EventData[]>(), null);
+    }
     const lastEventTime = events[events.length - 1].startTime;
     const splitEvents = await this.splitEventsIntoDays(events);
 

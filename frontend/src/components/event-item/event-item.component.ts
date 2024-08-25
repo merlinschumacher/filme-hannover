@@ -48,7 +48,7 @@ export default class EventItem extends HTMLElement {
   }
 
   static BuildElement(event: EventData) {
-    const timeSpan = SlotSpanFactory(new Date(event.startTime).toLocaleTimeString([], { timeStyle: 'short' }), 'time');
+    const timeSpan = SlotSpanFactory(event.startTime.toLocaleTimeString([], { timeStyle: 'short' }), 'time');
     const titleSpan = SlotSpanFactory(event.displayName, 'title');
     const typeString = getShowTimeTypeString(event.type);
     const languageString = getShowTimeLanguageString(event.language);

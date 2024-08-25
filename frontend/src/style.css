@@ -103,15 +103,12 @@ body {
   padding: 1em;
 }
 
-swiper-container {
-  margin-top: 2em;
+:root {
+  --slide-width: 100%;
 }
 
-.placeholder {
-  background-color: var(--background-lightblue);
-  border: 1px solid var(--light-accent);
-  border-radius: 8px;
-  padding: 1em;
-  margin-bottom: 1em;
-  width: 10%;
+@media (min-width: 640px) {
+  :root {
+    --slide-width: 360px;
+  }
 }

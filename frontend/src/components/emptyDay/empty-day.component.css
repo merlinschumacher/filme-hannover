@@ -1,8 +1,10 @@
 div {
-  background-color: var(--background-lightblue);
   border: 1px solid var(--light-accent);
-  border-radius: 8px;
   padding: 1em;
-  margin-bottom: 1em;
-  width: 10%;
+  width: 5%;
+  height: 100%;
+  background: var(--light-accent);
+  background-image: radial-gradient(black 1px, var(--light-accent) 0);
+  background-size: 10px 10px;
+  background-position: -2px 0px;
 }

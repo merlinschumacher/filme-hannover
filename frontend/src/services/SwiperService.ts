@@ -6,16 +6,21 @@ import { EventData } from "../models/EventData";
 export default class SwiperService {
   public onReachEnd?: () => void;
 
-  private swiper: Swiper =  Swiper.BuildElement();
+  private swiper: Swiper = Swiper.BuildElement();
+
 
   private onReachendEnabled: boolean = false;
 
+  public GetSwiperElement(): Swiper {
+    return this.swiper;
+  }
+
   constructor() {
-    const swiperContainerEl = document.querySelector(
-      "swiper-container"
-    );
-    swiperContainerEl?.appendChild(this.swiper);
-    this.swiper.removeAllSlides();
+    this.swiper.addEventListener("scroll-threshold-reached", () => {
+      if (this.onReachEnd && this.onReachendEnabled) {
+        this.onReachEnd();
+      }
+    });
   }
 
   public ClearSlider(): void {
@@ -23,7 +28,7 @@ export default class SwiperService {
     this.swiper.removeAllSlides();
   }
 
-  public async SetEvents(eventDays: Map<Date, EventData[]>): Promise<void> {
+  public async AddEvents(eventDays: Map<Date, EventData[]>): Promise<void> {
     let lastDate = eventDays.keys().next().value;
     eventDays.forEach((dayEvents, dateString) => {
       const date = new Date(dateString);

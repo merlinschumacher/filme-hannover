@@ -15,6 +15,7 @@ export default class Swiper extends HTMLElement {
   private shadow: ShadowRoot = null!;
   private scrollSnapSlider: ScrollSnapSlider = null!;
   private scrollSnapSliderEl: HTMLElement = null!;
+  private triggeredScrollThreshold: boolean = false;
 
   connectedCallback() {
     this.shadow = this.attachShadow({ mode: "open" });
@@ -32,12 +33,18 @@ export default class Swiper extends HTMLElement {
     }).with([
       new ScrollSnapDraggable
     ]);
-    this.scrollSnapSlider.addEventListener("slide-stop", function (event: Event) {
-      console.log("slide-end", event);
-      console.log(event.target);
-      event.preventDefault();
-    });
     this.removeAllSlides();
+
+    // Detect if the user has swiped to the last page and load more data
+    this.scrollSnapSliderEl.addEventListener("scroll", () => {
+      if (this.triggeredScrollThreshold) {
+        return;
+      }
+      if (this.scrollSnapSliderEl.scrollLeft + this.scrollSnapSliderEl.clientWidth >= (this.scrollSnapSliderEl.scrollWidth / 2 )) {
+        this.triggeredScrollThreshold = true;
+        this.dispatchEvent(new CustomEvent("scroll-threshold-reached", { bubbles: true }));
+      }
+    });
   }
 
   disconnectedCallback() {}
@@ -46,8 +53,7 @@ export default class Swiper extends HTMLElement {
     slide.slot = "slides";
     slide.classList.add("scroll-snap-slide");
     this.scrollSnapSliderEl.appendChild(slide);
-
-
+    this.triggeredScrollThreshold = false;
   }
 
   public removeAllSlides(): void {

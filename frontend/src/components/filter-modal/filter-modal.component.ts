@@ -41,6 +41,7 @@ export default class FilterModal extends HTMLElement {
 
   connectedCallback() {
       this.SelectedCinemas = this.Cinemas;
+      const cinemaButtons: CheckableButtonElement[] = [];
       this.Cinemas.forEach(cinema => {
         const cinemaButton = new CheckableButtonElement();
         cinemaButton.slot = 'cinema-selection';
@@ -49,8 +50,7 @@ export default class FilterModal extends HTMLElement {
         cinemaButton.setAttribute('color', cinema.color);
         cinemaButton.setAttribute('checked', '');
         cinemaButton.addEventListener('click', this.handleCinemaSelectionChanged.bind(this));
-        this.append(cinemaButton);
-
+        cinemaButtons.push(cinemaButton);
       });
 
       const movieList = SelectionListElement.BuildElement(this.Movies);
@@ -61,6 +61,7 @@ export default class FilterModal extends HTMLElement {
         this.onFilterChanged(this.SelectedCinemas, this.SelectedMovies);
       }
       movieList.slot = 'movie-selection';
+      this.append(...cinemaButtons);
       this.append(movieList);
     }
 

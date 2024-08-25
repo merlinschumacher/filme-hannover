@@ -5,6 +5,7 @@ import FilterService from "./services/FilterService";
 import ViewPortService from "./services/ViewPortService";
 import SwiperService from "./services/SwiperService";
 import Cinema from "./models/Cinema";
+import Swiper from "./components/swiper/swiper.component";
 
 export class Application {
   private filterService: FilterService = null!;
@@ -12,10 +13,13 @@ export class Application {
   private swiper: SwiperService = null!;
   private lastVisibleDate: Date = new Date();
   private visibleDays: number = this.viewPortService.getVisibleDays() * 2;
+  private appRootEl: HTMLElement = document.querySelector("#app-root")!;
 
   private constructor() {
     this.init().then(() => {
       this.swiper = new SwiperService();
+
+      this.appRootEl.appendChild(this.swiper.GetSwiperElement());
     this.swiper.onReachEnd = this.updateSwiper;
     this.updateSwiper().then(() => {
     });
@@ -27,12 +31,11 @@ export class Application {
     this.filterService = await FilterService.Create();
     const cinemas = await this.filterService.GetAllCinemas();
     document.adoptedStyleSheets = [
-      this.buildSlideStyleSheet(),
       this.buildCinemaStyleSheet(cinemas),
     ];
-    const filterModalEl = document.querySelector("#filterModal")!;
     const filterModal = await this.initFilter();
-    filterModalEl.replaceWith(filterModal);
+    this.appRootEl.appendChild(filterModal);
+
     document.querySelector("#lastUpdate")!.textContent =
       await this.filterService.getDataVersion();
   }
@@ -62,21 +65,15 @@ export class Application {
       this.lastVisibleDate,
       this.visibleDays
     );
+    if (eventDataResult.EventData.size === 0) {
+      return;
+    }
+
     // Set the last visible date to the last date in the event list
     const lastDate = new Date([...eventDataResult.EventData.keys()].pop()!);
     this.lastVisibleDate = new Date(lastDate.setDate(lastDate.getDate() + 1));
-    await this.swiper.SetEvents(eventDataResult.EventData);
+    await this.swiper.AddEvents(eventDataResult.EventData);
   };
-
-  private buildSlideStyleSheet(): CSSStyleSheet {
-    const slideStyle = new CSSStyleSheet();
-    const swiperSlideDefaultWidth = 100 / this.viewPortService.getVisibleDays();
-    slideStyle.insertRule(
-      `swiper-slide.default-slide { width: ${swiperSlideDefaultWidth}%; }`
-    );
-    slideStyle.insertRule(`swiper-slide.placeholder-slide { width: 3em; }`);
-    return slideStyle;
-  }
 
   private buildCinemaStyleSheet(cinemas: Cinema[]) {
     const style = new CSSStyleSheet();
