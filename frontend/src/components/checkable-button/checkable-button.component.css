@@ -1,7 +1,3 @@
-:host {
-  flex: 1 1 49%;
-}
-
 .checkable-button-input {
   appearance: none;
   display: none;
@@ -40,8 +36,14 @@
 
 .icon {
   margin-left: 1.3em;
-  margin-right: 0.5em;
 }
+
+.text {
+  margin-left: 0.5em;
+  margin-right: 1em;
+}
+
+
 
 .icon, .icon > svg {
   height: 2em;

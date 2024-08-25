@@ -1,6 +1,5 @@
 :host  {
   display: flex;
-  height: 100%;
   flex-direction: column;
   border: 1px solid var(--light-accent);
 }

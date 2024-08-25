@@ -11,8 +11,13 @@
   scroll-snap-stop: always;
   width: auto;
 }
+
 day-list.scroll-snap-slide {
   width: var(--slide-width);
+}
+
+empty-day.scroll-snap-slide {
+  display: none;
 }
 
 day-list.scroll-snap-slide:last-of-type {
@@ -23,6 +28,10 @@ day-list.scroll-snap-slide:last-of-type {
 @media screen and (min-width: 640px) {
   day-list.scroll-snap-slide {
     max-width: var(--slide-width);
+  }
+
+  empty-day.scroll-snap-slide {
+    display: initial;
   }
 }
 

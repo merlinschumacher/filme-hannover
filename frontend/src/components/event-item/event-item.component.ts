@@ -3,7 +3,7 @@ import html from './event-item.component.html?raw';
 import css from './event-item.component.css?inline';
 import { EventData } from '../../models/EventData';
 import { SlotSpanFactory } from '../component-helpers';
-import { getShowTimeTypeString } from '../../models/ShowTimeType';
+import { getShowTimeTypeAttributeString, ShowTimeType } from '../../models/ShowTimeType';
 import { getShowTimeLanguageString } from '../../models/ShowTimeLanguage';
 
 const style = new CSSStyleSheet();
@@ -50,7 +50,7 @@ export default class EventItem extends HTMLElement {
   static BuildElement(event: EventData) {
     const timeSpan = SlotSpanFactory(event.startTime.toLocaleTimeString([], { timeStyle: 'short' }), 'time');
     const titleSpan = SlotSpanFactory(event.displayName, 'title');
-    const typeString = getShowTimeTypeString(event.type);
+    const typeString = getShowTimeTypeAttributeString(event.type);
     const languageString = getShowTimeLanguageString(event.language);
     const suffixString = EventItem.BuildSuffixString(typeString, languageString);
 

@@ -167,7 +167,8 @@ export default class CinemaDb extends Dexie {
   }
   public async GetEarliestShowTimeDate(
     selectedCinemaIds: number[],
-    selectedMovieIds: number[]
+    selectedMovieIds: number[],
+    selectedShowTimeTypes: number[]
   ): Promise<Date | null> {
     // get the first showtime date for the selected cinemas and movies
     let earliestShowTime = await this.showTimes
@@ -175,8 +176,9 @@ export default class CinemaDb extends Dexie {
       .and(
         (showTime) =>
           showTime.startTime.getTime() >= new Date().getTime() &&
-          selectedCinemaIds.some((e) => e == showTime.cinema) &&
-          selectedMovieIds.some((e) => e == showTime.movie)
+          selectedCinemaIds.includes(showTime.cinema) &&
+          selectedMovieIds.includes(showTime.movie) &&
+          selectedShowTimeTypes.includes(showTime.type)
       )
       .first();
 
@@ -191,14 +193,16 @@ export default class CinemaDb extends Dexie {
     startDate: Date,
     endDate: Date,
     selectedCinemaIds: number[],
-    selectedMovieIds: number[]
+    selectedMovieIds: number[],
+    selectedShowTimeTypes: number[]
   ): Promise<EventData[]> {
     const showTimeResults = await this.showTimes
       .where("startTime")
       .between(startDate, endDate)
       .and(showtime =>
         selectedCinemaIds.includes(showtime.cinema) &&
-        selectedMovieIds.includes(showtime.movie)
+        selectedMovieIds.includes(showtime.movie) &&
+        selectedShowTimeTypes.includes(showtime.type)
       )
       .sortBy("startTime");
 
@@ -224,6 +228,7 @@ export default class CinemaDb extends Dexie {
     startDate: Date,
     selectedCinemaIds: number[],
     selectedMovieIds: number[],
+    selectedShowTimeTypes: number[],
     visibleDays: number
   ): Promise<Date> {
 
@@ -233,7 +238,8 @@ export default class CinemaDb extends Dexie {
         (showtime) =>
           showtime.date.getTime() >= startDate.getTime() &&
           selectedCinemaIds.includes(showtime.cinema) &&
-          selectedMovieIds.includes(showtime.movie)
+          selectedMovieIds.includes(showtime.movie) &&
+          selectedShowTimeTypes.includes(showtime.type)
       )
       .keys();
 

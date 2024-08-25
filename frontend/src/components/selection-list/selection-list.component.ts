@@ -1,7 +1,7 @@
 import html from './selection-list.component.html?raw';
 import css from './selection-list.component.css?inline';
 import Movie from '../../models/Movie';
-import SelectionListItemElement from './selection-list-item.component';
+import SelectionListItemElement from '../selection-list-item/selection-list-item.component';
 
 const style = new CSSStyleSheet();
 style.replaceSync(css);

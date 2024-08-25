@@ -99,8 +99,15 @@ body > h1:first-of-type {
 
 body {
   font-family: var(--font-family);
-  font-size: 13px;
+  font-size: .75em;
   padding: 1em;
+}
+
+h4 {
+  margin-bottom: 0.5em;
+  font-weight: 700;
+  display: block;
+  width: 100%;
 }
 
 :root {

@@ -1,5 +1,5 @@
 import DayListElement from "../components/day-list/day-list.component";
-import EmptyDayElement from "../components/emptyDay/empty-day.component";
+import EmptyDayElement from "../components/empty-day/empty-day.component";
 import Swiper from "../components/swiper/swiper.component";
 import { EventData } from "../models/EventData";
 
@@ -28,6 +28,10 @@ export default class SwiperService {
     this.swiper.removeAllSlides();
   }
 
+  public NoResults(): void {
+    this.swiper.displayNoResults();
+  }
+
   public async AddEvents(eventDays: Map<Date, EventData[]>): Promise<void> {
     let lastDate = eventDays.keys().next().value;
     eventDays.forEach((dayEvents, dateString) => {
@@ -39,6 +43,29 @@ export default class SwiperService {
       this.swiper.appendSlide(dayList);
       lastDate = date;
     });
+    this.onReachendEnabled = true;
+    return Promise.resolve();
+  }
+
+  public async ReplaceEvents(eventDays: Map<Date, EventData[]>): Promise<void> {
+
+    if (eventDays.size === 0) {
+      this.swiper.displayNoResults();
+      return Promise.resolve();
+    }
+
+    let lastDate = eventDays.keys().next().value;
+    const dateElements: HTMLElement[]  = [];
+    eventDays.forEach((dayEvents, dateString) => {
+      const date = new Date(dateString);
+      if (!this.isConsecutiveDate(date, lastDate)) {
+        dateElements.push(new EmptyDayElement());
+      }
+      const dayList = DayListElement.BuildElement(date, dayEvents);
+      dateElements.push(dayList);
+      lastDate = date;
+    });
+    this.swiper.replaceSlides(dateElements);
     this.onReachendEnabled = true;
     return Promise.resolve();
   }

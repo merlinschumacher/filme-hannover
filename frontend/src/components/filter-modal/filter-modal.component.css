@@ -1,21 +1,17 @@
-.cinema-selection {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2%;
+.cinema-selection{
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 1em;
 }
 
-.cinema-selection  >  ::slotted(*){
-  margin-bottom: 1em;
+.type-selection {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 1em;
 }
 
 .cinema-selection,
 .movie-selection,
-.date-selection {
+.type-selection{
   margin-bottom: 1em;
-}
-h4 {
-  margin-bottom: 0.5em;
-  font-weight: 700;
-  display: block;
-  width: 100%;
 }

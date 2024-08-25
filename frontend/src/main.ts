@@ -21,7 +21,7 @@ export class Application {
 
       this.appRootEl.appendChild(this.swiper.GetSwiperElement());
     this.swiper.onReachEnd = this.updateSwiper;
-    this.updateSwiper().then(() => {
+    this.updateSwiper(true).then(() => {
     });
     });
   }
@@ -49,30 +49,35 @@ export class Application {
     const movies = await this.filterService.GetAllMovies();
     const cinemas = await this.filterService.GetAllCinemas();
     const filterModal = FilterModal.BuildElement(cinemas, movies);
-    filterModal.onFilterChanged = async (cinemas, movies) => {
+    filterModal.onFilterChanged = async (cinemas, movies, showTimeTypes) => {
       this.lastVisibleDate = new Date();
-      await this.filterService.SetSelection(cinemas, movies);
+      await this.filterService.SetSelection(cinemas, movies, showTimeTypes);
     };
     this.filterService.resultListChanged = async () => {
-      this.swiper.ClearSlider();
-      return this.updateSwiper();
+      return this.updateSwiper(true);
     };
     return filterModal;
   }
 
-  private updateSwiper = async () => {
+  private updateSwiper = async (replaceSlides: boolean = false) => {
     const eventDataResult = await this.filterService.GetEvents(
       this.lastVisibleDate,
       this.visibleDays
     );
     if (eventDataResult.EventData.size === 0) {
+      if (replaceSlides) {
+        this.swiper.NoResults();
+      };
       return;
     }
-
     // Set the last visible date to the last date in the event list
     const lastDate = new Date([...eventDataResult.EventData.keys()].pop()!);
     this.lastVisibleDate = new Date(lastDate.setDate(lastDate.getDate() + 1));
-    await this.swiper.AddEvents(eventDataResult.EventData);
+    if (replaceSlides) {
+      this.swiper.ReplaceEvents(eventDataResult.EventData);
+    } else {
+      await this.swiper.AddEvents(eventDataResult.EventData);
+    }
   };
 
   private buildCinemaStyleSheet(cinemas: Cinema[]) {
