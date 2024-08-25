@@ -12,7 +12,7 @@ namespace kinohannover.Scrapers
     {
         private readonly Cinema _cinema = new()
         {
-            DisplayName = "KoKi (Kino im Künstlerhaus)",
+            DisplayName = "Kino im Künstlerhaus",
             Url = new("https://www.koki-hannover.de"),
             ShopUrl = new("https://booking.cinetixx.de/Program?cinemaId=2995877579"),
             Color = "#2c2e35",

@@ -5,7 +5,6 @@ import FilterService from "./services/FilterService";
 import ViewPortService from "./services/ViewPortService";
 import SwiperService from "./services/SwiperService";
 import Cinema from "./models/Cinema";
-import Swiper from "./components/swiper/swiper.component";
 
 export class Application {
   private filterService: FilterService = null!;
@@ -18,7 +17,6 @@ export class Application {
   private constructor() {
     this.init().then(() => {
       this.swiper = new SwiperService();
-
       this.appRootEl.appendChild(this.swiper.GetSwiperElement());
     this.swiper.onReachEnd = this.updateSwiper;
     this.updateSwiper(true).then(() => {
@@ -35,6 +33,7 @@ export class Application {
     ];
     const filterModal = await this.initFilter();
     this.appRootEl.appendChild(filterModal);
+
 
     document.querySelector("#lastUpdate")!.textContent =
       await this.filterService.getDataVersion();
@@ -90,6 +89,7 @@ export class Application {
     return style;
   }
 }
+
 
 document.addEventListener("DOMContentLoaded", () => {
 Application.Init().then(() => console.log("Application running."));

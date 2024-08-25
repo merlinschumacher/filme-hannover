@@ -15,3 +15,29 @@
 .type-selection{
   margin-bottom: 1em;
 }
+
+#filter-info {
+  margin-bottom: 1em;
+  font-size: 1.1em;
+  font-weight: 700;
+}
+
+button {
+  align-items: center;
+  border: 1px solid black;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.1s, border 0.1s;
+  font-weight: 700;
+  padding: 1em;
+  background-color: #fff;
+  appearance: none;
+}
+
+button:hover {
+  background-color: var(--light-accent);
+}
+
+button#apply-filter {
+  width: 100%;
+}

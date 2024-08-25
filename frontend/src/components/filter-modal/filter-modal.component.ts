@@ -37,7 +37,7 @@ export default class FilterModal extends HTMLElement {
       this.SelectedCinemas = this.SelectedCinemas.filter(c => c.id !== parseInt(target.value));
     }
     if (this.onFilterChanged) {
-      this.onFilterChanged(this.SelectedCinemas, this.SelectedMovies, this.SelectedShowTimeTypes);
+      //this.onFilterChanged(this.SelectedCinemas, this.SelectedMovies, this.SelectedShowTimeTypes);
     }
   };
 
@@ -50,11 +50,12 @@ export default class FilterModal extends HTMLElement {
       this.SelectedShowTimeTypes = this.SelectedShowTimeTypes.filter(t => t !== showTimeType);
     }
     if (this.onFilterChanged) {
-      this.onFilterChanged(this.SelectedCinemas, this.SelectedMovies, this.SelectedShowTimeTypes);
+      //this.onFilterChanged(this.SelectedCinemas, this.SelectedMovies, this.SelectedShowTimeTypes);
     }
   };
 
   connectedCallback() {
+    this.buildButtonEvents();
     this.SelectedCinemas = this.Cinemas;
     this.SelectedShowTimeTypes = getAllShowTimeTypes();
     const cinemaButtons: CheckableButtonElement[] = this.generateCinemaButtons();
@@ -64,13 +65,50 @@ export default class FilterModal extends HTMLElement {
     movieList.onSelectionChanged = (movies: Movie[]) => {
       this.SelectedMovies = movies;
       if (this.onFilterChanged) {
-        this.onFilterChanged(this.SelectedCinemas, this.SelectedMovies, this.SelectedShowTimeTypes);
+        //this.onFilterChanged(this.SelectedCinemas, this.SelectedMovies, this.SelectedShowTimeTypes);
       }
     }
     movieList.slot = 'movie-selection';
     this.append(...showTimeTypeButtons);
     this.append(...cinemaButtons);
     this.append(movieList);
+  }
+
+  private updateFilterInfo() {
+    const cinemaCount = (this.SelectedCinemas.length === 0 || this.SelectedCinemas.length === this.Cinemas.length) ? 'Alle' : this.SelectedCinemas.length;
+    const movieCount = (this.SelectedMovies.length === 0 || this.SelectedMovies.length === this.Movies.length) ? 'Alle' : this.SelectedMovies.length;
+    const filterInfo = this.shadowRoot?.querySelector('#filter-info') as HTMLElement;
+    let showTimeTypeStringList = this.SelectedShowTimeTypes.map(t => getShowTimeTypeLabelString(t)).sort((a,b) => a.localeCompare(b)).join(', ');
+    showTimeTypeStringList = (this.SelectedShowTimeTypes.length === 0 || this.SelectedShowTimeTypes.length == getAllShowTimeTypes().length) ? 'Alle Vorführungen' : showTimeTypeStringList;
+    const moviePluralSuffix = this.SelectedMovies.length === 1 ? '' : 'e';
+    const cinemaPluralSuffix = this.SelectedCinemas.length === 1 ? '' : 's';
+    filterInfo.textContent = `Aktueller Filter: ${cinemaCount} Kino${cinemaPluralSuffix}, ${movieCount} Film${moviePluralSuffix}, ${showTimeTypeStringList}`;
+  }
+
+  private buildButtonEvents() {
+    const openFilterDialogButtonEl = this.shadowRoot?.querySelector('#open-filter') as HTMLButtonElement;
+    const applyFilterDialogButtonEl = this.shadowRoot?.querySelector('#apply-filter') as HTMLButtonElement;
+    const dialogEl = this.shadowRoot?.querySelector('#filter-dialog') as HTMLDialogElement;
+    this.updateFilterInfo();
+    openFilterDialogButtonEl.addEventListener('click', () => {
+      dialogEl.showModal();
+    });
+    applyFilterDialogButtonEl.addEventListener('click', () => {
+      if (this.onFilterChanged) {
+        this.onFilterChanged(this.SelectedCinemas, this.SelectedMovies, this.SelectedShowTimeTypes);
+        this.updateFilterInfo();
+
+      }
+      dialogEl.close();
+    });
+    dialogEl.addEventListener('click', (event) => {
+      var rect = dialogEl.getBoundingClientRect();
+      var isInDialog = (rect.top <= event.clientY && event.clientY <= rect.top + rect.height
+        && rect.left <= event.clientX && event.clientX <= rect.left + rect.width);
+      if (!isInDialog) {
+        dialogEl.close();
+      }
+    });
   }
 
   private generateCinemaButtons() {
@@ -90,7 +128,7 @@ export default class FilterModal extends HTMLElement {
 
   private generateShowTimeTypeButtons() {
     const showTimeTypeButtons: CheckableButtonElement[] = [];
-    const showTimeTypes: ShowTimeType[] = [ShowTimeType.Regular, ShowTimeType.OriginalVersion, ShowTimeType.Subtitled];
+    const showTimeTypes: ShowTimeType[] = [ShowTimeType.Regular, ShowTimeType.Subtitled, ShowTimeType.OriginalVersion];
     showTimeTypes.forEach(showTimeType => {
       const showTimeTypeButton = new CheckableButtonElement();
       showTimeTypeButton.slot = 'type-selection';

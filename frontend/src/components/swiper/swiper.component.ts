@@ -73,6 +73,7 @@ export default class Swiper extends HTMLElement {
       slide.classList.add("scroll-snap-slide");
     });
     this.scrollSnapSliderEl.replaceChildren(...slides);
+    this.scrollSnapSlider.slideTo(0);
   }
 
   public static BuildElement(): Swiper {
