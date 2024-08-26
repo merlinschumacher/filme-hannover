@@ -14,10 +14,15 @@ export default defineConfig({
   },
   esbuild: {
     treeShaking: true,
-    pure: [ 'console.log' ],
+    pure: ['console.log'],
     minifyIdentifiers: true,
   },
   assetsInclude: ['**/*.html'],
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url))
+    }
+  }
 });
 
 const htmlComponentFile = /\.component\.html\?inline$/;
