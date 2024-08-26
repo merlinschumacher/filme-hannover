@@ -20,12 +20,19 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
+    - uses: actions/setup-node@v4
     - name: Restore dependencies
       run: dotnet restore
     - name: Execute
       run: dotnet run --no-restore
       env:
         CONNECTIONSTRINGS__TMDB: ${{ secrets.CONNECTIONSTRINGS__TMDB }}
+    - name: Restore frontend dependencies
+      run: cd frontend && npm install
+    - name: Build frontend
+      run: cd frontend && npm run build
+    - name: Copy frontend output
+      run: cp -r frontend/dist ../wwwroot
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
       with:

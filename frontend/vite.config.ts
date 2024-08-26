@@ -18,12 +18,7 @@ export default defineConfig({
     pure: ['console.log'],
     minifyIdentifiers: true,
   },
-  assetsInclude: ['**/*.html'],
-  resolve: {
-    alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
-    }
-  }
+  assetsInclude: ['.src/**/*.html'],
 });
 
 const htmlComponentFile = /\.component\.html\?inline$/;
