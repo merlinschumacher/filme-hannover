@@ -5,6 +5,8 @@ import SelectionListElement from '../selection-list/selection-list.component';
 import Cinema from '../../models/Cinema';
 import Movie from '../../models/Movie';
 import { getAllShowTimeTypes, getShowTimeTypeByNumber, getShowTimeTypeLabelString, ShowTimeType } from '../../models/ShowTimeType';
+import FilterIcon from '@material-symbols/svg-400/rounded/filter_alt.svg?raw'
+import Check from '@material-symbols/svg-400/outlined/check.svg?raw'
 
 const style = new CSSStyleSheet();
 style.replaceSync(css);
@@ -12,21 +14,21 @@ const template = document.createElement('template');
 template.innerHTML = html;
 
 export default class FilterModal extends HTMLElement {
-
   public Cinemas: Cinema[] = [];
   public Movies: Movie[] = [];
 
   private SelectedCinemas: Cinema[] = [];
   private SelectedMovies: Movie[] = [];
   private SelectedShowTimeTypes: ShowTimeType[] = [];
+  private shadow: ShadowRoot = null!;
 
   public onFilterChanged?: (cinemas: Cinema[], movies: Movie[], showTimeTypes: ShowTimeType[]) => void;
 
   constructor() {
     super();
-    const shadow = this.attachShadow({ mode: 'open' });
-    shadow.appendChild(template.content.cloneNode(true));
-    shadow.adoptedStyleSheets = [style];
+    this.shadow = this.attachShadow({ mode: 'open' });
+    this.shadow.appendChild(template.content.cloneNode(true));
+    this.shadow.adoptedStyleSheets = [style];
   }
 
   handleCinemaSelectionChanged(e: Event) {
@@ -55,6 +57,8 @@ export default class FilterModal extends HTMLElement {
   };
 
   connectedCallback() {
+    this.shadow.querySelector('#filter-edit-icon')!.innerHTML = FilterIcon;
+    this.shadow.querySelector('#filter-apply-icon')!.innerHTML = Check;
     this.buildButtonEvents();
     this.SelectedCinemas = this.Cinemas;
     this.SelectedShowTimeTypes = getAllShowTimeTypes();
@@ -78,7 +82,7 @@ export default class FilterModal extends HTMLElement {
     const cinemaCount = (this.SelectedCinemas.length === 0 || this.SelectedCinemas.length === this.Cinemas.length) ? 'Alle' : this.SelectedCinemas.length;
     const movieCount = (this.SelectedMovies.length === 0 || this.SelectedMovies.length === this.Movies.length) ? 'Alle' : this.SelectedMovies.length;
     const filterInfo = this.shadowRoot?.querySelector('#filter-info') as HTMLElement;
-    let showTimeTypeStringList = this.SelectedShowTimeTypes.map(t => getShowTimeTypeLabelString(t)).sort((a,b) => a.localeCompare(b)).join(', ');
+    let showTimeTypeStringList = this.SelectedShowTimeTypes.map(t => getShowTimeTypeLabelString(t)).sort((a, b) => a.localeCompare(b)).join(', ');
     showTimeTypeStringList = (this.SelectedShowTimeTypes.length === 0 || this.SelectedShowTimeTypes.length == getAllShowTimeTypes().length) ? 'Alle Vorführungen' : showTimeTypeStringList;
     const moviePluralSuffix = this.SelectedMovies.length === 1 ? '' : 'e';
     const cinemaPluralSuffix = this.SelectedCinemas.length === 1 ? '' : 's';
@@ -97,7 +101,6 @@ export default class FilterModal extends HTMLElement {
       if (this.onFilterChanged) {
         this.onFilterChanged(this.SelectedCinemas, this.SelectedMovies, this.SelectedShowTimeTypes);
         this.updateFilterInfo();
-
       }
       dialogEl.close();
     });
@@ -150,4 +153,3 @@ export default class FilterModal extends HTMLElement {
 }
 
 customElements.define('filter-modal', FilterModal);
-

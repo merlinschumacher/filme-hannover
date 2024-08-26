@@ -1,12 +1,5 @@
 {
-  "extends": "@tsconfig/node20/tsconfig.json",
-  "include": [
-    "vite.config.*",
-    "vitest.config.*",
-    "cypress.config.*",
-    "nightwatch.conf.*",
-    "playwright.config.*"
-  ],
+  "include": [ "env.d.ts", "src/**/*" ],
   "compilerOptions": {
     "composite": true,
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
@@ -15,7 +8,9 @@
     "useDefineForClassFields": true,
 
     /* Bundler mode */
+    "module": "ESNext",
     "moduleResolution": "Bundler",
+    "types": [ "node" ],
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "noEmit": true,
@@ -27,7 +22,9 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "types": ["node"]
-  },
-  "include": ["src"]
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [ "src/*" ]
+    }
+  }
 }

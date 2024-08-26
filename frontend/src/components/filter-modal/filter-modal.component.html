@@ -1,16 +1,16 @@
 <dialog id="filter-dialog">
-<div class="movie-selection">
-  <slot name="movie-selection"></slot>
-</div>
-<h4>Kinoauswahl</h4>
-<div class="cinema-selection">
-  <slot name="cinema-selection"></slot>
-</div>
-<h4>Vorstellungarten</h4>
-<div class="type-selection">
-  <slot name="type-selection"></slot>
-</div>
-<button id="apply-filter">Filter anwenden</button>
+  <div class="movie-selection">
+    <slot name="movie-selection"></slot>
+  </div>
+  <h4>Kinoauswahl</h4>
+  <div class="cinema-selection">
+    <slot name="cinema-selection"></slot>
+  </div>
+  <h4>Vorstellungarten</h4>
+  <div class="type-selection">
+    <slot name="type-selection"></slot>
+  </div>
+  <button id="apply-filter"><span id="filter-apply-icon" class="icon"></span>Filter anwenden</button>
 </dialog>
 <div id="filter-info"></div>
-<button id="open-filter">Filter bearbeiten</button>
+<button id="open-filter"><span id="filter-edit-icon" class="icon"></span>Filter bearbeiten</button>

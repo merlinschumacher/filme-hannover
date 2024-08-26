@@ -6,7 +6,7 @@
 
 .type-selection {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  grid-template-columns: repeat(3, minmax(100px, 1fr));
   gap: 1em;
 }
 
@@ -22,14 +22,17 @@
   font-weight: 700;
 }
 
+
 button {
+  display: flex;
+  justify-content: center;
   align-items: center;
   border: 1px solid black;
   border-radius: 8px;
   cursor: pointer;
   transition: background 0.1s, border 0.1s;
   font-weight: 700;
-  padding: 1em;
+  padding: .5rem;
   background-color: #fff;
   appearance: none;
 }
@@ -38,6 +41,15 @@ button:hover {
   background-color: var(--light-accent);
 }
 
+button > .icon  > svg{
+    height: 2em;
+    width: 2em;
+}
+
 button#apply-filter {
   width: 100%;
 }
+  button#apply-filter:hover {
+    background-color: var(--background-lightgreen);
+  }
+

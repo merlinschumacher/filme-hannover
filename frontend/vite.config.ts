@@ -1,4 +1,5 @@
 // vite.config.js
+import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import htmlMinifier from 'vite-plugin-html-minifier'
 
@@ -59,4 +60,3 @@ const minifyHTMLConfig = {
 //     },
 //   };
 // }
-
