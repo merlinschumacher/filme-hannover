@@ -12,18 +12,14 @@
 		<IsPublishable>True</IsPublishable>
 		<EnableSdkContainerSupport>True</EnableSdkContainerSupport>
 		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+		<PublishSingleFile>true</PublishSingleFile>
+		<SelfContained>true</SelfContained>
 	</PropertyGroup>
-
-	<ItemGroup>
-		<Compile Remove="wwwroot\data\**" />
-		<EmbeddedResource Remove="wwwroot\data\**" />
-		<None Remove="wwwroot\data\**" />
-	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="CsvHelper" Version="33.0.1" />
 		<PackageReference Include="Fastenshtein" Version="1.0.10" />
-		<PackageReference Include="HtmlAgilityPack" Version="1.11.63" />
+		<PackageReference Include="HtmlAgilityPack" Version="1.11.64" />
 		<PackageReference Include="Ical.Net" Version="4.2.0" />
 		<PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0">
 			<PrivateAssets>all</PrivateAssets>
@@ -58,14 +54,6 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="TMDbLib" Version="2.2.0" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<None Remove="Scrapers\AstorScraper\.editorconfig" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<Folder Include="Migrations\" />
 	</ItemGroup>
 
 </Project>
