@@ -20,18 +20,12 @@ jobs:
     steps:
     - name: Checkout 
       uses: actions/checkout@v4 # Required to mount the Github Workspace to a volume 
-    - name: Login to Registry
-      uses: docker/login-action@v3
-      with:
-        registry: ${{ env.REGISTRY }}
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
     - uses: addnab/docker-run-action@v3
       with:
         registry: ${{ env.REGISTRY }}
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
-        image: ${{ env.IMAGE_NAME }}
+        image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
         options: -v ${{ github.workspace }}/public:/output -e CONNECTIONSTRINGS__TMDB=${{ secrets.CONNECTIONSTRINGS__TMDB }}
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
