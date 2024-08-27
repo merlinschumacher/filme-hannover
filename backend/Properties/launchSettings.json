@@ -11,14 +11,8 @@
       },
       "dotnetRunMessages": true
     },
-    "Container (Dockerfile)": {
-      "commandName": "Docker",
-      "environmentVariables": {
-        "TZ": "Europe/Berlin",
-        "LANG": "de_DE.UTF-8",
-        "LC_ALL": "de_DE.UTF-8",
-        "LANGUAGE": "de_DE.UTF-8"
-      }
+    "Container (.NET SDK)": {
+      "commandName": "SdkContainer"
     }
   },
   "$schema": "http://json.schemastore.org/launchsettings.json"
