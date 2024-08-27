@@ -28,6 +28,8 @@ COPY --from=fe-build-env /app/dist wwwroot
 
 # Build runtime image
 FROM mcr.microsoft.com/dotnet/runtime:8.0-alpine AS runtime
+LABEL org.opencontainers.image.description="This is the base image for the generation of filme-hannover.de"
+LABEL org.opencontainers.image.source="https://github.com/merlinschumacher/filme-hannover"
 RUN apk add --no-cache icu-libs
 WORKDIR /app
 COPY --from=artifacts / .
