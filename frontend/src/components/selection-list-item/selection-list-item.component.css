@@ -1,0 +1,52 @@
+:host {
+  flex: 1 1 49%;
+}
+
+.selection-list-item-input {
+  appearance: none;
+  display: none;
+}
+
+.selection-list-item-input+label {
+  display: flex;
+  align-items: center;
+  user-select: none;
+  cursor: pointer;
+  transition: background 0.1s, border 0.1s;
+  white-space: nowrap;
+  font-weight: 700;
+  position: relative;
+}
+
+.selection-list-item-input+label:hover,
+.selection-list-item-input:checked+label:hover {
+  background-color: var(--light-accent);
+}
+
+.selection-list-item-input:checked+label {
+  background-color: var(--background-mediumblue);
+  font-weight: 700;
+}
+
+.border {
+  background-color: var(--color);
+  height: 100%;
+  position: absolute;
+  width: .666em;
+}
+
+.text,
+.icon {
+  padding: .2em 0em;
+}
+
+.icon {
+  margin-left: 0.5em;
+  margin-right: 0.5em;
+}
+
+.icon,
+.icon>svg {
+  height: 2em;
+  width: 2em;
+}

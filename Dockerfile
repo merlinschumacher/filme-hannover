@@ -1,30 +1,37 @@
-#See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
-
-FROM mcr.microsoft.com/dotnet/runtime:8.0 AS base
-USER app
+FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS be-build-env
 WORKDIR /app
+# Copy everything
+COPY . ./
+# Restore as distinct layers
+RUN dotnet restore
+# Build and publish a release
+RUN dotnet publish -c Release -r linux-musl-x64 -o out -p:PublishReadyToRun=true -p:InvariantGlobalization=false
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-ARG BUILD_CONFIGURATION=Release
-WORKDIR /src
-COPY ["kinohannover.csproj", "."]
-RUN dotnet restore "./kinohannover.csproj"
-COPY . .
-WORKDIR "/src/."
-RUN dotnet build "./kinohannover.csproj" -c $BUILD_CONFIGURATION -o /app/build
-
-FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./kinohannover.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
-
-FROM base AS final
-USER root
-ENV TZ=Europe/Berlin
-ENV LANG de_DE.UTF-8
-ENV LANGUAGE ${LANG}
-ENV LC_ALL ${LANG}
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-USER app
+FROM node:lts-alpine AS fe-build-env
+# Change the working directory
 WORKDIR /app
-COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "kinohannover.dll"]
+# Copy the package.json and package-lock.json to store the dependencies as a distinct layer
+COPY ./frontend/package.json ./frontend/package-lock.json* /app/
+RUN npm ci && npm cache clean --force
+# Copy the rest of the application
+COPY ./frontend /app/
+# Build the application
+RUN npm run build
+
+# Create an empty image to merge the output
+FROM scratch AS artifacts 
+# Copy the appsettings.json with the default values
+COPY ./backend/appsettings.json .
+# Copy the output from the build environments
+COPY --from=be-build-env /app/out .
+COPY --from=fe-build-env /app/dist wwwroot
+
+# Build runtime image
+FROM mcr.microsoft.com/dotnet/runtime:8.0-alpine AS runtime
+RUN apk add --no-cache icu-libs
+WORKDIR /app
+COPY --from=artifacts / .
+VOLUME /output /wwwroot/data
+# Start the application
+#CMD ["/bin/sh", "-c", "/app/backend", ";", "cp -var /app/wwwroot/* /output/"]
+CMD /app/backend; cp -var /app/wwwroot/* /output/

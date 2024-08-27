@@ -1,0 +1,45 @@
+:host  {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--light-accent);
+  font-size: 1.1em;
+}
+
+:host > * {
+  align-self: stretch;
+}
+
+.header {
+  text-align: center;
+  padding: .1em .5em;
+  border-bottom: 1px solid var(--light-accent);
+  font-weight: bold;
+  background-color: var(--background-lightblue);
+}
+
+.body {
+  padding: .5em .5em;
+  flex: 1 1 0px;
+}
+
+.footer {
+  padding: .1em .5em;
+  border-top: 1px solid var(--light-accent);
+  color: var(--light-text);
+}
+
+.footer:blank {
+  display: none;
+}
+
+:host(.today) .body{
+  background-color: var(--highlighted-color);
+}
+
+:host(.saturday) .header{
+  background-color: var(--background-mediumblue);
+}
+
+:host(.sunday) .header{
+  background-color: var(--background-mediumblue2);
+}

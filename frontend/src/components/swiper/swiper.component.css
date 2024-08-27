@@ -1,0 +1,44 @@
+@import 'scroll-snap-slider';
+
+.scroll-snap-slider {
+  overscroll-behavior-x: none;
+  overscroll-behavior-y: auto;
+}
+
+.scroll-snap-slide {
+  flex: 0 0 auto;
+  height: auto;
+  scroll-snap-stop: always;
+  width: auto;
+}
+
+day-list.scroll-snap-slide {
+  width: var(--slide-width);
+}
+
+empty-day.scroll-snap-slide {
+  display: none;
+}
+
+day-list.scroll-snap-slide:last-of-type {
+  scroll-snap-align: end;
+  margin-right: calc(var(--slide-width) / 2);
+}
+
+@media screen and (min-width: 640px) {
+  day-list.scroll-snap-slide {
+    max-width: var(--slide-width);
+  }
+
+  empty-day.scroll-snap-slide {
+    display: initial;
+  }
+}
+
+.-dragging {
+  cursor: grabbing;
+}
+
+.-dragging a {
+  pointer-events: none;
+}

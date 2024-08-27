@@ -2,35 +2,30 @@ permissions:
   contents: read
   pages: write
   id-token: write
-name: Generate page
+name: Generate pages and deploy
 on:
-  push:
-    branches: [ "master" ]
   schedule:
     - cron: '0 1 * * *'
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - name: Setup Pages
-      uses: actions/configure-pages@v5
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
+    - name: Checkout 
+      uses: actions/checkout@v2 # Required to mount the Github Workspace to a volume 
+    - uses: addnab/docker-run-action@v3
       with:
-        dotnet-version: 8.0.x
-    - name: Restore dependencies
-      run: dotnet restore
-    - name: Execute
-      run: dotnet run --no-restore
-      env:
-        CONNECTIONSTRINGS__TMDB: ${{ secrets.CONNECTIONSTRINGS__TMDB }}
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+        registry: gcr.io
+        image: ${{ github.repository }}
+        options: -v ${{ github.workspace }}/public:/output -e CONNECTIONSTRINGS__TMDB=${{ secrets.CONNECTIONSTRINGS__TMDB }}
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
       with:
         # Upload the output
-        path: 'wwwroot'
+        path: 'public'
     - name: Deploy to GitHub Pages
       id: deployment
       uses: actions/deploy-pages@v4
