@@ -10,15 +10,15 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
   },
   "devDependencies": {
-    "@types/node": "^20.16.1",
-    "eslint": "^8.57.0",
+    "@types/node": "^22.5.0",
+    "eslint": "^9.9.1",
     "npm-run-all2": "^6.2.2",
-    "typescript": "~5.4.0",
+    "typescript": "~5.5.4",
     "vite": "^5.4.2",
     "vite-plugin-html-minifier": "^1.0.4"
   },
   "dependencies": {
-    "@material-symbols/svg-400": "^0.20.0",
+    "@material-symbols/svg-400": "^0.22.2",
     "dexie": "^4.0.8",
     "inter-ui": "^4.0.2",
     "scroll-snap-slider": "^3.3.1"
