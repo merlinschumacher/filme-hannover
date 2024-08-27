@@ -18,7 +18,7 @@
     "vite-plugin-html-minifier": "^1.0.4"
   },
   "dependencies": {
-    "@material-symbols/svg-400": "^0.20.0",
+    "@material-symbols/svg-400": "^0.22.2",
     "dexie": "^4.0.8",
     "inter-ui": "^4.0.2",
     "scroll-snap-slider": "^3.3.1"
