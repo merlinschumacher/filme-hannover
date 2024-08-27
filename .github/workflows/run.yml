@@ -2,12 +2,11 @@ permissions:
   contents: read
   pages: write
   id-token: write
-name: Generate page
+name: Generate pages and deploy
 on:
-  push:
-    branches: [ "master" ]
   schedule:
     - cron: '0 1 * * *'
+  workflow_dispatch:
 
 jobs:
   build:
@@ -21,7 +20,7 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
         registry: gcr.io
         image: ${{ github.repository }}
-        options: -v ${{ github.workspace }}/wwwdata:/work -e CONNECTIONSTRINGS__TMDB=${{ secrets.CONNECTIONSTRINGS__TMDB }}
+        options: -v ${{ github.workspace }}/wwwdata/data:/app/data -e CONNECTIONSTRINGS__TMDB=${{ secrets.CONNECTIONSTRINGS__TMDB }}
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
       with:

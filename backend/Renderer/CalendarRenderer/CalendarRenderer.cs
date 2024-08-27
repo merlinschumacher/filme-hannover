@@ -5,8 +5,6 @@ using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
 using Ical.Net.Serialization;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 
 namespace backend.Renderer.CalendarRenderer
 {
@@ -33,8 +31,6 @@ namespace backend.Renderer.CalendarRenderer
                 });
                 WriteCalendarToFile(movies, Path.Combine(path, cinemaInfo.CalendarFile));
             }
-
-            WriteJsonToFile(_cinemaInfos, Path.Combine(path, "cinemas.json"));
         }
 
         private static void WriteCalendarToFile(IEnumerable<Movie> movies, string path)
@@ -68,21 +64,6 @@ namespace backend.Renderer.CalendarRenderer
                 }
             }
             return calendar;
-        }
-
-        private static void WriteJsonToFile(IEnumerable<CinemaInfo> eventSources, string path)
-        {
-            DefaultContractResolver contractResolver = new()
-            {
-                NamingStrategy = new CamelCaseNamingStrategy()
-            };
-
-            var serializedEventSources = JsonConvert.SerializeObject(eventSources, new JsonSerializerSettings
-            {
-                ContractResolver = contractResolver,
-                Formatting = Formatting.None
-            });
-            File.WriteAllText(path, serializedEventSources);
         }
     }
 }

@@ -5,7 +5,7 @@ COPY . ./
 # Restore as distinct layers
 RUN dotnet restore
 # Build and publish a release
-RUN dotnet publish -c Release -r linux-musl-x64 -o out -p:PublishReadyToRun=true -p:PublishTrimmed=true -p:InvariantGlobalization=false
+RUN dotnet publish -c Release -r linux-musl-x64 -o out -p:PublishReadyToRun=true -p:InvariantGlobalization=false
 
 FROM node:lts-alpine AS fe-build-env
 # Change the working directory
@@ -29,9 +29,9 @@ COPY --from=fe-build-env /app/dist wwwroot
 # Build runtime image
 FROM mcr.microsoft.com/dotnet/runtime:8.0-alpine AS runtime
 RUN apk add --no-cache icu-libs
-USER $APP_UID
 WORKDIR /app
 COPY --from=artifacts / .
-
+VOLUME /output /wwwroot/data
 # Start the application
-ENTRYPOINT ["/app/backend"]
+#CMD ["/bin/sh", "-c", "/app/backend", ";", "cp -var /app/wwwroot/* /output/"]
+CMD /app/backend; cp -var /app/wwwroot/* /output/
