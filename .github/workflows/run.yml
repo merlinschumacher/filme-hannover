@@ -28,13 +28,8 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Pull image
       run: docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} || true
-    - uses: addnab/docker-run-action@v3
-      with:
-        registry: ${{ env.REGISTRY }}
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-        image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-        options: -v ${{ github.workspace }}/public:/output -e CONNECTIONSTRINGS__TMDB=${{ secrets.CONNECTIONSTRINGS__TMDB }}
+    - name: Run image
+      run: docker run -v ${{ github.workspace }}/public:/output -e CONNECTIONSTRINGS__TMDB=${{ secrets.CONNECTIONSTRINGS__TMDB }} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} || true
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
       with:
