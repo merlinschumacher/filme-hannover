@@ -10,7 +10,7 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
   },
   "devDependencies": {
-    "@types/node": "^20.16.1",
+    "@types/node": "^22.5.0",
     "eslint": "^8.57.0",
     "npm-run-all2": "^6.2.2",
     "typescript": "~5.4.0",
