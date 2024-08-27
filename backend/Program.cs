@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using System.Globalization;
 using TMDbLib.Client;
 
@@ -49,9 +50,25 @@ var cleanupService = scope.ServiceProvider.GetRequiredService<CleanupService>();
 await cleanupService.CleanupAsync();
 
 var scrapers = scope.ServiceProvider.GetServices<IScraper>().OrderByDescending(e => e.ReliableMetadata);
+var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+var exceptions = new List<Exception>();
 foreach (var scraper in scrapers)
 {
-    await scraper.ScrapeAsync();
+    try
+    {
+        await scraper.ScrapeAsync();
+    }
+    catch (Exception e)
+    {
+        logger.LogError(e, "The {ScraperName} failed due to an exception.", scraper.GetType().Name);
+        exceptions.Add(e);
+    }
+}
+
+if (exceptions.Count != 0)
+{
+    throw new AggregateException("One or more scrapers failed.", exceptions);
 }
 
 var renderers = scope.ServiceProvider.GetServices<IRenderer>();

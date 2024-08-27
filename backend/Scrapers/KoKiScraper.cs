@@ -1,4 +1,4 @@
-﻿using backend.Helpers;
+using backend.Helpers;
 using backend.Models;
 using backend.Scrapers;
 using backend.Services;

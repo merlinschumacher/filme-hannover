@@ -56,7 +56,6 @@ namespace kinohannover.Scrapers.FilmkunstKinos
             var movie = new Movie()
             {
                 DisplayName = title,
-                Url = movieUri,
             };
 
             movie = await movieService.CreateAsync(movie);

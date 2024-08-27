@@ -97,7 +97,6 @@ namespace backend.Scrapers.AstorScraper
             var movie = new Movie()
             {
                 DisplayName = title,
-                Url = movieUrl
             };
 
             movie.SetReleaseDateFromYear(releaseYear);
