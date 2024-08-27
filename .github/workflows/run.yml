@@ -20,12 +20,12 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
         registry: gcr.io
         image: ${{ github.repository }}
-        options: -v ${{ github.workspace }}/wwwdata/data:/app/data -e CONNECTIONSTRINGS__TMDB=${{ secrets.CONNECTIONSTRINGS__TMDB }}
+        options: -v ${{ github.workspace }}/public:/output -e CONNECTIONSTRINGS__TMDB=${{ secrets.CONNECTIONSTRINGS__TMDB }}
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
       with:
         # Upload the output
-        path: 'wwwroot'
+        path: 'public'
     - name: Deploy to GitHub Pages
       id: deployment
       uses: actions/deploy-pages@v4
