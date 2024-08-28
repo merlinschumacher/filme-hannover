@@ -80,10 +80,10 @@ export default class FilterModal extends HTMLElement {
 
   private updateFilterInfo() {
     const cinemaCount = (this.SelectedCinemas.length === 0 || this.SelectedCinemas.length === this.Cinemas.length) ? 'Alle' : this.SelectedCinemas.length;
-    const movieCount = (this.SelectedMovies.length === 0 || this.SelectedMovies.length === this.Movies.length) ? 'Alle' : this.SelectedMovies.length;
+    const movieCount = (this.SelectedMovies.length === 0 || this.SelectedMovies.length === this.Movies.length) ? 'alle' : this.SelectedMovies.length;
     const filterInfo = this.shadowRoot?.querySelector('#filter-info') as HTMLElement;
     let showTimeTypeStringList = this.SelectedShowTimeTypes.map(t => getShowTimeTypeLabelString(t)).sort((a, b) => a.localeCompare(b)).join(', ');
-    showTimeTypeStringList = (this.SelectedShowTimeTypes.length === 0 || this.SelectedShowTimeTypes.length == getAllShowTimeTypes().length) ? 'Alle Vorführungen' : showTimeTypeStringList;
+    showTimeTypeStringList = (this.SelectedShowTimeTypes.length === 0 || this.SelectedShowTimeTypes.length == getAllShowTimeTypes().length) ? 'alle Vorführungen' : showTimeTypeStringList;
     const moviePluralSuffix = this.SelectedMovies.length === 1 ? '' : 'e';
     const cinemaPluralSuffix = this.SelectedCinemas.length === 1 ? '' : 's';
     filterInfo.textContent = `Aktueller Filter: ${cinemaCount} Kino${cinemaPluralSuffix}, ${movieCount} Film${moviePluralSuffix}, ${showTimeTypeStringList}`;
