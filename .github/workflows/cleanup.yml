@@ -37,6 +37,7 @@ jobs:
     steps:
       - uses: actions/delete-package-versions@v5
         with: 
+          token: ${{ secrets.GITHUB_TOKEN }}
           package-name: 'filme-hannover'
           package-type: 'container'
           min-versions-to-keep: 2
