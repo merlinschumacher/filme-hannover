@@ -35,10 +35,8 @@ jobs:
     name: Delete untagged package versions
     runs-on: ubuntu-latest
     steps:
-      - uses: snok/container-retention-policy@v3.0.0
-        with:
-          account: user
-          token: ${{ secrets.PAT }}
-          image-names: "*"  # all packages owned by the account
-          tag-selection: untagged
-          cut-off: 1d
+      - uses: actions/delete-package-versions@v5
+        with: 
+          package-name: 'filme-hannover'
+          package-type: 'container'
+          min-versions-to-keep: 2
