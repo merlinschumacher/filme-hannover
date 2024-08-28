@@ -16,10 +16,10 @@ export default class SelectionListItemElement extends HTMLElement {
 
   private shadow: ShadowRoot;
 
-  public value: string = '';
-  public label: string = '';
-  public checked: boolean = false;
-  public color: string = '#000000';
+  public value = '';
+  public label = '';
+  public checked = false;
+  public color = '#000000';
 
   private handleClick(e: MouseEvent) {
     if (e.target instanceof SelectionListItemElement) {
@@ -30,11 +30,11 @@ export default class SelectionListItemElement extends HTMLElement {
 
   private updateStyle() {
     const icon = this.checked ? CheckboxChecked : Checkbox;
-    const iconEl = this.shadow?.querySelector('.icon') as HTMLElement;
+    const iconEl = this.shadow.querySelector('.icon')!;
     iconEl.innerHTML = icon;
-    const textEl = this.shadow?.querySelector('.text') as HTMLLabelElement;
+    const textEl = this.shadow.querySelector('.text')!;
     textEl.textContent = this.label;
-    const input = this.shadow?.querySelector('input') as HTMLInputElement;
+    const input = this.shadow.querySelector('input')!;
     input.value = this.value;
     const colorStyle = new CSSStyleSheet();
     colorStyle.insertRule(`:host { --color: ${this.color}; }`);

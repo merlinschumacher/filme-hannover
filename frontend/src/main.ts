@@ -58,7 +58,7 @@ export class Application {
     return filterModal;
   }
 
-  private updateSwiper = async (replaceSlides: boolean = false) => {
+  private updateSwiper = async (replaceSlides = false) => {
     const eventDataResult = await this.filterService.GetEvents(
       this.lastVisibleDate,
       this.visibleDays
@@ -91,5 +91,5 @@ export class Application {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-Application.Init().then(() => console.log("Application running."));
+Application.Init().then(() => { console.log("Application running."); });
 });

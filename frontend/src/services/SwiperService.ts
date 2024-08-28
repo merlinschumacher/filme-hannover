@@ -9,7 +9,7 @@ export default class SwiperService {
   private swiper: Swiper = Swiper.BuildElement();
 
 
-  private onReachendEnabled: boolean = false;
+  private onReachendEnabled = false;
 
   public GetSwiperElement(): Swiper {
     return this.swiper;

@@ -118,7 +118,7 @@ export default class FilterService {
   private async splitEventsIntoDays(
     eventData: EventData[],
   ): Promise<Map<Date, EventData[]>> {
-    let eventsByDay = new Map<Date, EventData[]>();
+    const eventsByDay = new Map<Date, EventData[]>();
 
     // The unique dates of the events
     const eventDates = Array.from(

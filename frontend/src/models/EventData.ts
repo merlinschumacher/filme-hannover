@@ -6,9 +6,9 @@ import Cinema from "./Cinema";
 
 export class EventData {
   constructor(showTime: ShowTime, movie: Movie, cinema: Cinema) {
-    this.date = showTime.date as Date;
-    this.startTime = showTime.startTime as Date;
-    this.endTime = showTime.endTime as Date;
+    this.date = showTime.date;
+    this.startTime = showTime.startTime;
+    this.endTime = showTime.endTime;
     this.displayName = movie.displayName;
     this.runtime = movie.runtime;
     this.cinema = cinema.displayName;

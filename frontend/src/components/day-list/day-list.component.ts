@@ -25,7 +25,7 @@ export default class DayListElement extends HTMLElement {
   }
 
   connectedCallback() {
-    const header = this.shadowRoot?.querySelector('.header') as HTMLElement;
+    const header = this.shadowRoot?.querySelector('.header')!;
     if (header) {
       header.textContent = this.getAttribute('date') || '';
     }
@@ -47,8 +47,8 @@ export default class DayListElement extends HTMLElement {
     if (date.getDay() === 6) {
       item.classList.add('saturday');
     }
-    let eventCumulativeDuration: number = 0;
-    let eventElements: EventItem[] = [];
+    let eventCumulativeDuration = 0;
+    const eventElements: EventItem[] = [];
     events.forEach(element => {
       const eventItem = EventItem.BuildElement(element);
       eventItem.slot = 'body';
@@ -57,7 +57,7 @@ export default class DayListElement extends HTMLElement {
       eventElements.push(eventItem);
     });
     item.append(...eventElements);
-    let eventHours = eventCumulativeDuration / 60;
+    const eventHours = eventCumulativeDuration / 60;
     const footerText = `${events.length} Vorführungen, ca. ${eventHours.toFixed(0)} h`;
     const footerSpan = SlotSpanFactory(footerText, 'footer');
     footerSpan.slot = 'footer';

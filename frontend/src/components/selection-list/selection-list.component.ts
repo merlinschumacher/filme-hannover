@@ -68,14 +68,14 @@ export default class SelectionListElement extends HTMLElement {
   connectedCallback() {
     const options: SelectionListItemElement[] = [];
     const movieButtons = this.buildMovieButtons(this.Movies);
-    this.allMoviesButton.addEventListener('click', (e: MouseEvent) => this.uncheckMovieButtons(e, movieButtons), false);
+    this.allMoviesButton.addEventListener('click', (e: MouseEvent) => { this.uncheckMovieButtons(e, movieButtons); }, false);
     this.append(this.allMoviesButton);
 
     options.push(...movieButtons);
     this.append(...options);
 
-    const searchInput = this.shadow.querySelector('input') as HTMLInputElement;
-    searchInput.addEventListener('input', () => this.searchMovies(searchInput.value));
+    const searchInput = this.shadow.querySelector('input')!;
+    searchInput.addEventListener('input', () => { this.searchMovies(searchInput.value); });
 
   };
 
@@ -88,7 +88,7 @@ export default class SelectionListElement extends HTMLElement {
   }
 
   private searchMovies(searchTerm: string) {
-    const options = this.querySelectorAll('selection-list-item') as NodeListOf<SelectionListItemElement>;
+    const options = this.querySelectorAll('selection-list-item');
     options.forEach((option: SelectionListItemElement) => {
       if (option.label.toLowerCase().includes(searchTerm.toLowerCase())) {
         option.style.display = 'block';

@@ -18,13 +18,13 @@ export default class Swiper extends HTMLElement {
   private shadow: ShadowRoot = null!;
   private scrollSnapSlider: ScrollSnapSlider = null!;
   private scrollSnapSliderEl: HTMLElement = null!;
-  private triggeredScrollThreshold: boolean = false;
+  private triggeredScrollThreshold = false;
 
   connectedCallback() {
     this.shadow = this.attachShadow({ mode: "open" });
     this.shadow.appendChild(template.content.cloneNode(true));
     this.shadow.adoptedStyleSheets = [style];
-    this.scrollSnapSliderEl = this.shadow.querySelector(".scroll-snap-slider") as HTMLElement;
+    this.scrollSnapSliderEl = this.shadow.querySelector(".scroll-snap-slider")!;
     this.scrollSnapSlider = new ScrollSnapSlider({
       element: this.scrollSnapSliderEl,
       sizingMethod(slider) {

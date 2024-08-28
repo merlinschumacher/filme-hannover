@@ -25,8 +25,8 @@ export default class EventItem extends HTMLElement {
   }
 
   connectedCallback() {
-    const titleElem = this.shadowRoot?.querySelector('.title') as HTMLElement;
-    const dotElem = this.shadowRoot?.querySelector('.dot') as HTMLElement;
+    const titleElem = this.shadowRoot?.querySelector('.title')!;
+    const dotElem = this.shadowRoot?.querySelector('.dot')!;
     if (titleElem && dotElem) {
       titleElem.setAttribute('href', this.getAttribute('href') || '#');
       dotElem.style.backgroundColor = this.getAttribute('dotColor') || 'black';

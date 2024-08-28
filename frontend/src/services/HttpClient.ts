@@ -3,7 +3,7 @@ export default class HttpClient {
 
   static async getData(url: string) {
     try {
-      let response = await fetch(url);
+      const response = await fetch(url);
       if (!response.ok) throw response.statusText;
       return response;
     } catch (e) {
@@ -14,7 +14,7 @@ export default class HttpClient {
 
   static async getJsonData(url: string) {
     try {
-      let response = await this.getData(url);
+      const response = await this.getData(url);
       if (!response) return null;
       return await response.json();
     } catch (e) {

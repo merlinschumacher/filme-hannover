@@ -172,7 +172,7 @@ export default class CinemaDb extends Dexie {
     selectedShowTimeTypes: number[]
   ): Promise<Date | null> {
     // get the first showtime date for the selected cinemas and movies
-    let earliestShowTime = await this.showTimes
+    const earliestShowTime = await this.showTimes
       .orderBy("startTime")
       .and(
         (showTime) =>
@@ -220,7 +220,7 @@ export default class CinemaDb extends Dexie {
 
     const eventData = (await Promise.all(eventDataPromises)).filter(
       (data) => data !== null
-    ) as EventData[];
+    );
 
     return eventData;
   }
