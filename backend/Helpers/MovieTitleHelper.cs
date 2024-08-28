@@ -82,6 +82,7 @@ namespace kinohannover.Helpers
 
             title = title.Replace(" OmU ", "", StringComparison.CurrentCultureIgnoreCase).Trim();
             title = title.Replace(" OV ", "", StringComparison.CurrentCultureIgnoreCase).Trim();
+            title = title.Replace(" OF ", "", StringComparison.CurrentCultureIgnoreCase).Trim();
 
             // Avoid adding movies with only uppercase letters, as this is usually a sign of a bad title. Make them title case instead.
             var upperCasePercentage = title.Count(c => char.IsLetter(c) && char.IsUpper(c)) / (double)title.Length;

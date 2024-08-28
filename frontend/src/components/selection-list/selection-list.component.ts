@@ -25,7 +25,7 @@ export default class SelectionListElement extends HTMLElement {
     this.allMoviesButton = this.buildAllMoviesButton();
   }
   private buildMovieButtons(movies: Movie[]): SelectionListItemElement[] {
-    var options: SelectionListItemElement[] = [];
+    const options: SelectionListItemElement[] = [];
     movies.forEach(movie => {
       const movieButton = new SelectionListItemElement();
       movieButton.slot = 'selection-list';
@@ -66,8 +66,8 @@ export default class SelectionListElement extends HTMLElement {
   }
 
   connectedCallback() {
-    var options: SelectionListItemElement[] = [];
-    var movieButtons = this.buildMovieButtons(this.Movies);
+    const options: SelectionListItemElement[] = [];
+    const movieButtons = this.buildMovieButtons(this.Movies);
     this.allMoviesButton.addEventListener('click', (e: MouseEvent) => this.uncheckMovieButtons(e, movieButtons), false);
     this.append(this.allMoviesButton);
 
@@ -88,7 +88,7 @@ export default class SelectionListElement extends HTMLElement {
   }
 
   private searchMovies(searchTerm: string) {
-    var options = this.querySelectorAll('selection-list-item') as NodeListOf<SelectionListItemElement>;
+    const options = this.querySelectorAll('selection-list-item') as NodeListOf<SelectionListItemElement>;
     options.forEach((option: SelectionListItemElement) => {
       if (option.label.toLowerCase().includes(searchTerm.toLowerCase())) {
         option.style.display = 'block';
@@ -99,7 +99,7 @@ export default class SelectionListElement extends HTMLElement {
   }
 
   public static BuildElement(movies: Movie[]): SelectionListElement {
-    var item = new SelectionListElement();
+    const item = new SelectionListElement();
     item.Movies = movies;
     return item;
   }

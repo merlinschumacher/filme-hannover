@@ -24,7 +24,6 @@ namespace backend.Scrapers.AstorScraper
 
         private const string _movieListKey = "movie_list";
         private readonly Uri _apiEndpointUrl = new("https://hannover.premiumkino.de/api/v1/de/config");
-        private readonly Uri _movieBaseUrl = new("https://hannover.premiumkino.de/film/");
         private readonly Uri _showTimeBaseUrl = new("https://hannover.premiumkino.de/vorstellung/");
         private readonly ILogger<AstorScraper> _logger;
         private readonly CinemaService _cinemaService;
@@ -93,7 +92,6 @@ namespace backend.Scrapers.AstorScraper
                 title = SanitizeTitle(title, eventTitle);
             }
 
-            var movieUrl = new Uri(_movieBaseUrl + astorMovie.slug);
             var movie = new Movie()
             {
                 DisplayName = title,

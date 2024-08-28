@@ -365,3 +365,5 @@ FodyWeavers.xsd
 **/wwwroot/data
 **/frontend/data
 
+*.sqlite.db*
+.vite

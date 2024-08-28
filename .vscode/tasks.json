@@ -36,6 +36,17 @@
                 "${workspaceFolder}/kinohannover.sln"
             ],
             "problemMatcher": "$msCompile"
+        },
+        {
+            "type": "npm",
+            "script": "dev",
+            "path": "frontend",
+            "label": "npm: dev - frontend",
+            "detail": "vite dev",
+            "isBackground": true,
+            "problemMatcher": [
+                "$tsc-watch"
+            ]
         }
     ]
 }

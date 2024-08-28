@@ -5,22 +5,27 @@
             // Use IntelliSense to find out which attributes exist for C# debugging
             // Use hover for the description of the existing attributes
             // For further information visit https://github.com/dotnet/vscode-csharp/blob/main/debugger-launchjson.md
-            "name": ".NET Core Launch (console)",
+            "name": "Launch backend",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/bin/Debug/net8.0/kinohannover.dll",
+            "program": "${workspaceFolder}/backend/bin/Debug/net8.0/backend.dll",
             "args": [],
-            "cwd": "${workspaceFolder}",
+            "cwd": "${workspaceFolder}/backend",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
             "console": "internalConsole",
             "stopAtEntry": false
         },
         {
-            "name": ".NET Core Attach",
-            "type": "coreclr",
-            "request": "attach"
-        }
+            "name": "Launch frontend",
+            "request": "launch",
+            "type": "chrome",
+            "skipFiles": ["${workspaceFolder}/node_modules/**/*.js"],
+            "url": "http://localhost:5173",
+            "webRoot": "${workspaceFolder}/frontend",
+            "cwd": "${workspaceFolder}/frontend",
+            "preLaunchTask": "npm: dev - frontend",
+        },
     ]
 }

@@ -105,8 +105,8 @@ export default class FilterModal extends HTMLElement {
       dialogEl.close();
     });
     dialogEl.addEventListener('click', (event) => {
-      var rect = dialogEl.getBoundingClientRect();
-      var isInDialog = (rect.top <= event.clientY && event.clientY <= rect.top + rect.height
+      const rect = dialogEl.getBoundingClientRect();
+      const isInDialog = (rect.top <= event.clientY && event.clientY <= rect.top + rect.height
         && rect.left <= event.clientX && event.clientX <= rect.left + rect.width);
       if (!isInDialog) {
         dialogEl.close();
@@ -145,7 +145,7 @@ export default class FilterModal extends HTMLElement {
   }
 
   public static BuildElement(Cinemas: Cinema[], Movies: Movie[]): FilterModal {
-    var item = new FilterModal();
+    const item = new FilterModal();
     item.Cinemas = Cinemas;
     item.Movies = Movies;
     return item;

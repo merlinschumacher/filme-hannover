@@ -78,14 +78,14 @@ export default class CinemaDb extends Dexie {
       .primaryKeys();
     await this.showTimes.bulkDelete(showTimes);
 
-    var movieIds = await this.showTimes.orderBy("movie").uniqueKeys();
+    const movieIds = await this.showTimes.orderBy("movie").uniqueKeys();
     const movies = await this.movies
       .where("id")
       .noneOf(movieIds)
       .primaryKeys();
     await this.movies.bulkDelete(movies);
 
-    var cinemaIds = await this.showTimes.orderBy("cinema").uniqueKeys();
+    const cinemaIds = await this.showTimes.orderBy("cinema").uniqueKeys();
     const cinemas = await this.cinemas
       .where("id")
       .noneOf(cinemaIds)
@@ -100,13 +100,14 @@ export default class CinemaDb extends Dexie {
       "0";
     const remoteVersionDate = new Date(remoteVersionText);
     if (
-      currentDataVersion.toDateString() !== remoteVersionDate.toDateString()
+      currentDataVersion.getTime() !== remoteVersionDate.getTime()
     ) {
       try {
         await this.configurations.put({
           id: this.dataVersionKey,
           value: remoteVersionDate,
         });
+        this.dataVersionDate = remoteVersionDate;
       } catch (error) {
         console.error(error);
       }
@@ -116,8 +117,8 @@ export default class CinemaDb extends Dexie {
   }
 
   private parseWithDate(jsonString: string): any {
-    var reDateDetect = /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/; // startswith: 2015-04-29T22:06:55
-    var resultObject = JSON.parse(jsonString, (_: any, value: any) => {
+    const reDateDetect = /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/; // startswith: 2015-04-29T22:06:55
+    const resultObject = JSON.parse(jsonString, (_: any, value: any) => {
       if (typeof value == "string" && reDateDetect.exec(value)) {
         return new Date(value);
       }
@@ -156,13 +157,13 @@ export default class CinemaDb extends Dexie {
 
   public async GetAllCinemas(): Promise<Cinema[]> {
     // Get all cinemas that have showtimes
-    var cinemaIds = await this.cinemas.toCollection().primaryKeys();
-    var cinemasWithShowTimes = await this.showTimes.where("cinema").anyOf(cinemaIds).uniqueKeys();
+    const cinemaIds = await this.cinemas.toCollection().primaryKeys();
+    const cinemasWithShowTimes = await this.showTimes.where("cinema").anyOf(cinemaIds).uniqueKeys();
     return this.cinemas.orderBy("displayName").and(cinema => cinemasWithShowTimes.includes(cinema.id)).toArray();
   }
 
   public async GetAllMovies(): Promise<Movie[]> {
-    var movieIds = await this.showTimes.orderBy("movie").uniqueKeys();
+    const movieIds = await this.showTimes.orderBy("movie").uniqueKeys();
     return this.movies.orderBy("displayName").and(movie => movieIds.includes(movie.id)).toArray();
   }
   public async GetEarliestShowTimeDate(

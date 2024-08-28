@@ -87,6 +87,7 @@
         private static readonly Dictionary<string, ShowTimeType> _showTimeTypeMap = new(StringComparer.OrdinalIgnoreCase)
         {
             { "OV", ShowTimeType.OriginalVersion },
+            { "OF", ShowTimeType.OriginalVersion },
             { "OmU", ShowTimeType.Subtitled },
             { "Original Version", ShowTimeType.OriginalVersion },
             { "Originalversion", ShowTimeType.OriginalVersion },

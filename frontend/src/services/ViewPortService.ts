@@ -12,7 +12,7 @@ export default class ViewPortService {
   ]);
 
   public getVisibleDays(): number {
-    var width = window.innerWidth;
+    const width = window.innerWidth;
     this.daySizeMap.forEach((value, key) => {
       if (width <= key) {
         return value;

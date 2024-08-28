@@ -41,8 +41,6 @@ namespace kinohannover.Scrapers.FilmkunstKinos
         private async Task<(Movie, ShowTimeType, ShowTimeLanguage)> ProcessMovieAsync(HtmlNode movieNode)
         {
             var title = movieNode.SelectSingleNode(_titleSelector).InnerText;
-            var movieUriString = movieNode.SelectSingleNode(_titleSelector).SelectSingleNode(_aElemeSelector).GetAttributeValue("href", "");
-            var movieUri = new Uri(_cinema.Url, movieUriString);
             var match = TitleRegex().Match(title);
             var type = ShowTimeType.Regular;
             var language = ShowTimeLanguage.German;

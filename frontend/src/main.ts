@@ -90,7 +90,6 @@ export class Application {
   }
 }
 
-
 document.addEventListener("DOMContentLoaded", () => {
 Application.Init().then(() => console.log("Application running."));
 });
