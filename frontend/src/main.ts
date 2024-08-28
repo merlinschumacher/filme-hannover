@@ -7,26 +7,29 @@ import SwiperService from "./services/SwiperService";
 import Cinema from "./models/Cinema";
 
 export class Application {
-  private filterService: FilterService = null!;
+  private filterService: FilterService;
   private viewPortService: ViewPortService = new ViewPortService();
-  private swiper: SwiperService = null!;
+  private swiper: SwiperService;
   private lastVisibleDate: Date = new Date();
   private visibleDays: number = this.viewPortService.getVisibleDays() * 2;
   private appRootEl: HTMLElement = document.querySelector("#app-root")!;
 
   private constructor() {
-    this.init().then(() => {
+    FilterService.Create().then((filterService) => {
+      this.filterService = filterService;
+    }).catch((error: unknown) => {
+      console.error("Failed to create filter service.", error);
+    });
+    void this.init().then(() => {
       this.swiper = new SwiperService();
       this.appRootEl.appendChild(this.swiper.GetSwiperElement());
-    this.swiper.onReachEnd = this.updateSwiper;
-    this.updateSwiper(true).then(() => {
-    });
+      this.swiper.onReachEnd = this.updateSwiper;
+      void this.updateSwiper(true);
     });
   }
 
   private async init() {
     console.log("Initializing application...");
-    this.filterService = await FilterService.Create();
     const cinemas = await this.filterService.GetAllCinemas();
     document.adoptedStyleSheets = [
       this.buildCinemaStyleSheet(cinemas),
@@ -35,11 +38,13 @@ export class Application {
     this.appRootEl.appendChild(filterModal);
 
 
-    document.querySelector("#lastUpdate")!.textContent =
-      await this.filterService.getDataVersion();
+    const lastUpdateEl = document.querySelector("#lastUpdate");
+    if (lastUpdateEl) {
+      lastUpdateEl.textContent = await this.filterService.getDataVersion();
+    }
   }
 
-  public static async Init(): Promise<Application> {
+  public static Init(): Application {
     const app = new Application();
     return app;
   }
@@ -70,10 +75,10 @@ export class Application {
       return;
     }
     // Set the last visible date to the last date in the event list
-    const lastDate = new Date([...eventDataResult.EventData.keys()].pop()!);
+    const lastDate = new Date([...eventDataResult.EventData.keys()].pop());
     this.lastVisibleDate = new Date(lastDate.setDate(lastDate.getDate() + 1));
     if (replaceSlides) {
-      this.swiper.ReplaceEvents(eventDataResult.EventData);
+      await this.swiper.ReplaceEvents(eventDataResult.EventData);
     } else {
       await this.swiper.AddEvents(eventDataResult.EventData);
     }
@@ -83,7 +88,7 @@ export class Application {
     const style = new CSSStyleSheet();
     cinemas.forEach((cinema) => {
       style.insertRule(
-        `.cinema-${cinema.id} { background-color: ${cinema.color}; }`
+        `.cinema-${cinema.id.toString()} { background-color: ${cinema.color}; }`
       );
     });
     return style;
@@ -91,5 +96,5 @@ export class Application {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-Application.Init().then(() => { console.log("Application running."); });
+  Application.Init().then(() => { console.log("Application running."); });
 });

@@ -104,10 +104,11 @@ export default class FilterModal extends HTMLElement {
       }
       dialogEl.close();
     });
-    dialogEl.addEventListener('click', (event) => {
+    dialogEl.addEventListener('click', (event: Event) => {
       const rect = dialogEl.getBoundingClientRect();
-      const isInDialog = (rect.top <= event.clientY && event.clientY <= rect.top + rect.height
-        && rect.left <= event.clientX && event.clientX <= rect.left + rect.width);
+      const mouseEvent = event as MouseEvent
+      const isInDialog = (rect.top <= mouseEvent.clientY && mouseEvent.clientY <= rect.top + rect.height
+        && rect.left <= mouseEvent.clientX && mouseEvent.clientX <= rect.left + rect.width);
       if (!isInDialog) {
         dialogEl.close();
       }

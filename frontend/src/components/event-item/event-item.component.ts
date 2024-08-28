@@ -28,8 +28,8 @@ export default class EventItem extends HTMLElement {
     const titleElem = this.shadowRoot?.querySelector('.title')!;
     const dotElem = this.shadowRoot?.querySelector('.dot')!;
     if (titleElem && dotElem) {
-      titleElem.setAttribute('href', this.getAttribute('href') || '#');
-      dotElem.style.backgroundColor = this.getAttribute('dotColor') || 'black';
+      titleElem.setAttribute('href', this.getAttribute('href') ?? '#');
+      dotElem.style.backgroundColor = this.getAttribute('dotColor') ?? 'black';
     }
   }
 

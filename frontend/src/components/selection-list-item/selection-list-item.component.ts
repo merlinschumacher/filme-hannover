@@ -63,7 +63,7 @@ export default class SelectionListItemElement extends HTMLElement {
         this.color = newValue;
         break;
       case 'checked':
-        if (newValue === null) {
+        if (!newValue) {
           this.checked = false;
         } else {
           this.checked = true;

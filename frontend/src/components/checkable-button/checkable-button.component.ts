@@ -21,7 +21,7 @@ export default class CheckableButtonElement extends HTMLElement {
   public checked = false;
   public color = '#000000';
 
-  private handleClick(e: MouseEvent) {
+  private handleClick = (e: MouseEvent): void => {
     if (e.target instanceof CheckableButtonElement) {
       this.toggleAttribute('checked');
       e.preventDefault();
@@ -63,7 +63,7 @@ export default class CheckableButtonElement extends HTMLElement {
         this.color = newValue;
         break;
       case 'checked':
-        if (newValue === null) {
+        if (!newValue) {
           this.checked = false;
         } else {
           this.checked = true;

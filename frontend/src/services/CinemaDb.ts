@@ -42,10 +42,10 @@ export default class CinemaDb extends Dexie {
     console.log("Opening database...");
     await this.open();
     await this.checkData();
-    console.log("Data version: " + this.dataVersionDate);
-    console.log("Cinemas loaded: " + (await this.cinemas.count()));
-    console.log("Movies loaded: " + (await this.movies.count()));
-    console.log("Showtimes loaded: " + (await this.showTimes.count()));
+    console.log("Data version: " + this.dataVersionDate.toISOString());
+    console.log("Cinemas loaded: " + ((await this.cinemas.count()).toString()));
+    console.log("Movies loaded: " + ((await this.movies.count()).toString()));
+    console.log("Showtimes loaded: " + ((await this.showTimes.count()).toString()));
     return this;
   }
 
@@ -57,7 +57,7 @@ export default class CinemaDb extends Dexie {
 
   private async checkData() {
     const dataVersion = await this.configurations.get(this.dataVersionKey);
-    this.dataVersionDate = new Date(dataVersion?.value || 0);
+    this.dataVersionDate = new Date(dataVersion?.value as string | number || 0);
     const dataReloadRequired = await this.DataReloadRequired(
       this.dataVersionDate
     );

@@ -27,7 +27,7 @@ export default class DayListElement extends HTMLElement {
   connectedCallback() {
     const header = this.shadowRoot?.querySelector('.header')!;
     if (header) {
-      header.textContent = this.getAttribute('date') || '';
+      header.textContent = this.getAttribute('date') ?? '';
     }
   }
 
@@ -52,13 +52,13 @@ export default class DayListElement extends HTMLElement {
     events.forEach(element => {
       const eventItem = EventItem.BuildElement(element);
       eventItem.slot = 'body';
-      const runtime = element.runtime ?? 120;
+      const runtime = element.runtime;
       eventCumulativeDuration += +runtime;
       eventElements.push(eventItem);
     });
     item.append(...eventElements);
     const eventHours = eventCumulativeDuration / 60;
-    const footerText = `${events.length} Vorführungen, ca. ${eventHours.toFixed(0)} h`;
+    const footerText = `${events.length.toString()} Vorführungen, ca. ${eventHours.toFixed(0)} h`;
     const footerSpan = SlotSpanFactory(footerText, 'footer');
     footerSpan.slot = 'footer';
     item.appendChild(footerSpan);

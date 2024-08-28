@@ -11,20 +11,19 @@ const noResultsElement = document.createElement("div");
 noResultsElement.innerHTML = noContentHtml;
 
 export default class Swiper extends HTMLElement {
-  constructor() {
-    super();
-  }
 
-  private shadow: ShadowRoot = null!;
-  private scrollSnapSlider: ScrollSnapSlider = null!;
-  private scrollSnapSliderEl: HTMLElement = null!;
+  private scrollSnapSlider: ScrollSnapSlider | null = null;
+  private scrollSnapSliderEl: HTMLElement | null = null;
   private triggeredScrollThreshold = false;
 
   connectedCallback() {
-    this.shadow = this.attachShadow({ mode: "open" });
-    this.shadow.appendChild(template.content.cloneNode(true));
-    this.shadow.adoptedStyleSheets = [style];
-    this.scrollSnapSliderEl = this.shadow.querySelector(".scroll-snap-slider")!;
+    const shadow = this.attachShadow({ mode: "open" });
+    this.scrollSnapSliderEl = shadow.querySelector(".scroll-snap-slider");
+    shadow.appendChild(template.content.cloneNode(true));
+    shadow.adoptedStyleSheets = [style];
+    if (!this.scrollSnapSliderEl) {
+      throw new Error(".scroll-snap-slider element not found");
+    }
     this.scrollSnapSlider = new ScrollSnapSlider({
       element: this.scrollSnapSliderEl,
       sizingMethod(slider) {

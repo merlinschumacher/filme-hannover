@@ -1,10 +1,12 @@
 export default class HttpClient {
-  protected constructor() { }
+  private constructor() {
+    throw new Error('Cannot instantiate HttpClient');
+  }
 
   static async getData(url: string) {
     try {
       const response = await fetch(url);
-      if (!response.ok) throw response.statusText;
+      if (!response.ok) throw new Error(response.statusText);
       return response;
     } catch (e) {
       console.error(e);
@@ -12,9 +14,9 @@ export default class HttpClient {
     }
   }
 
-  static async getJsonData(url: string) {
+  static async getJsonData(url: string): Promise<unknown> {
     try {
-      const response = await this.getData(url);
+      const response = await HttpClient.getData(url);
       if (!response) return null;
       return await response.json();
     } catch (e) {

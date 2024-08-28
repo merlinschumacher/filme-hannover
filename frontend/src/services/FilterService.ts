@@ -7,7 +7,7 @@ import { getAllShowTimeTypes, ShowTimeType } from '../models/ShowTimeType';
 import CinemaDb from './CinemaDb';
 
 export default class FilterService {
-  private db: CinemaDb = null!
+  private db: CinemaDb;
   private availableMovies: Movie[] = [];
   private availableCinemas: Cinema[] = [];
   private selectedMovies: Movie[] = [];
@@ -33,21 +33,21 @@ export default class FilterService {
     this.selectedMovies = this.availableMovies;
   }
 
-  public async GetAllMovies(): Promise<Movie[]> {
+  public GetAllMovies(): Movie[] {
     if (this.selectedMovies.length === 0) {
       return this.availableMovies;
     }
     return this.availableMovies;
   }
 
-  public async GetAllCinemas(): Promise<Cinema[]> {
+  public GetAllCinemas(): Cinema[] {
     return this.availableCinemas;
   }
 
   public async SetSelection(cinemas: Cinema[], movies: Movie[], showTimeType: ShowTimeType[]): Promise<void> {
     await this.setSelectedCinemas(cinemas);
     await this.setSelectedMovies(movies);
-    await this.setSelectedShowTimeTypes(showTimeType);
+    this.setSelectedShowTimeTypes(showTimeType);
     if (this.resultListChanged) {
       this.resultListChanged();
     }
@@ -74,7 +74,7 @@ export default class FilterService {
     }
   }
 
-  private async setSelectedShowTimeTypes(showTimeTypes: ShowTimeType[]): Promise<void> {
+  private setSelectedShowTimeTypes(showTimeTypes: ShowTimeType[]): void {
     if (showTimeTypes.length === 0) {
       this.selectedShowTimeTypes = getAllShowTimeTypes();
     }
@@ -106,18 +106,18 @@ export default class FilterService {
       return new EventDataResult(new Map<Date, EventData[]>(), null);
     }
     const lastEventTime = events[events.length - 1].startTime;
-    const splitEvents = await this.splitEventsIntoDays(events);
+    const splitEvents = this.splitEventsIntoDays(events);
 
     return new EventDataResult(splitEvents, lastEventTime);
   }
 
-  public async getDataVersion(): Promise<string> {
+  public getDataVersion(): string {
     return this.db.dataVersionDate.toLocaleString();
   }
 
-  private async splitEventsIntoDays(
+  private splitEventsIntoDays(
     eventData: EventData[],
-  ): Promise<Map<Date, EventData[]>> {
+  ): Map<Date, EventData[]> {
     const eventsByDay = new Map<Date, EventData[]>();
 
     // The unique dates of the events

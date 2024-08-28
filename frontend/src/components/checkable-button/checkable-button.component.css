@@ -3,7 +3,7 @@
   display: none;
 }
 
-.checkable-button-input + label {
+.checkable-button-input+label {
   height: 4em;
   display: flex;
   align-items: center;
@@ -18,16 +18,16 @@
   overflow: hidden;
 }
 
-.checkable-button-input + label:hover {
+.checkable-button-input+label:hover {
   background-color: var(--light-accent);
 }
 
-.checkable-button-input:checked + label {
+.checkable-button-input:checked+label {
   background-color: var(--background-mediumblue);
   font-weight: 700;
 }
 
-.border{
+.border {
   background-color: var(--color);
   height: 100%;
   position: absolute;
@@ -43,9 +43,8 @@
   margin-right: 1em;
 }
 
-
-
-.icon, .icon > svg {
+.icon,
+.icon>svg {
   height: 2em;
   width: 2em;
 }
