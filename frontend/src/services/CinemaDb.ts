@@ -116,14 +116,14 @@ export default class CinemaDb extends Dexie {
     return false;
   }
 
-  private parseWithDate(jsonString: string): any {
+  private parseWithDate(jsonString: string): unknown {
     const reDateDetect = /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/; // startswith: 2015-04-29T22:06:55
-    const resultObject = JSON.parse(jsonString, (_: any, value: any) => {
+    const resultObject = JSON.parse(jsonString, (_: unknown, value: unknown) => {
       if (typeof value == "string" && reDateDetect.exec(value)) {
         return new Date(value);
       }
       return value;
-    });
+    }) as unknown;
     return resultObject;
   }
 
@@ -150,9 +150,7 @@ export default class CinemaDb extends Dexie {
       );
     } catch (error) {
       console.error(error);
-      return Promise.reject();
     }
-    return Promise.resolve();
   }
 
   public async GetAllCinemas(): Promise<Cinema[]> {

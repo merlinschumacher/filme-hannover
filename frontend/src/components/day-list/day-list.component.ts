@@ -16,19 +16,18 @@ export default class DayListElement extends HTMLElement {
   }
 
   public EventData: EventData[] = [];
+  private shadow: ShadowRoot;
 
   constructor() {
     super();
-    const shadow = this.attachShadow({ mode: 'open' });
-    shadow.appendChild(template.content.cloneNode(true));
-    shadow.adoptedStyleSheets = [style];
+    this.shadow = this.attachShadow({ mode: 'open' });
   }
 
   connectedCallback() {
-    const header = this.shadowRoot?.querySelector('.header')!;
-    if (header) {
-      header.textContent = this.getAttribute('date') ?? '';
-    }
+    this.shadow.appendChild(template.content.cloneNode(true));
+    this.shadow.adoptedStyleSheets = [style];
+    const header = this.shadow.safeQuerySelector('.header');
+    header.textContent = this.getAttribute('date') ?? '';
   }
 
   static BuildElement(date: Date, events: EventData[]) {

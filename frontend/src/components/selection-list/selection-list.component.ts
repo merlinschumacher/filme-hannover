@@ -74,7 +74,7 @@ export default class SelectionListElement extends HTMLElement {
     options.push(...movieButtons);
     this.append(...options);
 
-    const searchInput = this.shadow.querySelector('input')!;
+    const searchInput = this.shadow.safeQuerySelector('input') as HTMLInputElement;
     searchInput.addEventListener('input', () => { this.searchMovies(searchInput.value); });
 
   };
@@ -89,11 +89,12 @@ export default class SelectionListElement extends HTMLElement {
 
   private searchMovies(searchTerm: string) {
     const options = this.querySelectorAll('selection-list-item');
-    options.forEach((option: SelectionListItemElement) => {
-      if (option.label.toLowerCase().includes(searchTerm.toLowerCase())) {
-        option.style.display = 'block';
+    options.forEach((option: Element) => {
+      const optionElement = option as SelectionListItemElement;
+      if (optionElement.label.toLowerCase().includes(searchTerm.toLowerCase())) {
+        optionElement.style.display = 'block';
       } else {
-        option.style.display = 'none';
+        optionElement.style.display = 'none';
       }
     });
   }

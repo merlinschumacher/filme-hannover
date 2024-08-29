@@ -20,26 +20,24 @@ export default class FilterModal extends HTMLElement {
   private SelectedCinemas: Cinema[] = [];
   private SelectedMovies: Movie[] = [];
   private SelectedShowTimeTypes: ShowTimeType[] = [];
-  private shadow: ShadowRoot = null!;
+  private shadow: ShadowRoot;
 
   public onFilterChanged?: (cinemas: Cinema[], movies: Movie[], showTimeTypes: ShowTimeType[]) => void;
 
   constructor() {
     super();
     this.shadow = this.attachShadow({ mode: 'open' });
-    this.shadow.appendChild(template.content.cloneNode(true));
-    this.shadow.adoptedStyleSheets = [style];
   }
 
   handleCinemaSelectionChanged(e: Event) {
     const target = e.target as CheckableButtonElement;
     if (!target.checked) {
-      this.SelectedCinemas.push(this.Cinemas.find(c => c.id === parseInt(target.value))!);
+      const cinema = this.Cinemas.find(c => c.id === parseInt(target.value));
+      if (cinema) {
+        this.SelectedCinemas.push(cinema);
+      }
     } else {
       this.SelectedCinemas = this.SelectedCinemas.filter(c => c.id !== parseInt(target.value));
-    }
-    if (this.onFilterChanged) {
-      //this.onFilterChanged(this.SelectedCinemas, this.SelectedMovies, this.SelectedShowTimeTypes);
     }
   };
 
@@ -51,14 +49,13 @@ export default class FilterModal extends HTMLElement {
     } else {
       this.SelectedShowTimeTypes = this.SelectedShowTimeTypes.filter(t => t !== showTimeType);
     }
-    if (this.onFilterChanged) {
-      //this.onFilterChanged(this.SelectedCinemas, this.SelectedMovies, this.SelectedShowTimeTypes);
-    }
   };
 
   connectedCallback() {
-    this.shadow.querySelector('#filter-edit-icon')!.innerHTML = FilterIcon;
-    this.shadow.querySelector('#filter-apply-icon')!.innerHTML = Check;
+    this.shadow.appendChild(template.content.cloneNode(true));
+    this.shadow.adoptedStyleSheets = [style];
+    this.shadow.safeQuerySelector('#filter-edit-icon').innerHTML = FilterIcon;
+    this.shadow.safeQuerySelector('#filter-apply-icon').innerHTML = Check;
     this.buildButtonEvents();
     this.SelectedCinemas = this.Cinemas;
     this.SelectedShowTimeTypes = getAllShowTimeTypes();
@@ -68,9 +65,6 @@ export default class FilterModal extends HTMLElement {
     const movieList = SelectionListElement.BuildElement(this.Movies);
     movieList.onSelectionChanged = (movies: Movie[]) => {
       this.SelectedMovies = movies;
-      if (this.onFilterChanged) {
-        //this.onFilterChanged(this.SelectedCinemas, this.SelectedMovies, this.SelectedShowTimeTypes);
-      }
     }
     movieList.slot = 'movie-selection';
     this.append(...showTimeTypeButtons);
@@ -81,18 +75,18 @@ export default class FilterModal extends HTMLElement {
   private updateFilterInfo() {
     const cinemaCount = (this.SelectedCinemas.length === 0 || this.SelectedCinemas.length === this.Cinemas.length) ? 'Alle' : this.SelectedCinemas.length;
     const movieCount = (this.SelectedMovies.length === 0 || this.SelectedMovies.length === this.Movies.length) ? 'alle' : this.SelectedMovies.length;
-    const filterInfo = this.shadowRoot?.querySelector('#filter-info')!;
+    const filterInfo = this.shadow.safeQuerySelector('#filter-info');
     let showTimeTypeStringList = this.SelectedShowTimeTypes.map(t => getShowTimeTypeLabelString(t)).sort((a, b) => a.localeCompare(b)).join(', ');
     showTimeTypeStringList = (this.SelectedShowTimeTypes.length === 0 || this.SelectedShowTimeTypes.length == getAllShowTimeTypes().length) ? 'alle Vorführungen' : showTimeTypeStringList;
     const moviePluralSuffix = this.SelectedMovies.length === 1 ? '' : 'e';
     const cinemaPluralSuffix = this.SelectedCinemas.length === 1 ? '' : 's';
-    filterInfo.textContent = `Aktueller Filter: ${cinemaCount} Kino${cinemaPluralSuffix}, ${movieCount} Film${moviePluralSuffix}, ${showTimeTypeStringList}`;
+    filterInfo.textContent = `Aktueller Filter: ${cinemaCount.toString()} Kino${cinemaPluralSuffix}, ${movieCount.toString()} Film${moviePluralSuffix}, ${showTimeTypeStringList}`;
   }
 
   private buildButtonEvents() {
-    const openFilterDialogButtonEl = this.shadowRoot?.querySelector('#open-filter')!;
-    const applyFilterDialogButtonEl = this.shadowRoot?.querySelector('#apply-filter')!;
-    const dialogEl = this.shadowRoot?.querySelector('#filter-dialog')!;
+    const openFilterDialogButtonEl = this.shadow.safeQuerySelector('#open-filter');
+    const applyFilterDialogButtonEl = this.shadow.safeQuerySelector('#apply-filter');
+    const dialogEl = this.shadow.safeQuerySelector('#filter-dialog') as HTMLDialogElement;
     this.updateFilterInfo();
     openFilterDialogButtonEl.addEventListener('click', () => {
       dialogEl.showModal();

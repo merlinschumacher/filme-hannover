@@ -21,20 +21,20 @@ export default class SelectionListItemElement extends HTMLElement {
   public checked = false;
   public color = '#000000';
 
-  private handleClick(e: MouseEvent) {
+  private handleClick = (e: MouseEvent): void => {
     if (e.target instanceof SelectionListItemElement) {
-      this.toggleAttribute('checked');
+      e.target.toggleAttribute('checked');
       e.preventDefault();
     }
   }
 
   private updateStyle() {
     const icon = this.checked ? CheckboxChecked : Checkbox;
-    const iconEl = this.shadow.querySelector('.icon')!;
+    const iconEl = this.shadow.safeQuerySelector('.icon');
     iconEl.innerHTML = icon;
-    const textEl = this.shadow.querySelector('.text')!;
+    const textEl = this.shadow.safeQuerySelector('.text');
     textEl.textContent = this.label;
-    const input = this.shadow.querySelector('input')!;
+    const input = this.shadow.safeQuerySelector('input') as HTMLInputElement;
     input.value = this.value;
     const colorStyle = new CSSStyleSheet();
     colorStyle.insertRule(`:host { --color: ${this.color}; }`);

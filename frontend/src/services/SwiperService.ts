@@ -32,8 +32,8 @@ export default class SwiperService {
     this.swiper.displayNoResults();
   }
 
-  public async AddEvents(eventDays: Map<Date, EventData[]>): Promise<void> {
-    let lastDate = eventDays.keys().next().value;
+  public AddEvents(eventDays: Map<Date, EventData[]>) {
+    let lastDate: Date = eventDays.keys().next().value as Date;
     eventDays.forEach((dayEvents, dateString) => {
       const date = new Date(dateString);
       if (!this.isConsecutiveDate(date, lastDate)) {
@@ -44,18 +44,16 @@ export default class SwiperService {
       lastDate = date;
     });
     this.onReachendEnabled = true;
-    return Promise.resolve();
   }
 
-  public async ReplaceEvents(eventDays: Map<Date, EventData[]>): Promise<void> {
+  public ReplaceEvents(eventDays: Map<Date, EventData[]>) {
 
     if (eventDays.size === 0) {
       this.swiper.displayNoResults();
-      return Promise.resolve();
     }
 
-    let lastDate = eventDays.keys().next().value;
-    const dateElements: HTMLElement[]  = [];
+    let lastDate: Date = eventDays.keys().next().value as Date;
+    const dateElements: HTMLElement[] = [];
     eventDays.forEach((dayEvents, dateString) => {
       const date = new Date(dateString);
       if (!this.isConsecutiveDate(date, lastDate)) {
@@ -67,7 +65,6 @@ export default class SwiperService {
     });
     this.swiper.replaceSlides(dateElements);
     this.onReachendEnabled = true;
-    return Promise.resolve();
   }
 
   private isConsecutiveDate(first: Date, second: Date): boolean {

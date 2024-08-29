@@ -7,40 +7,47 @@ import SwiperService from "./services/SwiperService";
 import Cinema from "./models/Cinema";
 
 export class Application {
-  private filterService: FilterService;
+  private filterService!: FilterService;
   private viewPortService: ViewPortService = new ViewPortService();
   private swiper: SwiperService;
   private lastVisibleDate: Date = new Date();
   private visibleDays: number = this.viewPortService.getVisibleDays() * 2;
-  private appRootEl: HTMLElement = document.querySelector("#app-root")!;
+  private appRootEl: HTMLElement = this.getAppRootEl();
+
+  private getAppRootEl(): HTMLElement {
+    const appRootEl = document.querySelector("#app-root");
+    if (appRootEl) {
+      return appRootEl as HTMLElement;
+    }
+    throw new Error("Failed to find app root element.");
+  };
 
   private constructor() {
+    this.swiper = new SwiperService();
     FilterService.Create().then((filterService) => {
       this.filterService = filterService;
+      this.init()
+      this.appRootEl.appendChild(this.swiper.GetSwiperElement());
+      this.swiper.onReachEnd = this.updateSwiper;
+      this.updateSwiper(true);
     }).catch((error: unknown) => {
       console.error("Failed to create filter service.", error);
     });
-    void this.init().then(() => {
-      this.swiper = new SwiperService();
-      this.appRootEl.appendChild(this.swiper.GetSwiperElement());
-      this.swiper.onReachEnd = this.updateSwiper;
-      void this.updateSwiper(true);
-    });
   }
 
-  private async init() {
+  private init() {
     console.log("Initializing application...");
-    const cinemas = await this.filterService.GetAllCinemas();
+    const cinemas = this.filterService.GetAllCinemas();
     document.adoptedStyleSheets = [
       this.buildCinemaStyleSheet(cinemas),
     ];
-    const filterModal = await this.initFilter();
+    const filterModal = this.initFilter();
     this.appRootEl.appendChild(filterModal);
 
 
     const lastUpdateEl = document.querySelector("#lastUpdate");
     if (lastUpdateEl) {
-      lastUpdateEl.textContent = await this.filterService.getDataVersion();
+      lastUpdateEl.textContent = this.filterService.getDataVersion();
     }
   }
 
@@ -49,39 +56,48 @@ export class Application {
     return app;
   }
 
-  private async initFilter() {
-    const movies = await this.filterService.GetAllMovies();
-    const cinemas = await this.filterService.GetAllCinemas();
+  private initFilter(): FilterModal {
+    const movies = this.filterService.GetAllMovies();
+    const cinemas = this.filterService.GetAllCinemas();
     const filterModal = FilterModal.BuildElement(cinemas, movies);
-    filterModal.onFilterChanged = async (cinemas, movies, showTimeTypes) => {
+    filterModal.onFilterChanged = (cinemas, movies, showTimeTypes) => {
       this.lastVisibleDate = new Date();
-      await this.filterService.SetSelection(cinemas, movies, showTimeTypes);
+      this.filterService.SetSelection(cinemas, movies, showTimeTypes).then(() => {
+        console.log("Filter changed.");
+      }).catch((error: unknown) => {
+        console.error("Failed to set selection.", error);
+      });
     };
-    this.filterService.resultListChanged = async () => {
-      return this.updateSwiper(true);
+    this.filterService.resultListChanged = () => {
+      this.updateSwiper(true);
     };
     return filterModal;
   }
 
-  private updateSwiper = async (replaceSlides = false) => {
-    const eventDataResult = await this.filterService.GetEvents(
-      this.lastVisibleDate,
-      this.visibleDays
-    );
-    if (eventDataResult.EventData.size === 0) {
-      if (replaceSlides) {
-        this.swiper.NoResults();
-      };
-      return;
-    }
-    // Set the last visible date to the last date in the event list
-    const lastDate = new Date([...eventDataResult.EventData.keys()].pop());
-    this.lastVisibleDate = new Date(lastDate.setDate(lastDate.getDate() + 1));
-    if (replaceSlides) {
-      await this.swiper.ReplaceEvents(eventDataResult.EventData);
-    } else {
-      await this.swiper.AddEvents(eventDataResult.EventData);
-    }
+  private updateSwiper = (replaceSlides = false): void => {
+    this.filterService.GetEvents(this.lastVisibleDate, this.visibleDays)
+      .then((eventDataResult) => {
+        if (eventDataResult.EventData.size === 0) {
+          if (replaceSlides) {
+            this.swiper.NoResults();
+          }
+          return;
+        }
+        // Set the last visible date to the last date in the event list
+        const lastKey = [...eventDataResult.EventData.keys()].pop();
+        if (lastKey) {
+          this.lastVisibleDate = lastKey;
+        }
+        this.lastVisibleDate.setDate(this.lastVisibleDate.getDate() + 1);
+        if (replaceSlides) {
+          this.swiper.ReplaceEvents(eventDataResult.EventData);
+        } else {
+          this.swiper.AddEvents(eventDataResult.EventData);
+        }
+      })
+      .catch((error: unknown) => {
+        console.error("Failed to get events.", error);
+      });
   };
 
   private buildCinemaStyleSheet(cinemas: Cinema[]) {
@@ -96,5 +112,5 @@ export class Application {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  Application.Init().then(() => { console.log("Application running."); });
+  Application.Init();
 });

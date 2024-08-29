@@ -21,20 +21,20 @@ export default class CheckableButtonElement extends HTMLElement {
   public checked = false;
   public color = '#000000';
 
-  private handleClick = (e: MouseEvent): void => {
-    if (e.target instanceof CheckableButtonElement) {
-      this.toggleAttribute('checked');
-      e.preventDefault();
+  private handleClick(ev: MouseEvent) {
+    ev.preventDefault();
+    if (ev.target instanceof CheckableButtonElement) {
+      ev.target.toggleAttribute('checked');
     }
   }
 
   private updateStyle() {
     const icon = this.checked ? CheckboxChecked : Checkbox;
-    const iconEl = this.shadow.querySelector('.icon')!;
+    const iconEl = this.shadow.safeQuerySelector('.icon');
     iconEl.innerHTML = icon;
-    const textEl = this.shadow.querySelector('.text')!;
+    const textEl = this.shadow.safeQuerySelector('.text');
     textEl.textContent = this.label;
-    const input = this.shadow.querySelector('input')!;
+    const input = this.shadow.safeQuerySelector('input') as HTMLInputElement;
     input.value = this.value;
     const colorStyle = new CSSStyleSheet();
     colorStyle.insertRule(`:host { --color: ${this.color}; }`);
@@ -83,11 +83,7 @@ export default class CheckableButtonElement extends HTMLElement {
 
   connectedCallback() {
     this.updateStyle();
-    this.addEventListener('click', this.handleClick);
-  }
-
-  disconnectedCallback() {
-    this.removeEventListener('click', this.handleClick);
+    this.addEventListener('click', (ev) => { this.handleClick(ev) });
   }
 
 }

@@ -17,20 +17,15 @@ export default class EventItem extends HTMLElement {
     return ['href', 'dotColor'];
   }
 
-  constructor() {
-    super();
+
+  connectedCallback() {
     const shadow = this.attachShadow({ mode: 'open' });
     shadow.adoptedStyleSheets = [style];
     shadow.appendChild(template.content.cloneNode(true));
-  }
-
-  connectedCallback() {
-    const titleElem = this.shadowRoot?.querySelector('.title')!;
-    const dotElem = this.shadowRoot?.querySelector('.dot')!;
-    if (titleElem && dotElem) {
-      titleElem.setAttribute('href', this.getAttribute('href') ?? '#');
-      dotElem.style.backgroundColor = this.getAttribute('dotColor') ?? 'black';
-    }
+    const titleElem = shadow.safeQuerySelector('.title');
+    const dotElem = shadow.safeQuerySelector('.dot');
+    titleElem.setAttribute('href', this.getAttribute('href') ?? '#');
+    dotElem.style.backgroundColor = this.getAttribute('dotColor') ?? 'black';
   }
 
   private static BuildSuffixString(type: string, language: string) {

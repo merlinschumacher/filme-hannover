@@ -2,6 +2,7 @@ import html from "./swiper.component.html?raw";
 import css from "./swiper.component.css?inline";
 import noContentHtml from "../no-content/no-content.component.html?raw";
 import { ScrollSnapDraggable, ScrollSnapSlider } from "scroll-snap-slider";
+import '../../extensions/ShadowRootExtensions';
 
 const style = new CSSStyleSheet();
 style.replaceSync(css);
@@ -12,18 +13,16 @@ noResultsElement.innerHTML = noContentHtml;
 
 export default class Swiper extends HTMLElement {
 
-  private scrollSnapSlider: ScrollSnapSlider | null = null;
-  private scrollSnapSliderEl: HTMLElement | null = null;
+  private scrollSnapSlider: ScrollSnapSlider;
+  private scrollSnapSliderEl: HTMLElement;
   private triggeredScrollThreshold = false;
 
-  connectedCallback() {
+  constructor() {
+    super();
     const shadow = this.attachShadow({ mode: "open" });
-    this.scrollSnapSliderEl = shadow.querySelector(".scroll-snap-slider");
     shadow.appendChild(template.content.cloneNode(true));
     shadow.adoptedStyleSheets = [style];
-    if (!this.scrollSnapSliderEl) {
-      throw new Error(".scroll-snap-slider element not found");
-    }
+    this.scrollSnapSliderEl = shadow.safeQuerySelector(".scroll-snap-slider");
     this.scrollSnapSlider = new ScrollSnapSlider({
       element: this.scrollSnapSliderEl,
       sizingMethod(slider) {
@@ -35,6 +34,9 @@ export default class Swiper extends HTMLElement {
     }).with([
       new ScrollSnapDraggable
     ]);
+  }
+
+  connectedCallback() {
     this.removeAllSlides();
 
     // Detect if the user has swiped to the last page and load more data
@@ -48,8 +50,6 @@ export default class Swiper extends HTMLElement {
       }
     });
   }
-
-  disconnectedCallback() { }
 
   public appendSlide(slide: HTMLElement): void {
     slide.slot = "slides";
