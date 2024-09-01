@@ -2,7 +2,6 @@
 import html from './event-item.component.html?raw';
 import css from './event-item.component.css?inline';
 import { EventData } from '../../models/EventData';
-import { SlotSpanFactory } from '../component-helpers';
 import { getShowTimeTypeAttributeString } from '../../models/ShowTimeType';
 import { getShowTimeLanguageString } from '../../models/ShowTimeLanguage';
 
@@ -12,20 +11,39 @@ const template = document.createElement('template');
 template.innerHTML = html;
 
 export default class EventItem extends HTMLElement {
+  static observedAttributes = ['href', 'color', 'time', 'title', 'suffix'];
 
-  static get observedAttributes() {
-    return ['href', 'dotColor'];
+  private shadow: ShadowRoot;
+
+  constructor() {
+    super();
+    this.shadow = this.attachShadow({ mode: 'open' });
+    this.shadow.adoptedStyleSheets = [style];
+    this.shadow.appendChild(template.content.cloneNode(true));
   }
 
+  attributeChangedCallback(name: string, oldValue: string, newValue: string) {
+    if (oldValue === newValue) return;
 
-  connectedCallback() {
-    const shadow = this.attachShadow({ mode: 'open' });
-    shadow.adoptedStyleSheets = [style];
-    shadow.appendChild(template.content.cloneNode(true));
-    const titleElem = shadow.safeQuerySelector('.title');
-    const dotElem = shadow.safeQuerySelector('.dot');
-    titleElem.setAttribute('href', this.getAttribute('href') ?? '#');
-    dotElem.style.backgroundColor = this.getAttribute('dotColor') ?? 'black';
+    switch (name) {
+      case 'title':
+        this.shadow.updateElement('.title', el => el.textContent = newValue);
+        break;
+      case 'href':
+        this.shadow.updateElement('.link', el => {
+          el.setAttribute('href', newValue)
+        });
+        break;
+      case 'color':
+        this.shadow.updateElement('.dot', el => el.style.backgroundColor = newValue);
+        break;
+      case 'time': {
+        const date = new Date(newValue);
+        const dateString = date.toLocaleTimeString([], { timeStyle: 'short' });
+        this.shadow.updateElement('.time', el => el.textContent = dateString);
+        break;
+      }
+    }
   }
 
   private static BuildSuffixString(type: string, language: string) {
@@ -43,20 +61,15 @@ export default class EventItem extends HTMLElement {
   }
 
   static BuildElement(event: EventData) {
-    const timeSpan = SlotSpanFactory(event.startTime.toLocaleTimeString([], { timeStyle: 'short' }), 'time');
-    const titleSpan = SlotSpanFactory(event.displayName, 'title');
+    const item = new EventItem();
+    item.setAttribute('href', event.url.toString());
+    item.setAttribute('color', event.color);
+    item.setAttribute('time', event.startTime.toISOString());
+    item.setAttribute('title', event.title);
     const typeString = getShowTimeTypeAttributeString(event.type);
     const languageString = getShowTimeLanguageString(event.language);
     const suffixString = EventItem.BuildSuffixString(typeString, languageString);
-
-    const suffixSpan = SlotSpanFactory(suffixString, 'suffix');
-
-    const item = new EventItem();
-    item.setAttribute('href', event.url.toString());
-    item.setAttribute('dotColor', event.color);
-    item.appendChild(timeSpan);
-    item.appendChild(titleSpan);
-    item.appendChild(suffixSpan);
+    item.setAttribute('suffix', suffixString);
     return item;
   }
 }

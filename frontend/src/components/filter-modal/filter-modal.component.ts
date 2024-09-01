@@ -31,7 +31,7 @@ export default class FilterModal extends HTMLElement {
 
   handleCinemaSelectionChanged(e: Event) {
     const target = e.target as CheckableButtonElement;
-    if (!target.checked) {
+    if (!target.getAttribute('checked')) {
       const cinema = this.Cinemas.find(c => c.id === parseInt(target.value));
       if (cinema) {
         this.SelectedCinemas.push(cinema);
@@ -44,7 +44,7 @@ export default class FilterModal extends HTMLElement {
   handleShowTimeTypeSelected(e: Event) {
     const target = e.target as CheckableButtonElement;
     const showTimeType = getShowTimeTypeByNumber(parseInt(target.value));
-    if (!target.checked) {
+    if (!target.getAttribute('checked')) {
       this.SelectedShowTimeTypes.push(showTimeType);
     } else {
       this.SelectedShowTimeTypes = this.SelectedShowTimeTypes.filter(t => t !== showTimeType);

@@ -9,7 +9,7 @@ export class EventData {
     this.date = showTime.date;
     this.startTime = showTime.startTime;
     this.endTime = showTime.endTime;
-    this.displayName = movie.displayName;
+    this.title = movie.displayName;
     this.runtime = movie.runtime;
     this.cinema = cinema.displayName;
     this.color = cinema.color;
@@ -21,7 +21,7 @@ export class EventData {
   startTime: Date;
   date: Date;
   endTime: Date;
-  displayName: string;
+  title: string;
   runtime: number;
   cinema: string;
   color: string;

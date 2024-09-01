@@ -1,8 +1,13 @@
-// shadow-root-extensions.ts
 declare global {
   interface ShadowRoot {
+    updateElement(selector: string, updater: (el: HTMLElement) => void): void;
     safeQuerySelector(selector: string): HTMLElement;
   }
+}
+
+ShadowRoot.prototype.updateElement = function (selector: string, updater: (el: HTMLElement) => void): void {
+  const element = this.safeQuerySelector(selector);
+  updater(element);
 }
 
 ShadowRoot.prototype.safeQuerySelector = function (selector: string): HTMLElement {
@@ -14,3 +19,4 @@ ShadowRoot.prototype.safeQuerySelector = function (selector: string): HTMLElemen
 };
 
 export { };
+
