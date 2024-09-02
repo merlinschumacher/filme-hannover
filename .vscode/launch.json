@@ -21,7 +21,9 @@
             "name": "Launch frontend",
             "request": "launch",
             "type": "chrome",
-            "skipFiles": ["${workspaceFolder}/node_modules/**/*.js"],
+            "skipFiles": [
+                "${workspaceFolder}/node_modules/**/*.js"
+            ],
             "url": "http://localhost:5173",
             "webRoot": "${workspaceFolder}/frontend",
             "cwd": "${workspaceFolder}/frontend",
