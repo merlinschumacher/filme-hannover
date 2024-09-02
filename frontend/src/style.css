@@ -6,6 +6,7 @@
   --background-mediumblue: #E3F5FF;
   --background-mediumblue2: #d5ebff;
   --background-lightgreen: #b9ffae;
+  --background-lightred: #ffaeae;
   --light-text: #626262;
   --font-family: "Inter", "Inter Variable", "InterVariable", "Helvetica Neue", "Roboto", "Arial", sans-serif;
 }
@@ -25,8 +26,18 @@ html {
 }
 
 /* Remove default margin in favour of better control in authored CSS */
-body, h1, h2, h3, h4, h5, h6, p,
-figure, blockquote, dl, dd {
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+figure,
+blockquote,
+dl,
+dd {
   margin-block-end: 0;
 }
 
@@ -44,18 +55,31 @@ body {
 }
 
 /* Set shorter line heights on headings and interactive elements */
-h1, h2, h3, h4, h5, h6,
-button, input, label {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+button,
+input,
+label {
   line-height: 1.1;
 }
 
 /* Balance text wrapping on headings */
-h1, h2,
-h3, h4, h3, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h3,
+h5,
+h6 {
   text-wrap: balance;
 }
 
-h1, h2 {
+h1,
+h2 {
   font-weight: normal;
 }
 
@@ -73,23 +97,25 @@ picture {
 }
 
 /* Inherit fonts for inputs and buttons */
-input, button,
-textarea, select {
+input,
+button,
+textarea,
+select {
   font-family: inherit;
   font-size: inherit;
 }
 
-  /* Make sure textareas without a rows attribute are not tiny */
-  textarea:not([rows]) {
-    min-height: 10em;
-  }
+/* Make sure textareas without a rows attribute are not tiny */
+textarea:not([rows]) {
+  min-height: 10em;
+}
 
 /* Anything that has been anchored to should have extra scroll margin */
 :target {
   scroll-margin-block: 5ex;
 }
 
-body > h1:first-of-type {
+body>h1:first-of-type {
   margin-top: 0;
 }
 

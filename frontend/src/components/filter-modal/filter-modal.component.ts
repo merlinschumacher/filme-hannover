@@ -7,6 +7,8 @@ import Movie from '../../models/Movie';
 import { getAllShowTimeTypes, getShowTimeTypeByNumber, getShowTimeTypeLabelString, ShowTimeType } from '../../models/ShowTimeType';
 import FilterIcon from '@material-symbols/svg-400/rounded/filter_alt.svg?raw'
 import Check from '@material-symbols/svg-400/outlined/check.svg?raw'
+import Close from '@material-symbols/svg-400/outlined/close.svg?raw'
+import EventItem from '../event-item/event-item.component';
 
 const style = new CSSStyleSheet();
 style.replaceSync(css);
@@ -21,55 +23,71 @@ export default class FilterModal extends HTMLElement {
   private SelectedMovies: Movie[] = [];
   private SelectedShowTimeTypes: ShowTimeType[] = [];
   private shadow: ShadowRoot;
+  private dialogEl: HTMLDialogElement;
 
   public onFilterChanged?: (cinemas: Cinema[], movies: Movie[], showTimeTypes: ShowTimeType[]) => void;
 
   constructor() {
     super();
     this.shadow = this.attachShadow({ mode: 'open' });
-  }
-
-  handleCinemaSelectionChanged(e: Event) {
-    const target = e.target as CheckableButtonElement;
-    if (!target.getAttribute('checked')) {
-      const cinema = this.Cinemas.find(c => c.id === parseInt(target.value));
-      if (cinema) {
-        this.SelectedCinemas.push(cinema);
-      }
-    } else {
-      this.SelectedCinemas = this.SelectedCinemas.filter(c => c.id !== parseInt(target.value));
-    }
-  };
-
-  handleShowTimeTypeSelected(e: Event) {
-    const target = e.target as CheckableButtonElement;
-    const showTimeType = getShowTimeTypeByNumber(parseInt(target.value));
-    if (!target.getAttribute('checked')) {
-      this.SelectedShowTimeTypes.push(showTimeType);
-    } else {
-      this.SelectedShowTimeTypes = this.SelectedShowTimeTypes.filter(t => t !== showTimeType);
-    }
-  };
-
-  connectedCallback() {
     this.shadow.appendChild(template.content.cloneNode(true));
     this.shadow.adoptedStyleSheets = [style];
     this.shadow.safeQuerySelector('#filter-edit-icon').innerHTML = FilterIcon;
     this.shadow.safeQuerySelector('#filter-apply-icon').innerHTML = Check;
+    this.shadow.safeQuerySelector('#filter-close-icon').innerHTML = Close;
+    this.dialogEl = this.shadow.safeQuerySelector('#filter-dialog') as HTMLDialogElement;
+  }
+
+  handleCinemaSelectionChanged(e: Event) {
+    if (e.target instanceof CheckableButtonElement) {
+      const value = e.target.getAttribute('value') ?? '';
+      const cinemaId = parseInt(value);
+      if (!this.SelectedCinemas.find(c => c.id === cinemaId)) {
+        const cinema = this.Cinemas.find(c => c.id === cinemaId);
+        if (cinema) {
+          this.SelectedCinemas.push(cinema);
+        }
+      } else {
+        this.SelectedCinemas = this.SelectedCinemas.filter(c => c.id !== cinemaId);
+      }
+    }
+  };
+
+  handleShowTimeTypeSelected(e: Event) {
+    if (e.target instanceof CheckableButtonElement) {
+      const value = e.target.getAttribute('value') ?? '';
+      const typeNumber = parseInt(value);
+      const showTimeType = getShowTimeTypeByNumber(typeNumber);
+      if (!this.SelectedShowTimeTypes.includes(showTimeType)) {
+        this.SelectedShowTimeTypes.push(showTimeType);
+      } else {
+        this.SelectedShowTimeTypes = this.SelectedShowTimeTypes.filter(t => t !== showTimeType);
+      }
+    }
+  };
+
+  connectedCallback() {
     this.buildButtonEvents();
     this.SelectedCinemas = this.Cinemas;
-    this.SelectedShowTimeTypes = getAllShowTimeTypes();
     const cinemaButtons: CheckableButtonElement[] = this.generateCinemaButtons();
+
+    this.SelectedShowTimeTypes = getAllShowTimeTypes();
     const showTimeTypeButtons: CheckableButtonElement[] = this.generateShowTimeTypeButtons();
+
+    const cinemaLegend: EventItem[] = this.generateCinemaLegend();
+    this.append(...cinemaLegend);
 
     const movieList = SelectionListElement.BuildElement(this.Movies);
     movieList.onSelectionChanged = (movies: Movie[]) => {
       this.SelectedMovies = movies;
     }
     movieList.slot = 'movie-selection';
+
     this.append(...showTimeTypeButtons);
     this.append(...cinemaButtons);
     this.append(movieList);
+
+    this.updateFilterInfo();
   }
 
   private updateFilterInfo() {
@@ -86,25 +104,25 @@ export default class FilterModal extends HTMLElement {
   private buildButtonEvents() {
     const openFilterDialogButtonEl = this.shadow.safeQuerySelector('#open-filter');
     const applyFilterDialogButtonEl = this.shadow.safeQuerySelector('#apply-filter');
-    const dialogEl = this.shadow.safeQuerySelector('#filter-dialog') as HTMLDialogElement;
-    this.updateFilterInfo();
-    openFilterDialogButtonEl.addEventListener('click', () => {
-      dialogEl.showModal();
-    });
+    const closeFilterDialogButtonEl = this.shadow.safeQuerySelector('#close-filter');
+    openFilterDialogButtonEl.addEventListener('click', () => { this.dialogEl.showModal(); });
+    closeFilterDialogButtonEl.addEventListener('click', () => { this.dialogEl.close(); });
+
     applyFilterDialogButtonEl.addEventListener('click', () => {
       if (this.onFilterChanged) {
         this.onFilterChanged(this.SelectedCinemas, this.SelectedMovies, this.SelectedShowTimeTypes);
         this.updateFilterInfo();
       }
-      dialogEl.close();
+      this.dialogEl.close();
     });
-    dialogEl.addEventListener('click', (event: Event) => {
-      const rect = dialogEl.getBoundingClientRect();
+
+    this.dialogEl.addEventListener('click', (event: Event) => {
       const mouseEvent = event as MouseEvent
+      const rect = this.dialogEl.getBoundingClientRect();
       const isInDialog = (rect.top <= mouseEvent.clientY && mouseEvent.clientY <= rect.top + rect.height
         && rect.left <= mouseEvent.clientX && mouseEvent.clientX <= rect.left + rect.width);
       if (!isInDialog) {
-        dialogEl.close();
+        this.dialogEl.close();
       }
     });
   }
@@ -112,12 +130,12 @@ export default class FilterModal extends HTMLElement {
   private generateCinemaButtons() {
     const cinemaButtons: CheckableButtonElement[] = [];
     this.Cinemas.forEach(cinema => {
-      const cinemaButton = new CheckableButtonElement();
+      const cinemaButton = CheckableButtonElement.BuildElement(
+        cinema.displayName,
+        cinema.id.toString(),
+        cinema.color
+      );
       cinemaButton.slot = 'cinema-selection';
-      cinemaButton.setAttribute('label', cinema.displayName);
-      cinemaButton.setAttribute('value', cinema.id.toString());
-      cinemaButton.setAttribute('color', cinema.color);
-      cinemaButton.setAttribute('checked', '');
       cinemaButton.addEventListener('click', this.handleCinemaSelectionChanged.bind(this));
       cinemaButtons.push(cinemaButton);
     });
@@ -127,16 +145,29 @@ export default class FilterModal extends HTMLElement {
   private generateShowTimeTypeButtons() {
     const showTimeTypeButtons: CheckableButtonElement[] = [];
     const showTimeTypes: ShowTimeType[] = [ShowTimeType.Regular, ShowTimeType.Subtitled, ShowTimeType.OriginalVersion];
+
     showTimeTypes.forEach(showTimeType => {
-      const showTimeTypeButton = new CheckableButtonElement();
+      const showTimeTypeButton = CheckableButtonElement.BuildElement(
+        getShowTimeTypeLabelString(showTimeType),
+        showTimeType.valueOf().toString());
       showTimeTypeButton.slot = 'type-selection';
-      showTimeTypeButton.setAttribute('label', getShowTimeTypeLabelString(showTimeType));
-      showTimeTypeButton.setAttribute('value', showTimeType.valueOf().toString());
-      showTimeTypeButton.setAttribute('checked', '');
       showTimeTypeButton.addEventListener('click', this.handleShowTimeTypeSelected.bind(this));
       showTimeTypeButtons.push(showTimeTypeButton);
     });
     return showTimeTypeButtons
+  }
+
+  private generateCinemaLegend() {
+    const elements: EventItem[] = [];
+    this.SelectedCinemas.forEach(cinema => {
+      const cinemaLegendItem = new EventItem();
+      cinemaLegendItem.setAttribute('color', cinema.color);
+      cinemaLegendItem.setAttribute('title', cinema.displayName);
+      cinemaLegendItem.setAttribute('href', '');
+      cinemaLegendItem.slot = 'cinema-legend';
+      elements.push(cinemaLegendItem);
+    });
+    return elements;
   }
 
   public static BuildElement(Cinemas: Cinema[], Movies: Movie[]): FilterModal {

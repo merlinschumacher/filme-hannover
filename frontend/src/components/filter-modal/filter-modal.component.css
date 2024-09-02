@@ -22,7 +22,6 @@
   font-weight: 700;
 }
 
-
 button {
   display: flex;
   justify-content: center;
@@ -35,10 +34,17 @@ button {
   padding: .5rem;
   background-color: #fff;
   appearance: none;
+  color: #000000;
+  outline: none;
 }
 
 button:hover {
   background-color: var(--light-accent);
+}
+
+button>.icon {
+  display: flex;
+  flex: 0 0 auto;
 }
 
 button>.icon>svg {
@@ -54,9 +60,37 @@ button#apply-filter:hover {
   background-color: var(--background-lightgreen);
 }
 
+button#close-filter:hover {
+  background-color: var(--background-lightred);
+}
+
 #filter-dialog {
-  background-color: var(--background-lightblue);
   border-radius: 8px;
-  border: 1px solid var(--background-darkblue);
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border: 1px solid black;
+  box-shadow: 0 0 10px var(--dark-accent);
+}
+
+#filter-header {
+  display: flex;
+  justify-content: space-between;
+}
+
+#filter-controls {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  flex-direction: row;
+}
+
+#cinema-legend {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+#cinema-legend ::slotted(.link) {
+  cursor: none;
+  pointer-events: none;
 }

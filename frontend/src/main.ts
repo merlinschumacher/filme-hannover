@@ -64,6 +64,9 @@ export class Application {
       this.lastVisibleDate = new Date();
       this.filterService.SetSelection(cinemas, movies, showTimeTypes).then(() => {
         console.log("Filter changed.");
+        console.debug("Cinemas:", cinemas);
+        console.debug("Movies:", movies);
+        console.debug("ShowTimeTypes:", showTimeTypes);
       }).catch((error: unknown) => {
         console.error("Failed to set selection.", error);
       });

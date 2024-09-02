@@ -39,6 +39,6 @@ day-list.scroll-snap-slide:last-of-type {
   cursor: grabbing;
 }
 
-.-dragging a {
+.-dragging ::slotted(day-list) {
   pointer-events: none;
 }

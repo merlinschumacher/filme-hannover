@@ -1,8 +1,9 @@
 div {
-  border: 1px solid var(--light-accent);
+  border: 1px solid #000000;
+  border-right: none;
   padding: 1em;
   width: 5%;
-  height: 100%;
+  height: calc(100% - 2em - 2px);
   background: var(--light-accent);
   background-image: radial-gradient(black 1px, var(--light-accent) 0);
   background-size: 10px 10px;

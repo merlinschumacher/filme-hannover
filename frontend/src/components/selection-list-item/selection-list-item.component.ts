@@ -16,62 +16,40 @@ export default class SelectionListItemElement extends HTMLElement {
 
   private shadow: ShadowRoot;
 
-  public value = '';
-  public label = '';
-  public checked = false;
-  public color = '#000000';
-
-  private handleClick = (e: MouseEvent): void => {
-    if (e.target instanceof SelectionListItemElement) {
-      e.target.toggleAttribute('checked');
-      e.preventDefault();
+  private handleClick = (ev: MouseEvent) => {
+    ev.preventDefault();
+    if (ev.target instanceof SelectionListItemElement) {
+      ev.target.toggleAttribute('checked');
     }
   }
 
-  private updateStyle() {
-    const icon = this.checked ? CheckboxChecked : Checkbox;
-    const iconEl = this.shadow.safeQuerySelector('.icon');
-    iconEl.innerHTML = icon;
-    const textEl = this.shadow.safeQuerySelector('.text');
-    textEl.textContent = this.label;
-    const input = this.shadow.safeQuerySelector('input') as HTMLInputElement;
-    input.value = this.value;
-    const colorStyle = new CSSStyleSheet();
-    colorStyle.insertRule(`:host { --color: ${this.color}; }`);
-    this.shadow.adoptedStyleSheets = [style, colorStyle];
-
-
-    if (this.checked) {
-      input.setAttribute('checked', '');
-    } else {
-      input.removeAttribute('checked');
-    }
-  }
-
-  attributeChangedCallback(name: string, oldValue: string, newValue: string) {
+  attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null) {
     if (oldValue === newValue) {
       return;
     }
     switch (name) {
       case 'label':
-        this.label = newValue;
+        this.shadow.updateElement('.text', el => el.textContent = newValue);
         break;
-      case 'value':
-        this.value = newValue;
+      case 'value': {
+        this.shadow.updateElement('input', (el: HTMLElement) => {
+          if (el instanceof HTMLInputElement) { el.value = newValue ?? ''; }
+        });
         break;
-      case 'color':
-        this.color = newValue;
+      }
+      case 'color': {
+        const colorStyle = new CSSStyleSheet();
+        const color = newValue ?? '#000000';
+        colorStyle.insertRule(`:host { --color: ${color}; }`);
+        this.shadow.adoptedStyleSheets = [style, colorStyle];
         break;
-      case 'checked':
-        if (!newValue) {
-          this.checked = false;
-        } else {
-          this.checked = true;
-        }
-
+      }
+      case 'checked': {
+        const checked = newValue !== null;
+        this.setCheckedState(checked);
         break;
+      }
     }
-    this.updateStyle();
   }
 
   constructor() {
@@ -81,8 +59,16 @@ export default class SelectionListItemElement extends HTMLElement {
     this.shadow.adoptedStyleSheets = [style];
   }
 
+  private setCheckedState(checked: boolean) {
+    const icon = checked ? CheckboxChecked : Checkbox;
+    this.shadow.updateElement('.icon', el => el.innerHTML = icon);
+    this.shadow.updateElement('input', (el: HTMLElement) => {
+      if (el instanceof HTMLInputElement) { el.checked = checked; }
+    });
+  }
+
   connectedCallback() {
-    this.updateStyle();
+    this.setCheckedState(this.hasAttribute('checked'));
     this.addEventListener('click', this.handleClick);
   }
 

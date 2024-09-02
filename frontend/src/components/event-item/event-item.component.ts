@@ -30,9 +30,17 @@ export default class EventItem extends HTMLElement {
         this.shadow.updateElement('.title', el => el.textContent = newValue);
         break;
       case 'href':
-        this.shadow.updateElement('.link', el => {
-          el.setAttribute('href', newValue)
-        });
+        if (!newValue || newValue === '') {
+          this.shadow.updateElement('.link', el => {
+            el.classList.add('disabled');
+            el.removeAttribute('href');
+          });
+        } else {
+          this.shadow.updateElement('.link', el => {
+            el.classList.remove('disabled');
+            el.setAttribute('href', newValue)
+          });
+        }
         break;
       case 'color':
         this.shadow.updateElement('.dot', el => el.style.backgroundColor = newValue);
@@ -43,6 +51,9 @@ export default class EventItem extends HTMLElement {
         this.shadow.updateElement('.time', el => el.textContent = dateString);
         break;
       }
+      case 'suffix':
+        this.shadow.updateElement('.suffix', el => el.textContent = newValue);
+        break;
     }
   }
 

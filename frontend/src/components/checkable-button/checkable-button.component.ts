@@ -14,9 +14,6 @@ export default class CheckableButtonElement extends HTMLElement {
   }
 
   private shadow: ShadowRoot;
-  public value = '';
-  public label = '';
-  public color = '#000000';
 
   constructor() {
     super();
@@ -26,6 +23,7 @@ export default class CheckableButtonElement extends HTMLElement {
   }
 
   connectedCallback() {
+    this.setCheckedState(this.hasAttribute('checked'));
     this.addEventListener('click', this.handleClick);
   }
 
@@ -33,32 +31,28 @@ export default class CheckableButtonElement extends HTMLElement {
     this.removeEventListener('click', this.handleClick);
   }
 
-  attributeChangedCallback(name: string, oldValue: string, newValue: string) {
+  attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null) {
     if (oldValue === newValue) return;
 
     switch (name) {
       case 'label':
-        this.shadow.updateElement('.label', el => el.textContent = this.label);
+        this.shadow.updateElement('.label', el => el.textContent = newValue);
         break;
       case 'value':
-        this.value = newValue;
         this.shadow.updateElement('input', (el: HTMLElement) => {
-          if (el instanceof HTMLInputElement) { el.value = this.value; }
+          if (el instanceof HTMLInputElement) { el.value = newValue ?? ''; }
         });
         break;
       case 'color': {
         const colorStyle = new CSSStyleSheet();
-        colorStyle.insertRule(`:host { --color: ${this.color}; }`);
+        const color = newValue ?? '#000000';
+        colorStyle.insertRule(`.border { background-color: ${color}; }`);
         this.shadow.adoptedStyleSheets = [style, colorStyle];
         break;
       }
       case 'checked': {
-        const checked = Boolean(newValue);
-        const icon = checked ? CheckboxChecked : Checkbox;
-        this.shadow.updateElement('.icon', el => el.innerHTML = icon);
-        this.shadow.updateElement('input', (el: HTMLElement) => {
-          if (el instanceof HTMLInputElement) { el.checked = checked; }
-        });
+        const checked = newValue !== null;
+        this.setCheckedState(checked);
         break;
       }
     }
@@ -71,6 +65,24 @@ export default class CheckableButtonElement extends HTMLElement {
     }
   }
 
+  private setCheckedState(checked: boolean) {
+    const icon = checked ? CheckboxChecked : Checkbox;
+    this.shadow.updateElement('.icon', el => el.innerHTML = icon);
+    this.shadow.updateElement('input', (el: HTMLElement) => {
+      if (el instanceof HTMLInputElement) { el.checked = checked; }
+    });
+  }
+
+  public static BuildElement(label: string, value: string, color = "#000000", checked = true): CheckableButtonElement {
+    const element = document.createElement('checkable-button') as CheckableButtonElement;
+    element.setAttribute('label', label);
+    element.setAttribute('value', value);
+    element.setAttribute('color', color);
+    if (checked) {
+      element.setAttribute('checked', '');
+    }
+    return element;
+  }
 }
 
 customElements.define('checkable-button', CheckableButtonElement);
