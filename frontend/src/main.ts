@@ -10,7 +10,7 @@ export class Application {
   private filterService!: FilterService;
   private viewPortService: ViewPortService = new ViewPortService();
   private swiper: SwiperService;
-  private lastVisibleDate: Date = new Date();
+  private nextVisibleDate: Date = new Date();
   private visibleDays: number = this.viewPortService.getVisibleDays() * 2;
   private appRootEl: HTMLElement = this.getAppRootEl();
 
@@ -61,7 +61,7 @@ export class Application {
     const cinemas = this.filterService.GetAllCinemas();
     const filterModal = FilterModal.BuildElement(cinemas, movies);
     filterModal.onFilterChanged = (cinemas, movies, showTimeTypes) => {
-      this.lastVisibleDate = new Date();
+      this.nextVisibleDate = new Date();
       this.filterService.SetSelection(cinemas, movies, showTimeTypes).then(() => {
         console.log("Filter changed.");
         console.debug("Cinemas:", cinemas);
@@ -78,7 +78,10 @@ export class Application {
   }
 
   private updateSwiper = (replaceSlides = false): void => {
-    this.filterService.GetEvents(this.lastVisibleDate, this.visibleDays)
+    if (replaceSlides) {
+      this.nextVisibleDate = new Date();
+    }
+    this.filterService.GetEvents(this.nextVisibleDate, this.visibleDays)
       .then((eventDataResult) => {
         if (eventDataResult.EventData.size === 0) {
           if (replaceSlides) {
@@ -86,18 +89,17 @@ export class Application {
           }
           return;
         }
+        if (replaceSlides) {
+          this.swiper.ReplaceEvents(eventDataResult.EventData);
+
+        } else {
+          this.swiper.AddEvents(eventDataResult.EventData);
+        }
         // Set the last visible date to the last date in the event list
         const lastKey = [...eventDataResult.EventData.keys()].pop();
         if (lastKey) {
-          this.lastVisibleDate = lastKey;
-        }
-        if (eventDataResult.EventData.size > 1) {
-          this.lastVisibleDate.setDate(this.lastVisibleDate.getDate() + 1);
-        }
-        if (replaceSlides) {
-          this.swiper.ReplaceEvents(eventDataResult.EventData);
-        } else {
-          this.swiper.AddEvents(eventDataResult.EventData);
+          lastKey.setDate(lastKey.getDate() + 1);
+          this.nextVisibleDate = lastKey;
         }
       })
       .catch((error: unknown) => {
