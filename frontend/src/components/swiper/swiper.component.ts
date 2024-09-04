@@ -79,18 +79,20 @@ export default class Swiper extends HTMLElement {
     slide.slot = "slides";
     slide.classList.add("scroll-snap-slide");
     this.scrollSnapSliderEl.appendChild(slide);
-    this.triggeredScrollThreshold = false;
     this.slideCount++;
+    this.triggeredScrollThreshold = false;
   }
 
   public removeAllSlides(): void {
     this.scrollSnapSliderEl.replaceChildren();
     this.slideCount = 0;
+    this.triggeredScrollThreshold = false;
   }
 
   public displayNoResults(): void {
     this.scrollSnapSliderEl.replaceChildren(noResultsElement);
     this.slideCount = 0;
+    this.triggeredScrollThreshold = false;
   }
 
   public replaceSlides(slides: HTMLElement[]): void {
@@ -101,6 +103,7 @@ export default class Swiper extends HTMLElement {
     this.scrollSnapSliderEl.replaceChildren(...slides);
     this.scrollSnapSlider.slideTo(0);
     this.slideCount = slides.length;
+    this.triggeredScrollThreshold = false;
   }
 
   public static BuildElement(): Swiper {
