@@ -1,8 +1,9 @@
 :host {
   padding-bottom: .2em;
   display: flex;
-  gap: .5em;
-  font-size: .9em;
+  gap: .333em;
+  font-size: 1em;
+  margin-bottom: .1em;
 }
 
 .link {
@@ -23,6 +24,8 @@
 .title {
   flex-grow: 1;
   font-weight: bold;
+  text-wrap: balance;
+  text-wrap: pretty;
 }
 
 .time {

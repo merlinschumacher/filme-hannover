@@ -138,7 +138,7 @@ h4 {
 }
 
 :root {
-  --slide-width: 100%;
+  --slide-width: calc(100% - 2px);
 }
 
 @media (min-width: 640px) {

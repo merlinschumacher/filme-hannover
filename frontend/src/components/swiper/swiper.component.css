@@ -6,10 +6,15 @@
 }
 
 .scroll-snap-slide {
-  flex: 0 0 auto;
-  height: auto;
+  height: fit-content;
   scroll-snap-stop: always;
   width: auto;
+}
+
+@media screen and (min-width: 640px) {
+  .scroll-snap-slide {
+    height: auto;
+  }
 }
 
 day-list.scroll-snap-slide {
@@ -41,4 +46,34 @@ day-list.scroll-snap-slide:last-of-type {
 
 .-dragging ::slotted(day-list) {
   pointer-events: none;
+}
+
+button {
+  appearance: none;
+  position: fixed;
+  top: 50%;
+  border: none;
+  background: none;
+  z-index: 10;
+  height: fit-content;
+  color: #000000;
+  cursor: pointer;
+}
+
+button:focus {
+  outline: none;
+}
+
+button:hover>svg {
+  filter: drop-shadow(0px 0px 5px #000)
+}
+
+
+
+#swipe-left {
+  left: 0;
+}
+
+#swipe-right {
+  right: 0;
 }

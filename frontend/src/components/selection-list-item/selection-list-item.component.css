@@ -13,9 +13,10 @@
   user-select: none;
   cursor: pointer;
   transition: background 0.1s, border 0.1s;
-  white-space: nowrap;
   font-weight: 700;
   position: relative;
+  text-wrap: balance;
+  text-wrap: pretty;
 }
 
 .selection-list-item-input+label:hover,

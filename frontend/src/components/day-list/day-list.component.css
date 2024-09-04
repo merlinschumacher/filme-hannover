@@ -5,21 +5,32 @@
   font-size: 1.1em;
   cursor: grab;
   position: relative;
-}
-
-:host(:first-child) {
-  border-radius: 8px 0 0 8px;
+  border-radius: 8px;
   overflow: auto;
 }
 
-:host(:last-child) {
-  border-radius: 0 8px 8px 0;
-  overflow: auto;
+
+
+@media screen and (min-width: 640px) {
+  :host {
+    border-radius: 0px;
+  }
+
+  :host(:first-child) {
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+  }
+
+  :host(:last-child) {
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+  }
+
+  :host(:not(:last-child)) {
+    border-right: none;
+  }
 }
 
-:host(:not(:last-child)) {
-  border-right: none;
-}
 
 :host>* {
   align-self: stretch;
