@@ -31,15 +31,15 @@ export default class SelectionListElement extends HTMLElement {
       movieButton.slot = 'selection-list';
       movieButton.setAttribute('label', movie.displayName);
       movieButton.setAttribute('value', movie.id.toString());
-      movieButton.addEventListener('click', (e: MouseEvent) => {
+      movieButton.addEventListener('click', (ev: MouseEvent) => {
+        const eventTarget = ev.target as SelectionListItemElement;
+        const movieId = parseInt(eventTarget.getAttribute('value') ?? '0');
 
-        if (this.SelectedMovies.some(m => m.id === movie.id)) {
-          this.SelectedMovies = this.SelectedMovies.filter(m => m.id !== movie.id);
+        if (this.SelectedMovies.some(m => m.id === movieId)) {
+          this.SelectedMovies = this.SelectedMovies.filter(m => m.id !== movieId);
         } else {
           this.SelectedMovies.push(movie);
         }
-
-        this.uncheckAllMoviesButton(e, this.allMoviesButton);
         if (!this.onSelectionChanged)
           return;
         this.onSelectionChanged(this.SelectedMovies);
@@ -49,11 +49,6 @@ export default class SelectionListElement extends HTMLElement {
     return options;
   }
 
-  private uncheckAllMoviesButton(e: MouseEvent, btn: SelectionListItemElement) {
-    if (e.target instanceof SelectionListItemElement && !e.target.checked) {
-      btn.removeAttribute('checked');
-    }
-  }
 
 
   private buildAllMoviesButton(): SelectionListItemElement {
@@ -68,8 +63,6 @@ export default class SelectionListElement extends HTMLElement {
   connectedCallback() {
     const options: SelectionListItemElement[] = [];
     const movieButtons = this.buildMovieButtons(this.Movies);
-    this.allMoviesButton.addEventListener('click', (e: MouseEvent) => { this.uncheckMovieButtons(e, movieButtons); }, false);
-    this.append(this.allMoviesButton);
 
     options.push(...movieButtons);
     this.append(...options);
@@ -79,19 +72,13 @@ export default class SelectionListElement extends HTMLElement {
 
   };
 
-  private uncheckMovieButtons(e: MouseEvent, options: SelectionListItemElement[]) {
-    if (e.target instanceof SelectionListItemElement && !e.target.checked) {
-      options.forEach((option: Element) => {
-        option.removeAttribute('checked');
-      });
-    }
-  }
 
   private searchMovies(searchTerm: string) {
     const options = this.querySelectorAll('selection-list-item');
     options.forEach((option: Element) => {
       const optionElement = option as SelectionListItemElement;
-      if (optionElement.label.toLowerCase().includes(searchTerm.toLowerCase())) {
+      const label = optionElement.getAttribute('label') ?? '';
+      if (label.toLowerCase().includes(searchTerm.toLowerCase())) {
         optionElement.style.display = 'block';
       } else {
         optionElement.style.display = 'none';
