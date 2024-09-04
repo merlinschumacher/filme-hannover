@@ -91,7 +91,9 @@ export class Application {
         if (lastKey) {
           this.lastVisibleDate = lastKey;
         }
-        this.lastVisibleDate.setDate(this.lastVisibleDate.getDate() + 1);
+        if (eventDataResult.EventData.size > 1) {
+          this.lastVisibleDate.setDate(this.lastVisibleDate.getDate() + 1);
+        }
         if (replaceSlides) {
           this.swiper.ReplaceEvents(eventDataResult.EventData);
         } else {
