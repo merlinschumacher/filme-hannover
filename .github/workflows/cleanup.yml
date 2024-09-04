@@ -2,9 +2,7 @@ name: cleanup
 on:
   pull_request:
     types:
-      - closed
-  schedule:
-    - cron: '0 3 * * *'
+      - close
   workflow_dispatch:
 
 jobs:
@@ -40,4 +38,4 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           package-name: 'filme-hannover'
           package-type: 'container'
-          min-versions-to-keep: 2
+          min-versions-to-keep: 4
