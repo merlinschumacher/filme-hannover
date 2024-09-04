@@ -14,7 +14,7 @@ export default defineConfig({
   },
   esbuild: {
     treeShaking: true,
-    pure: ['console.log'],
+    pure: ['console.log', 'console.debug', 'console.info', 'console.warn', 'console.error'],
     minifyIdentifiers: true,
   },
   assetsInclude: ['.src/**/*.html'],
