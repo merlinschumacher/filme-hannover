@@ -28,26 +28,25 @@
   }
 }
 
-
-:host>* {
+:host > * {
   align-self: stretch;
 }
 
 .header {
   text-align: center;
-  padding: .5em;
+  padding: 0.5em;
   border-bottom: 1px solid var(--light-accent);
   font-weight: bold;
   background-color: var(--background-lightblue);
 }
 
 .body {
-  padding: .5em .5em;
+  padding: 0.5em 0.5em;
   flex: 1 1 0px;
 }
 
 .footer {
-  padding: .5em;
+  padding: 0.5em;
   border-top: 1px solid var(--light-accent);
   color: var(--light-text);
 }

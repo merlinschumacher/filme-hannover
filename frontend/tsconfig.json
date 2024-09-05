@@ -1,14 +1,6 @@
 {
-  "include": [
-    "src",
-    "env.d.ts",
-    "vite.config.ts",
-    "eslint.config.mjs",
-  ],
-  "exclude": [
-    "node_modules",
-    "dist"
-  ],
+  "include": ["src", "env.d.ts", "vite.config.ts", "eslint.config.mjs"],
+  "exclude": ["node_modules", "dist"],
   "compilerOptions": {
     "composite": true,
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
@@ -17,9 +9,7 @@
     /* Bundler mode */
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "types": [
-      "node"
-    ],
+    "types": ["node"],
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "noEmit": true,
@@ -32,9 +22,7 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "src/*"
-      ]
+      "@/*": ["src/*"]
     }
   }
 }

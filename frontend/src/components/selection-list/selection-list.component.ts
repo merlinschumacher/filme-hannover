@@ -1,15 +1,14 @@
-import html from './selection-list.component.html?raw';
-import css from './selection-list.component.css?inline';
-import Movie from '../../models/Movie';
-import SelectionListItemElement from '../selection-list-item/selection-list-item.component';
+import html from "./selection-list.component.html?raw";
+import css from "./selection-list.component.css?inline";
+import Movie from "../../models/Movie";
+import SelectionListItemElement from "../selection-list-item/selection-list-item.component";
 
 const style = new CSSStyleSheet();
 style.replaceSync(css);
-const template = document.createElement('template');
+const template = document.createElement("template");
 template.innerHTML = html;
 
 export default class SelectionListElement extends HTMLElement {
-
   public Movies: Movie[] = [];
   private SelectedMovies: Movie[] = [];
   public onSelectionChanged?: (movies: Movie[]) => void;
@@ -18,28 +17,29 @@ export default class SelectionListElement extends HTMLElement {
 
   constructor() {
     super();
-    this.shadow = this.attachShadow({ mode: 'open' });
+    this.shadow = this.attachShadow({ mode: "open" });
     this.shadow.appendChild(template.content.cloneNode(true));
     this.shadow.adoptedStyleSheets = [style];
   }
   private buildMovieButtons(movies: Movie[]): SelectionListItemElement[] {
     const options: SelectionListItemElement[] = [];
-    movies.forEach(movie => {
+    movies.forEach((movie) => {
       const movieButton = new SelectionListItemElement();
-      movieButton.slot = 'selection-list';
-      movieButton.setAttribute('label', movie.displayName);
-      movieButton.setAttribute('value', movie.id.toString());
-      movieButton.addEventListener('click', (ev: MouseEvent) => {
+      movieButton.slot = "selection-list";
+      movieButton.setAttribute("label", movie.displayName);
+      movieButton.setAttribute("value", movie.id.toString());
+      movieButton.addEventListener("click", (ev: MouseEvent) => {
         const eventTarget = ev.target as SelectionListItemElement;
-        const movieId = parseInt(eventTarget.getAttribute('value') ?? '0');
+        const movieId = parseInt(eventTarget.getAttribute("value") ?? "0");
 
-        if (this.SelectedMovies.some(m => m.id === movieId)) {
-          this.SelectedMovies = this.SelectedMovies.filter(m => m.id !== movieId);
+        if (this.SelectedMovies.some((m) => m.id === movieId)) {
+          this.SelectedMovies = this.SelectedMovies.filter(
+            (m) => m.id !== movieId,
+          );
         } else {
           this.SelectedMovies.push(movie);
         }
-        if (!this.onSelectionChanged)
-          return;
+        if (!this.onSelectionChanged) return;
         this.onSelectionChanged(this.SelectedMovies);
       });
       options.push(movieButton);
@@ -54,19 +54,23 @@ export default class SelectionListElement extends HTMLElement {
     options.push(...movieButtons);
     this.append(...options);
 
-    const searchInput = this.shadow.safeQuerySelector('input') as HTMLInputElement;
-    searchInput.addEventListener('input', () => { this.searchMovies(searchInput.value); });
-  };
+    const searchInput = this.shadow.safeQuerySelector(
+      "input",
+    ) as HTMLInputElement;
+    searchInput.addEventListener("input", () => {
+      this.searchMovies(searchInput.value);
+    });
+  }
 
   private searchMovies(searchTerm: string) {
-    const options = this.querySelectorAll('selection-list-item');
+    const options = this.querySelectorAll("selection-list-item");
     options.forEach((option: Element) => {
       const optionElement = option as SelectionListItemElement;
-      const label = optionElement.getAttribute('label') ?? '';
+      const label = optionElement.getAttribute("label") ?? "";
       if (label.toLowerCase().includes(searchTerm.toLowerCase())) {
-        optionElement.style.display = 'block';
+        optionElement.style.display = "block";
       } else {
-        optionElement.style.display = 'none';
+        optionElement.style.display = "none";
       }
     });
   }
@@ -78,6 +82,4 @@ export default class SelectionListElement extends HTMLElement {
   }
 }
 
-customElements.define('selection-list', SelectionListElement);
-
-
+customElements.define("selection-list", SelectionListElement);

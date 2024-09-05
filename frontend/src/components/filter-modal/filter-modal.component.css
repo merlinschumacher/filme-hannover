@@ -29,9 +29,11 @@ button {
   border: 1px solid black;
   border-radius: 8px;
   cursor: pointer;
-  transition: background 0.1s, border 0.1s;
+  transition:
+    background 0.1s,
+    border 0.1s;
   font-weight: 700;
-  padding: .5rem;
+  padding: 0.5rem;
   background-color: #fff;
   appearance: none;
   color: #000000;
@@ -42,12 +44,12 @@ button:hover {
   background-color: var(--light-accent);
 }
 
-button>.icon {
+button > .icon {
   display: flex;
   flex: 0 0 auto;
 }
 
-button>.icon>svg {
+button > .icon > svg {
   height: 2em;
   width: 2em;
 }

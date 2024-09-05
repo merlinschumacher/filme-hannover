@@ -20,30 +20,29 @@ export class Application {
       return appRootEl as HTMLElement;
     }
     throw new Error("Failed to find app root element.");
-  };
+  }
 
   private constructor() {
     this.swiper = new SwiperService();
-    FilterService.Create().then((filterService) => {
-      this.filterService = filterService;
-      this.init()
-      this.appRootEl.appendChild(this.swiper.GetSwiperElement());
-      this.swiper.onReachEnd = this.updateSwiper;
-      this.updateSwiper(true);
-    }).catch((error: unknown) => {
-      console.error("Failed to create filter service.", error);
-    });
+    FilterService.Create()
+      .then((filterService) => {
+        this.filterService = filterService;
+        this.init();
+        this.appRootEl.appendChild(this.swiper.GetSwiperElement());
+        this.swiper.onReachEnd = this.updateSwiper;
+        this.updateSwiper(true);
+      })
+      .catch((error: unknown) => {
+        console.error("Failed to create filter service.", error);
+      });
   }
 
   private init() {
     console.log("Initializing application...");
     const cinemas = this.filterService.GetAllCinemas();
-    document.adoptedStyleSheets = [
-      this.buildCinemaStyleSheet(cinemas),
-    ];
+    document.adoptedStyleSheets = [this.buildCinemaStyleSheet(cinemas)];
     const filterModal = this.initFilter();
     this.appRootEl.appendChild(filterModal);
-
 
     const lastUpdateEl = document.querySelector("#lastUpdate");
     if (lastUpdateEl) {
@@ -62,14 +61,17 @@ export class Application {
     const filterModal = FilterModal.BuildElement(cinemas, movies);
     filterModal.onFilterChanged = (cinemas, movies, showTimeTypes) => {
       this.nextVisibleDate = new Date();
-      this.filterService.SetSelection(cinemas, movies, showTimeTypes).then(() => {
-        console.log("Filter changed.");
-        console.debug("Cinemas:", cinemas);
-        console.debug("Movies:", movies);
-        console.debug("ShowTimeTypes:", showTimeTypes);
-      }).catch((error: unknown) => {
-        console.error("Failed to set selection.", error);
-      });
+      this.filterService
+        .SetSelection(cinemas, movies, showTimeTypes)
+        .then(() => {
+          console.log("Filter changed.");
+          console.debug("Cinemas:", cinemas);
+          console.debug("Movies:", movies);
+          console.debug("ShowTimeTypes:", showTimeTypes);
+        })
+        .catch((error: unknown) => {
+          console.error("Failed to set selection.", error);
+        });
     };
     this.filterService.resultListChanged = () => {
       this.updateSwiper(true);
@@ -81,7 +83,8 @@ export class Application {
     if (replaceSlides) {
       this.nextVisibleDate = new Date();
     }
-    this.filterService.GetEvents(this.nextVisibleDate, this.visibleDays)
+    this.filterService
+      .GetEvents(this.nextVisibleDate, this.visibleDays)
       .then((eventDataResult) => {
         if (eventDataResult.EventData.size === 0) {
           if (replaceSlides) {
@@ -91,7 +94,6 @@ export class Application {
         }
         if (replaceSlides) {
           this.swiper.ReplaceEvents(eventDataResult.EventData);
-
         } else {
           this.swiper.AddEvents(eventDataResult.EventData);
         }
@@ -111,7 +113,7 @@ export class Application {
     const style = new CSSStyleSheet();
     cinemas.forEach((cinema) => {
       style.insertRule(
-        `.cinema-${cinema.id.toString()} { background-color: ${cinema.color}; }`
+        `.cinema-${cinema.id.toString()} { background-color: ${cinema.color}; }`,
       );
     });
     return style;

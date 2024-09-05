@@ -3,12 +3,13 @@
   --dark-accent: #707070;
   --highlighted-color: #fffadf;
   --background-lightblue: #f0ffff;
-  --background-mediumblue: #E3F5FF;
+  --background-mediumblue: #e3f5ff;
   --background-mediumblue2: #d5ebff;
   --background-lightgreen: #b9ffae;
   --background-lightred: #ffaeae;
   --light-text: #626262;
-  --font-family: "Inter", "Inter Variable", "InterVariable", "Helvetica Neue", "Roboto", "Arial", sans-serif;
+  --font-family: "Inter", "Inter Variable", "InterVariable", "Helvetica Neue",
+    "Roboto", "Arial", sans-serif;
 }
 
 /* Box sizing rules */
@@ -42,8 +43,8 @@ dd {
 }
 
 /* Remove list styles on ul, ol elements with a list role, which suggests default styling will be removed */
-ul[role='list'],
-ol[role='list'] {
+ul[role="list"],
+ol[role="list"] {
   list-style: none;
 }
 
@@ -115,7 +116,7 @@ textarea:not([rows]) {
   scroll-margin-block: 5ex;
 }
 
-body>h1:first-of-type {
+body > h1:first-of-type {
   margin-top: 0;
 }
 
@@ -126,7 +127,7 @@ body>h1:first-of-type {
 
 body {
   font-family: var(--font-family);
-  font-size: .75em;
+  font-size: 0.75em;
   padding: 1em;
 }
 

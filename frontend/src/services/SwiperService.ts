@@ -8,7 +8,6 @@ export default class SwiperService {
 
   private swiper: Swiper = Swiper.BuildElement();
 
-
   private onReachendEnabled = false;
 
   public GetSwiperElement(): Swiper {
@@ -47,7 +46,6 @@ export default class SwiperService {
   }
 
   public ReplaceEvents(eventDays: Map<Date, EventData[]>) {
-
     if (eventDays.size === 0) {
       this.swiper.displayNoResults();
     }
@@ -68,9 +66,18 @@ export default class SwiperService {
   }
 
   private isConsecutiveDate(first: Date, second: Date): boolean {
-    const firstDate = new Date(first.getFullYear(), first.getMonth(), first.getDate());
-    const secondDate = new Date(second.getFullYear(), second.getMonth(), second.getDate());
-    const diff = (firstDate.getTime() - secondDate.getTime()) / (1000 * 60 * 60 * 24);
+    const firstDate = new Date(
+      first.getFullYear(),
+      first.getMonth(),
+      first.getDate(),
+    );
+    const secondDate = new Date(
+      second.getFullYear(),
+      second.getMonth(),
+      second.getDate(),
+    );
+    const diff =
+      (firstDate.getTime() - secondDate.getTime()) / (1000 * 60 * 60 * 24);
     if (diff === 0) {
       return true;
     }

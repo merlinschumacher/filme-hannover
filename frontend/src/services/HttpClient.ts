@@ -1,6 +1,6 @@
 export default class HttpClient {
   private constructor() {
-    throw new Error('Cannot instantiate HttpClient');
+    throw new Error("Cannot instantiate HttpClient");
   }
 
   static async getData(url: string) {

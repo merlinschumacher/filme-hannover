@@ -5,12 +5,17 @@ declare global {
   }
 }
 
-ShadowRoot.prototype.updateElement = function (selector: string, updater: (el: HTMLElement) => void): void {
+ShadowRoot.prototype.updateElement = function (
+  selector: string,
+  updater: (el: HTMLElement) => void,
+): void {
   const element = this.safeQuerySelector(selector);
   updater(element);
-}
+};
 
-ShadowRoot.prototype.safeQuerySelector = function (selector: string): HTMLElement {
+ShadowRoot.prototype.safeQuerySelector = function (
+  selector: string,
+): HTMLElement {
   const element = this.querySelector(selector);
   if (!element) {
     throw new Error(`Element with selector ${selector} not found`);
@@ -18,5 +23,4 @@ ShadowRoot.prototype.safeQuerySelector = function (selector: string): HTMLElemen
   return element as HTMLElement;
 };
 
-export { };
-
+export {};

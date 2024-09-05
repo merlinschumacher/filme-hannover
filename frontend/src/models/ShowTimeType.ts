@@ -1,34 +1,39 @@
-
 export enum ShowTimeType {
   Regular = 0,
   OriginalVersion = 1,
-  Subtitled = 2
+  Subtitled = 2,
 }
 
-export function getShowTimeTypeAttributeString(showTimeType: ShowTimeType): string {
+export function getShowTimeTypeAttributeString(
+  showTimeType: ShowTimeType,
+): string {
   switch (showTimeType) {
     case ShowTimeType.OriginalVersion:
-      return 'OV';
+      return "OV";
     case ShowTimeType.Subtitled:
-      return 'OmU';
+      return "OmU";
     default:
-      return '';
+      return "";
   }
 }
 
 export function getShowTimeTypeLabelString(showTimeType: ShowTimeType): string {
   switch (showTimeType) {
     case ShowTimeType.Regular:
-      return 'Normal';
+      return "Normal";
     case ShowTimeType.OriginalVersion:
-      return 'OV';
+      return "OV";
     case ShowTimeType.Subtitled:
-      return 'OmU';
+      return "OmU";
   }
 }
 
 export function getAllShowTimeTypes() {
-  return [ShowTimeType.Regular, ShowTimeType.OriginalVersion, ShowTimeType.Subtitled];
+  return [
+    ShowTimeType.Regular,
+    ShowTimeType.OriginalVersion,
+    ShowTimeType.Subtitled,
+  ];
 }
 
 export function getShowTimeTypeByNumber(value: number): ShowTimeType {

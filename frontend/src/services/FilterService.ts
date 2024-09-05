@@ -1,10 +1,9 @@
-
-import Cinema from '../models/Cinema';
-import { EventData } from '../models/EventData';
-import EventDataResult from '../models/EventDataResult';
-import Movie from '../models/Movie';
-import { getAllShowTimeTypes, ShowTimeType } from '../models/ShowTimeType';
-import CinemaDb from './CinemaDb';
+import Cinema from "../models/Cinema";
+import { EventData } from "../models/EventData";
+import EventDataResult from "../models/EventDataResult";
+import Movie from "../models/Movie";
+import { getAllShowTimeTypes, ShowTimeType } from "../models/ShowTimeType";
+import CinemaDb from "./CinemaDb";
 
 export default class FilterService {
   private db: CinemaDb;
@@ -44,7 +43,11 @@ export default class FilterService {
     return this.availableCinemas;
   }
 
-  public async SetSelection(cinemas: Cinema[], movies: Movie[], showTimeType: ShowTimeType[]): Promise<void> {
+  public async SetSelection(
+    cinemas: Cinema[],
+    movies: Movie[],
+    showTimeType: ShowTimeType[],
+  ): Promise<void> {
     await this.setSelectedCinemas(cinemas);
     await this.setSelectedMovies(movies);
     this.setSelectedShowTimeTypes(showTimeType);
@@ -61,7 +64,6 @@ export default class FilterService {
     } else {
       this.selectedMovies = movies;
     }
-
   }
 
   private async setSelectedCinemas(cinemas: Cinema[]): Promise<void> {
@@ -81,11 +83,18 @@ export default class FilterService {
     this.selectedShowTimeTypes = showTimeTypes;
   }
 
-  public async GetEvents(startDate: Date, visibleDays: number): Promise<EventDataResult> {
-    const selectedCinemaIds = this.selectedCinemas.map(c => c.id);
-    const selectedMovieIds = this.selectedMovies.map(m => m.id);
+  public async GetEvents(
+    startDate: Date,
+    visibleDays: number,
+  ): Promise<EventDataResult> {
+    const selectedCinemaIds = this.selectedCinemas.map((c) => c.id);
+    const selectedMovieIds = this.selectedMovies.map((m) => m.id);
     // Get the first showtime date, if the start date is before the first showtime date, set the start date to the first showtime date
-    const firstShowTimeDate = await this.db.GetEarliestShowTimeDate(selectedCinemaIds, selectedMovieIds, this.selectedShowTimeTypes);
+    const firstShowTimeDate = await this.db.GetEarliestShowTimeDate(
+      selectedCinemaIds,
+      selectedMovieIds,
+      this.selectedShowTimeTypes,
+    );
     if (!firstShowTimeDate) {
       return new EventDataResult(new Map<Date, EventData[]>(), null);
     }
@@ -98,10 +107,16 @@ export default class FilterService {
       selectedCinemaIds,
       selectedMovieIds,
       this.selectedShowTimeTypes,
-      visibleDays
+      visibleDays,
     );
 
-    const events = await this.db.GetEventData(startDate, endDate, selectedCinemaIds, selectedMovieIds, this.selectedShowTimeTypes);
+    const events = await this.db.GetEventData(
+      startDate,
+      endDate,
+      selectedCinemaIds,
+      selectedMovieIds,
+      this.selectedShowTimeTypes,
+    );
     if (events.length === 0) {
       return new EventDataResult(new Map<Date, EventData[]>(), null);
     }
@@ -115,26 +130,21 @@ export default class FilterService {
     return this.db.dataVersionDate.toLocaleString();
   }
 
-  private splitEventsIntoDays(
-    eventData: EventData[],
-  ): Map<Date, EventData[]> {
+  private splitEventsIntoDays(eventData: EventData[]): Map<Date, EventData[]> {
     const eventsByDay = new Map<Date, EventData[]>();
 
     // The unique dates of the events
     const eventDates = Array.from(
-      new Set(eventData.map((e) => e.date.toISOString()))
+      new Set(eventData.map((e) => e.date.toISOString())),
     ).map((d) => new Date(d));
 
     eventDates.forEach((date) => {
       eventsByDay.set(
         date,
-        eventData.filter(
-          (e) => e.date.toISOString() === date.toISOString()
-        )
+        eventData.filter((e) => e.date.toISOString() === date.toISOString()),
       );
     });
 
     return eventsByDay;
   }
-
 }

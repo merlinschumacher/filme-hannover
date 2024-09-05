@@ -1,7 +1,4 @@
-import Dexie, {
-  EntityTable,
-  IndexableTypePart,
-} from "dexie";
+import Dexie, { EntityTable, IndexableTypePart } from "dexie";
 import { JsonData } from "../models/JsonData";
 import { EventData } from "../models/EventData";
 import HttpClient from "./HttpClient";
@@ -27,8 +24,7 @@ export default class CinemaDb extends Dexie {
     this.version(1).stores({
       cinemas: "id, displayName",
       movies: "id, displayName",
-      showTimes:
-        "id, date, startTime, endTime, movie, cinema, language, type",
+      showTimes: "id, date, startTime, endTime, movie, cinema, language, type",
       configurations: "id",
     });
 
@@ -43,9 +39,11 @@ export default class CinemaDb extends Dexie {
     await this.open();
     await this.checkData();
     console.log("Data version: " + this.dataVersionDate.toISOString());
-    console.log("Cinemas loaded: " + ((await this.cinemas.count()).toString()));
-    console.log("Movies loaded: " + ((await this.movies.count()).toString()));
-    console.log("Showtimes loaded: " + ((await this.showTimes.count()).toString()));
+    console.log("Cinemas loaded: " + (await this.cinemas.count()).toString());
+    console.log("Movies loaded: " + (await this.movies.count()).toString());
+    console.log(
+      "Showtimes loaded: " + (await this.showTimes.count()).toString(),
+    );
     return this;
   }
 
@@ -57,9 +55,11 @@ export default class CinemaDb extends Dexie {
 
   private async checkData() {
     const dataVersion = await this.configurations.get(this.dataVersionKey);
-    this.dataVersionDate = new Date(dataVersion?.value as string | number || 0);
+    this.dataVersionDate = new Date(
+      (dataVersion?.value as string | number) || 0,
+    );
     const dataReloadRequired = await this.DataReloadRequired(
-      this.dataVersionDate
+      this.dataVersionDate,
     );
     if (dataReloadRequired) {
       console.log("Data version changed, loading data.");
@@ -79,10 +79,7 @@ export default class CinemaDb extends Dexie {
     await this.showTimes.bulkDelete(showTimes);
 
     const movieIds = await this.showTimes.orderBy("movie").uniqueKeys();
-    const movies = await this.movies
-      .where("id")
-      .noneOf(movieIds)
-      .primaryKeys();
+    const movies = await this.movies.where("id").noneOf(movieIds).primaryKeys();
     await this.movies.bulkDelete(movies);
 
     const cinemaIds = await this.showTimes.orderBy("cinema").uniqueKeys();
@@ -99,9 +96,7 @@ export default class CinemaDb extends Dexie {
       (await (await HttpClient.getData(this.remoteVersionDateUrl))?.text()) ??
       "0";
     const remoteVersionDate = new Date(remoteVersionText);
-    if (
-      currentDataVersion.getTime() !== remoteVersionDate.getTime()
-    ) {
+    if (currentDataVersion.getTime() !== remoteVersionDate.getTime()) {
       try {
         await this.configurations.put({
           id: this.dataVersionKey,
@@ -118,18 +113,21 @@ export default class CinemaDb extends Dexie {
 
   private parseWithDate(jsonString: string): unknown {
     const reDateDetect = /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/; // startswith: 2015-04-29T22:06:55
-    const resultObject = JSON.parse(jsonString, (_: unknown, value: unknown) => {
-      if (typeof value == "string" && reDateDetect.exec(value)) {
-        return new Date(value);
-      }
-      return value;
-    }) as unknown;
+    const resultObject = JSON.parse(
+      jsonString,
+      (_: unknown, value: unknown) => {
+        if (typeof value == "string" && reDateDetect.exec(value)) {
+          return new Date(value);
+        }
+        return value;
+      },
+    ) as unknown;
     return resultObject;
   }
 
   private async loadData() {
     const response = await fetch(
-      new URL(this.remoteDataUrl, window.location.href)
+      new URL(this.remoteDataUrl, window.location.href),
     );
     const json = this.parseWithDate(await response.text());
     const data = Object.assign(new JsonData(), json);
@@ -146,7 +144,7 @@ export default class CinemaDb extends Dexie {
           await this.movies.bulkAdd(data.movies);
           await this.showTimes.clear();
           await this.showTimes.bulkAdd(data.showTimes);
-        }
+        },
       );
     } catch (error) {
       console.error(error);
@@ -156,18 +154,27 @@ export default class CinemaDb extends Dexie {
   public async GetAllCinemas(): Promise<Cinema[]> {
     // Get all cinemas that have showtimes
     const cinemaIds = await this.cinemas.toCollection().primaryKeys();
-    const cinemasWithShowTimes = await this.showTimes.where("cinema").anyOf(cinemaIds).uniqueKeys();
-    return this.cinemas.orderBy("displayName").and(cinema => cinemasWithShowTimes.includes(cinema.id)).toArray();
+    const cinemasWithShowTimes = await this.showTimes
+      .where("cinema")
+      .anyOf(cinemaIds)
+      .uniqueKeys();
+    return this.cinemas
+      .orderBy("displayName")
+      .and((cinema) => cinemasWithShowTimes.includes(cinema.id))
+      .toArray();
   }
 
   public async GetAllMovies(): Promise<Movie[]> {
     const movieIds = await this.showTimes.orderBy("movie").uniqueKeys();
-    return this.movies.orderBy("displayName").and(movie => movieIds.includes(movie.id)).toArray();
+    return this.movies
+      .orderBy("displayName")
+      .and((movie) => movieIds.includes(movie.id))
+      .toArray();
   }
   public async GetEarliestShowTimeDate(
     selectedCinemaIds: number[],
     selectedMovieIds: number[],
-    selectedShowTimeTypes: number[]
+    selectedShowTimeTypes: number[],
   ): Promise<Date | null> {
     // get the first showtime date for the selected cinemas and movies
     const earliestShowTime = await this.showTimes
@@ -177,7 +184,7 @@ export default class CinemaDb extends Dexie {
           showTime.startTime.getTime() >= new Date().getTime() &&
           selectedCinemaIds.includes(showTime.cinema) &&
           selectedMovieIds.includes(showTime.movie) &&
-          selectedShowTimeTypes.includes(showTime.type)
+          selectedShowTimeTypes.includes(showTime.type),
       )
       .first();
 
@@ -193,15 +200,16 @@ export default class CinemaDb extends Dexie {
     endDate: Date,
     selectedCinemaIds: number[],
     selectedMovieIds: number[],
-    selectedShowTimeTypes: number[]
+    selectedShowTimeTypes: number[],
   ): Promise<EventData[]> {
     const showTimeResults = await this.showTimes
       .where("startTime")
       .between(startDate, endDate)
-      .and(showtime =>
-        selectedCinemaIds.includes(showtime.cinema) &&
-        selectedMovieIds.includes(showtime.movie) &&
-        selectedShowTimeTypes.includes(showtime.type)
+      .and(
+        (showtime) =>
+          selectedCinemaIds.includes(showtime.cinema) &&
+          selectedMovieIds.includes(showtime.movie) &&
+          selectedShowTimeTypes.includes(showtime.type),
       )
       .sortBy("startTime");
 
@@ -217,7 +225,7 @@ export default class CinemaDb extends Dexie {
     });
 
     const eventData = (await Promise.all(eventDataPromises)).filter(
-      (data) => data !== null
+      (data) => data !== null,
     );
 
     return eventData;
@@ -228,9 +236,8 @@ export default class CinemaDb extends Dexie {
     selectedCinemaIds: number[],
     selectedMovieIds: number[],
     selectedShowTimeTypes: number[],
-    visibleDays: number
+    visibleDays: number,
   ): Promise<Date> {
-
     const showTimes = await this.showTimes
       .orderBy("date")
       .filter(
@@ -238,12 +245,12 @@ export default class CinemaDb extends Dexie {
           showtime.date.getTime() >= startDate.getTime() &&
           selectedCinemaIds.includes(showtime.cinema) &&
           selectedMovieIds.includes(showtime.movie) &&
-          selectedShowTimeTypes.includes(showtime.type)
+          selectedShowTimeTypes.includes(showtime.type),
       )
       .keys();
 
     const uniqueDates = Array.from(
-      new Set(showTimes.map((d: IndexableTypePart) => (d as Date).getTime()))
+      new Set(showTimes.map((d: IndexableTypePart) => (d as Date).getTime())),
     );
 
     let endDate = new Date(startDate);

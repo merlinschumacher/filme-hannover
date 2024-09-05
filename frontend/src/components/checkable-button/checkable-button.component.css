@@ -3,7 +3,7 @@
   display: none;
 }
 
-.checkable-button-input+label {
+.checkable-button-input + label {
   height: 4em;
   display: flex;
   align-items: center;
@@ -11,18 +11,20 @@
   border-radius: 8px;
   user-select: none;
   cursor: pointer;
-  transition: background 0.1s, border 0.1s;
+  transition:
+    background 0.1s,
+    border 0.1s;
   white-space: nowrap;
   font-weight: 700;
   position: relative;
   overflow: hidden;
 }
 
-.checkable-button-input+label:hover {
+.checkable-button-input + label:hover {
   background-color: var(--light-accent);
 }
 
-.checkable-button-input:checked+label {
+.checkable-button-input:checked + label {
   background-color: var(--background-mediumblue);
   font-weight: 700;
 }
@@ -31,7 +33,7 @@
   background-color: #000000;
   height: 100%;
   position: absolute;
-  width: .666em;
+  width: 0.666em;
 }
 
 .icon {
@@ -44,7 +46,7 @@
 }
 
 .icon,
-.icon>svg {
+.icon > svg {
   height: 2em;
   width: 2em;
 }

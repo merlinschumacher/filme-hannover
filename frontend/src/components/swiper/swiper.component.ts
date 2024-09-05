@@ -2,7 +2,7 @@ import html from "./swiper.component.html?raw";
 import css from "./swiper.component.css?inline";
 import noContentHtml from "../no-content/no-content.component.html?raw";
 import { ScrollSnapDraggable, ScrollSnapSlider } from "scroll-snap-slider";
-import '../../extensions/ShadowRootExtensions';
+import "../../extensions/ShadowRootExtensions";
 import ChevronBackward from "@material-symbols/svg-400/outlined/chevron_backward.svg?raw";
 import ChevronForward from "@material-symbols/svg-400/outlined/chevron_forward.svg?raw";
 
@@ -14,7 +14,6 @@ const noResultsElement = document.createElement("div");
 noResultsElement.innerHTML = noContentHtml;
 
 export default class Swiper extends HTMLElement {
-
   private scrollSnapSlider: ScrollSnapSlider;
   private scrollSnapSliderEl: HTMLElement;
   private triggeredScrollThreshold = false;
@@ -27,7 +26,9 @@ export default class Swiper extends HTMLElement {
     this.shadow = this.attachShadow({ mode: "open" });
     this.shadow.appendChild(template.content.cloneNode(true));
     this.shadow.adoptedStyleSheets = [style];
-    this.scrollSnapSliderEl = this.shadow.safeQuerySelector(".scroll-snap-slider");
+    this.scrollSnapSliderEl = this.shadow.safeQuerySelector(
+      ".scroll-snap-slider",
+    );
     this.scrollSnapSlider = new ScrollSnapSlider({
       element: this.scrollSnapSliderEl,
       sizingMethod(slider) {
@@ -35,15 +36,13 @@ export default class Swiper extends HTMLElement {
           return slider.element.firstElementChild.clientWidth;
         }
         return 0;
-      }
-    }).with([
-      new ScrollSnapDraggable
-    ]);
+      },
+    }).with([new ScrollSnapDraggable()]);
   }
 
   private handleMouseDown = (event: MouseEvent) => {
     this.clickPosition = { x: event.clientX, y: event.clientY };
-  }
+  };
   private handleClick = (event: MouseEvent) => {
     const clickPositionDiffX = Math.abs(this.clickPosition.x - event.clientX);
     const clickPositionDiffY = Math.abs(this.clickPosition.y - event.clientY);
@@ -52,33 +51,39 @@ export default class Swiper extends HTMLElement {
       event.preventDefault();
       return;
     }
-  }
+  };
 
   private handleSwipeLeft = () => {
-    const targetSlide = this.scrollSnapSlider.slide + 1
+    const targetSlide = this.scrollSnapSlider.slide + 1;
     if (targetSlide >= this.slideCount) {
       return;
     }
     this.scrollSnapSlider.slideTo(targetSlide);
-  }
+  };
 
   private handleSwipeRight = () => {
-    const targetSlide = this.scrollSnapSlider.slide - 1
+    const targetSlide = this.scrollSnapSlider.slide - 1;
     if (targetSlide < 0) {
       return;
     }
     this.scrollSnapSlider.slideTo(targetSlide);
-  }
+  };
 
   private handleScrollThresholdReached = () => {
     if (this.triggeredScrollThreshold) {
       return;
     }
-    if (this.scrollSnapSliderEl.scrollLeft + this.scrollSnapSliderEl.clientWidth >= (this.scrollSnapSliderEl.scrollWidth / 2)) {
+    if (
+      this.scrollSnapSliderEl.scrollLeft +
+        this.scrollSnapSliderEl.clientWidth >=
+      this.scrollSnapSliderEl.scrollWidth / 2
+    ) {
       this.triggeredScrollThreshold = true;
-      this.dispatchEvent(new CustomEvent("scroll-threshold-reached", { bubbles: true }));
+      this.dispatchEvent(
+        new CustomEvent("scroll-threshold-reached", { bubbles: true }),
+      );
     }
-  }
+  };
 
   connectedCallback() {
     this.removeAllSlides();
@@ -88,13 +93,19 @@ export default class Swiper extends HTMLElement {
     this.scrollSnapSlider.addEventListener("mousedown", this.handleMouseDown);
     this.scrollSnapSlider.addEventListener("click", this.handleClick);
     // Detect if the user has swiped to the last page and load more data
-    this.scrollSnapSliderEl.addEventListener("scroll", () => { this.handleScrollThresholdReached(); });
-    this.shadowRoot?.safeQuerySelector("#swipe-left").addEventListener("click", this.handleSwipeLeft);
-    this.shadowRoot?.safeQuerySelector("#swipe-right").addEventListener("click", this.handleSwipeRight);
+    this.scrollSnapSliderEl.addEventListener("scroll", () => {
+      this.handleScrollThresholdReached();
+    });
+    this.shadowRoot
+      ?.safeQuerySelector("#swipe-left")
+      .addEventListener("click", this.handleSwipeLeft);
+    this.shadowRoot
+      ?.safeQuerySelector("#swipe-right")
+      .addEventListener("click", this.handleSwipeRight);
   }
 
   disconnectedCallback() {
-    const link = this.shadow.safeQuerySelector('.link');
+    const link = this.shadow.safeQuerySelector(".link");
     link.removeEventListener("mousedown", this.handleMouseDown);
     link.removeEventListener("click", this.handleClick);
   }

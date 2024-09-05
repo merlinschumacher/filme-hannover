@@ -5,12 +5,14 @@ import eslint from "@eslint/js";
 
 export default [
   { files: ["**/*.{js,mjs,cjs,ts}"] },
-  { languageOptions: {
-    globals: globals.browser,
-    parserOptions: {
-      project: "./tsconfig.json",
+  {
+    languageOptions: {
+      globals: globals.browser,
+      parserOptions: {
+        project: "./tsconfig.json",
+      },
     },
-  } },
+  },
   eslint.configs.recommended,
   pluginJs.configs.recommended,
   ...tseslint.configs.strictTypeChecked,

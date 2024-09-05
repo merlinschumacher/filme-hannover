@@ -1,17 +1,16 @@
-import html from './day-list.component.html?raw';
-import css from './day-list.component.css?inline';
+import html from "./day-list.component.html?raw";
+import css from "./day-list.component.css?inline";
 import { EventData } from "../../models/EventData";
-import EventItem from '../event-item/event-item.component';
+import EventItem from "../event-item/event-item.component";
 
 const style = new CSSStyleSheet();
 style.replaceSync(css);
-const template = document.createElement('template');
+const template = document.createElement("template");
 template.innerHTML = html;
 
 export default class DayListElement extends HTMLElement {
-
   static get observedAttributes() {
-    return ['date', 'duration', 'eventcount'];
+    return ["date", "duration", "eventcount"];
   }
 
   public EventData: EventData[] = [];
@@ -19,7 +18,7 @@ export default class DayListElement extends HTMLElement {
 
   constructor() {
     super();
-    this.shadow = this.attachShadow({ mode: 'open' });
+    this.shadow = this.attachShadow({ mode: "open" });
     this.shadow.appendChild(template.content.cloneNode(true));
     this.shadow.adoptedStyleSheets = [style];
   }
@@ -28,19 +27,24 @@ export default class DayListElement extends HTMLElement {
     if (oldValue === newValue) return;
 
     switch (name) {
-      case 'date': {
+      case "date": {
         const date = new Date(newValue);
         const headerClass = this.getHeaderClass(date);
         if (headerClass) this.classList.add(headerClass);
-        const dateString = date.toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-        this.shadow.safeQuerySelector('.header').textContent = dateString;
+        const dateString = date.toLocaleDateString([], {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        });
+        this.shadow.safeQuerySelector(".header").textContent = dateString;
         break;
       }
-      case 'duration': {
+      case "duration": {
         this.updateFooterText();
         break;
       }
-      case 'eventcount': {
+      case "eventcount": {
         this.updateFooterText();
         break;
       }
@@ -48,44 +52,44 @@ export default class DayListElement extends HTMLElement {
   }
 
   private updateFooterText() {
-    const eventCount = this.getAttribute('eventcount') ?? 0;
-    const duration = this.getAttribute('duration') ?? 0;
+    const eventCount = this.getAttribute("eventcount") ?? 0;
+    const duration = this.getAttribute("duration") ?? 0;
     const eventHours = +duration / 60;
     const footerText = `${eventCount.toString()} Vorführungen, ca. ${eventHours.toFixed(0)} h`;
-    this.shadow.updateElement('.footer', el => el.textContent = footerText);
+    this.shadow.updateElement(".footer", (el) => (el.textContent = footerText));
   }
 
   private getHeaderClass(date: Date): string | undefined {
     const isToday = new Date().toDateString() === date.toDateString();
     const isSundayOrHoliday = date.getDay() === 0;
     if (isToday) {
-      return 'today';
+      return "today";
     }
     if (isSundayOrHoliday) {
-      return 'sunday';
+      return "sunday";
     }
     if (date.getDay() === 6) {
-      return 'saturday';
+      return "saturday";
     }
   }
 
   static BuildElement(date: Date, events: EventData[]) {
     let eventCumulativeDuration = 0;
     const eventElements: EventItem[] = [];
-    events.forEach(element => {
+    events.forEach((element) => {
       const eventItem = EventItem.BuildElement(element);
-      eventItem.slot = 'body';
+      eventItem.slot = "body";
       eventCumulativeDuration += +element.runtime;
       eventElements.push(eventItem);
     });
 
     const item = new DayListElement();
-    item.setAttribute('date', date.toDateString());
-    item.setAttribute('eventcount', events.length.toString());
-    item.setAttribute('duration', eventCumulativeDuration.toString());
+    item.setAttribute("date", date.toDateString());
+    item.setAttribute("eventcount", events.length.toString());
+    item.setAttribute("duration", eventCumulativeDuration.toString());
     item.replaceChildren(...eventElements);
     return item;
   }
 }
 
-customElements.define('day-list', DayListElement);
+customElements.define("day-list", DayListElement);

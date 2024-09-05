@@ -1,6 +1,4 @@
-
 export default class ViewPortService {
-
   public viewPortChanged?: () => void;
 
   private readonly daySizeMap = new Map<number, number>([
@@ -17,8 +15,7 @@ export default class ViewPortService {
       if (width <= key) {
         return value;
       }
-    })
+    });
     return 4;
   }
-
 }

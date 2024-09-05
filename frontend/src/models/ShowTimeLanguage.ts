@@ -1,4 +1,3 @@
-
 export enum ShowTimeLanguage {
   Danish,
   German,
@@ -12,37 +11,38 @@ export enum ShowTimeLanguage {
   Mayalam,
   Japanese,
   Miscellaneous,
-  Other
+  Other,
 }
 
-export function getShowTimeLanguageString(showTimeLanguage: ShowTimeLanguage): string {
+export function getShowTimeLanguageString(
+  showTimeLanguage: ShowTimeLanguage,
+): string {
   switch (showTimeLanguage) {
     case ShowTimeLanguage.Danish:
-      return 'Dänisch';
+      return "Dänisch";
     case ShowTimeLanguage.German:
-      return '';
+      return "";
     case ShowTimeLanguage.English:
-      return 'Englisch';
+      return "Englisch";
     case ShowTimeLanguage.French:
-      return 'Französisch';
+      return "Französisch";
     case ShowTimeLanguage.Spanish:
-      return 'Spanisch';
+      return "Spanisch";
     case ShowTimeLanguage.Italian:
-      return 'Italienisch';
+      return "Italienisch";
     case ShowTimeLanguage.Georgian:
-      return 'Georgisch';
+      return "Georgisch";
     case ShowTimeLanguage.Russian:
-      return 'Russisch';
+      return "Russisch";
     case ShowTimeLanguage.Turkish:
-      return 'Türkisch';
+      return "Türkisch";
     case ShowTimeLanguage.Mayalam:
-      return 'Malayalam';
+      return "Malayalam";
     case ShowTimeLanguage.Japanese:
-      return 'Japanisch';
+      return "Japanisch";
     case ShowTimeLanguage.Miscellaneous:
-      return 'Sonstige';
+      return "Sonstige";
     case ShowTimeLanguage.Other:
-      return 'Andere';
+      return "Andere";
   }
-
 }
