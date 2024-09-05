@@ -4,12 +4,9 @@
   border: 1px solid #000000;
   font-size: 1.1em;
   cursor: grab;
-  position: relative;
   border-radius: 8px;
   overflow: auto;
 }
-
-
 
 @media screen and (min-width: 640px) {
   :host {
@@ -42,7 +39,6 @@
   border-bottom: 1px solid var(--light-accent);
   font-weight: bold;
   background-color: var(--background-lightblue);
-  position: sticky;
 }
 
 .body {

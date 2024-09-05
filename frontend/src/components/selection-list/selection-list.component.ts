@@ -12,7 +12,6 @@ export default class SelectionListElement extends HTMLElement {
 
   public Movies: Movie[] = [];
   private SelectedMovies: Movie[] = [];
-  private allMoviesButton: SelectionListItemElement;
   public onSelectionChanged?: (movies: Movie[]) => void;
 
   private shadow: ShadowRoot;
@@ -22,7 +21,6 @@ export default class SelectionListElement extends HTMLElement {
     this.shadow = this.attachShadow({ mode: 'open' });
     this.shadow.appendChild(template.content.cloneNode(true));
     this.shadow.adoptedStyleSheets = [style];
-    this.allMoviesButton = this.buildAllMoviesButton();
   }
   private buildMovieButtons(movies: Movie[]): SelectionListItemElement[] {
     const options: SelectionListItemElement[] = [];
@@ -49,17 +47,6 @@ export default class SelectionListElement extends HTMLElement {
     return options;
   }
 
-
-
-  private buildAllMoviesButton(): SelectionListItemElement {
-    const allMoviesButton = new SelectionListItemElement();
-    allMoviesButton.classList.add('all-movies');
-    allMoviesButton.setAttribute('label', 'Alle Filme');
-    allMoviesButton.setAttribute('value', '0');
-    allMoviesButton.setAttribute('checked', '');
-    return allMoviesButton;
-  }
-
   connectedCallback() {
     const options: SelectionListItemElement[] = [];
     const movieButtons = this.buildMovieButtons(this.Movies);
@@ -69,9 +56,7 @@ export default class SelectionListElement extends HTMLElement {
 
     const searchInput = this.shadow.safeQuerySelector('input') as HTMLInputElement;
     searchInput.addEventListener('input', () => { this.searchMovies(searchInput.value); });
-
   };
-
 
   private searchMovies(searchTerm: string) {
     const options = this.querySelectorAll('selection-list-item');

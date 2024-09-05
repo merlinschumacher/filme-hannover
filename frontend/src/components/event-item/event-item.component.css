@@ -16,10 +16,6 @@
   text-decoration: underline;
 }
 
-.link.disabled {
-  cursor: pointer;
-  pointer-events: none;
-}
 
 .title {
   flex-grow: 1;

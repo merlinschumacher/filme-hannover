@@ -20,6 +20,7 @@ export default class Swiper extends HTMLElement {
   private triggeredScrollThreshold = false;
   private shadow: ShadowRoot;
   private slideCount = 1;
+  private clickPosition = { x: 0, y: 0 };
 
   constructor() {
     super();
@@ -40,42 +41,65 @@ export default class Swiper extends HTMLElement {
     ]);
   }
 
+  private handleMouseDown = (event: MouseEvent) => {
+    this.clickPosition = { x: event.clientX, y: event.clientY };
+  }
+  private handleClick = (event: MouseEvent) => {
+    const clickPositionDiffX = Math.abs(this.clickPosition.x - event.clientX);
+    const clickPositionDiffY = Math.abs(this.clickPosition.y - event.clientY);
+
+    if (clickPositionDiffX > 10 || clickPositionDiffY > 10) {
+      event.preventDefault();
+      return;
+    }
+  }
+
+  private handleSwipeLeft = () => {
+    const targetSlide = this.scrollSnapSlider.slide + 1
+    if (targetSlide >= this.slideCount) {
+      return;
+    }
+    this.scrollSnapSlider.slideTo(targetSlide);
+  }
+
+  private handleSwipeRight = () => {
+    const targetSlide = this.scrollSnapSlider.slide - 1
+    if (targetSlide < 0) {
+      return;
+    }
+    this.scrollSnapSlider.slideTo(targetSlide);
+  }
+
+  private handleScrollThresholdReached = () => {
+    if (this.triggeredScrollThreshold) {
+      return;
+    }
+    if (this.scrollSnapSliderEl.scrollLeft + this.scrollSnapSliderEl.clientWidth >= (this.scrollSnapSliderEl.scrollWidth / 2)) {
+      this.triggeredScrollThreshold = true;
+      this.dispatchEvent(new CustomEvent("scroll-threshold-reached", { bubbles: true }));
+    }
+  }
+
   connectedCallback() {
     this.removeAllSlides();
     this.shadow.safeQuerySelector("#swipe-left").innerHTML = ChevronBackward;
     this.shadow.safeQuerySelector("#swipe-right").innerHTML = ChevronForward;
 
+    this.scrollSnapSlider.addEventListener("mousedown", this.handleMouseDown);
+    this.scrollSnapSlider.addEventListener("click", this.handleClick);
     // Detect if the user has swiped to the last page and load more data
-    this.scrollSnapSliderEl.addEventListener("scroll", () => {
-      if (this.triggeredScrollThreshold) {
-        return;
-      }
-      if (this.scrollSnapSliderEl.scrollLeft + this.scrollSnapSliderEl.clientWidth >= (this.scrollSnapSliderEl.scrollWidth / 2)) {
-        this.triggeredScrollThreshold = true;
-        this.dispatchEvent(new CustomEvent("scroll-threshold-reached", { bubbles: true }));
-      }
-    });
-
-    this.shadowRoot?.safeQuerySelector("#swipe-left").addEventListener("click", () => {
-      console.log("swipe left");
-      const targetSlide = this.scrollSnapSlider.slide - 1
-      if (targetSlide < 0) {
-        return;
-      }
-      this.scrollSnapSlider.slideTo(targetSlide);
-    });
-
-    this.shadowRoot?.safeQuerySelector("#swipe-right").addEventListener("click", () => {
-      console.log("swipe right");
-      const targetSlide = this.scrollSnapSlider.slide + 1
-      if (targetSlide >= this.slideCount) {
-        return;
-      }
-      this.scrollSnapSlider.slideTo(targetSlide);
-    });
+    this.scrollSnapSliderEl.addEventListener("scroll", () => { this.handleScrollThresholdReached(); });
+    this.shadowRoot?.safeQuerySelector("#swipe-left").addEventListener("click", this.handleSwipeLeft);
+    this.shadowRoot?.safeQuerySelector("#swipe-right").addEventListener("click", this.handleSwipeRight);
   }
 
-  public appendSlide(slide: HTMLElement): void {
+  disconnectedCallback() {
+    const link = this.shadow.safeQuerySelector('.link');
+    link.removeEventListener("mousedown", this.handleMouseDown);
+    link.removeEventListener("click", this.handleClick);
+  }
+
+  appendSlide(slide: HTMLElement): void {
     slide.slot = "slides";
     slide.classList.add("scroll-snap-slide");
     this.scrollSnapSliderEl.appendChild(slide);
@@ -83,19 +107,19 @@ export default class Swiper extends HTMLElement {
     this.triggeredScrollThreshold = false;
   }
 
-  public removeAllSlides(): void {
+  removeAllSlides(): void {
     this.scrollSnapSliderEl.replaceChildren();
     this.slideCount = 0;
     this.triggeredScrollThreshold = false;
   }
 
-  public displayNoResults(): void {
+  displayNoResults(): void {
     this.scrollSnapSliderEl.replaceChildren(noResultsElement);
     this.slideCount = 0;
     this.triggeredScrollThreshold = false;
   }
 
-  public replaceSlides(slides: HTMLElement[]): void {
+  replaceSlides(slides: HTMLElement[]): void {
     slides.forEach((slide) => {
       slide.slot = "slides";
       slide.classList.add("scroll-snap-slide");
@@ -106,7 +130,7 @@ export default class Swiper extends HTMLElement {
     this.triggeredScrollThreshold = false;
   }
 
-  public static BuildElement(): Swiper {
+  static BuildElement(): Swiper {
     const item = new Swiper();
     return item;
   }

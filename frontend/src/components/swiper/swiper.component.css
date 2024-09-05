@@ -44,10 +44,6 @@ day-list.scroll-snap-slide:last-of-type {
   cursor: grabbing;
 }
 
-.-dragging ::slotted(day-list) {
-  pointer-events: none;
-}
-
 button {
   appearance: none;
   position: fixed;
