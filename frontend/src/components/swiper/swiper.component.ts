@@ -53,7 +53,7 @@ export default class Swiper extends HTMLElement {
     }
   };
 
-  private handleSwipeLeft = () => {
+  private handleSwipeRight = () => {
     const targetSlide = this.scrollSnapSlider.slide + 1;
     if (targetSlide >= this.slideCount) {
       return;
@@ -61,7 +61,7 @@ export default class Swiper extends HTMLElement {
     this.scrollSnapSlider.slideTo(targetSlide);
   };
 
-  private handleSwipeRight = () => {
+  private handleSwipeLeft = () => {
     const targetSlide = this.scrollSnapSlider.slide - 1;
     if (targetSlide < 0) {
       return;
