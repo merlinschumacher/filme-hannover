@@ -60,10 +60,10 @@ button#apply-filter {
   background-color: var(--background-mediumblue);
 }
 button#open-filter {
-  flex: 1 1 auto;
+  flex: 1 1 100%;
   margin-bottom: 1em;
 }
-@media screen and (min-width: 530px) {
+@media screen and (min-width: 550px) {
   button#open-filter {
     flex: unset;
   }
