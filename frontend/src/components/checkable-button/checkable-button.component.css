@@ -26,7 +26,6 @@
 
 .checkable-button-input:checked + label {
   background-color: var(--background-mediumblue);
-  font-weight: 700;
 }
 
 .border {

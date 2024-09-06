@@ -20,6 +20,13 @@
   text-wrap: balance;
   text-wrap: pretty;
 }
+:host:after {
+  content: "";
+  border-bottom: 1px solid var(--light-accent);
+  width: calc(100% - 4em);
+  display: block;
+  margin: 0 0 0 3em;
+}
 
 .selection-list-item-input + label:hover,
 .selection-list-item-input:checked + label:hover {

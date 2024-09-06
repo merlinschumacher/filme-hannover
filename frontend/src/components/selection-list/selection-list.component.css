@@ -19,14 +19,6 @@
   box-shadow: inset 0 -6px 4px -4px var(--light-accent);
 }
 
-.selection-list > *::slotted(*)::after {
-  content: "";
-  border-bottom: 1px solid var(--light-accent);
-  width: calc(100% - 7em);
-  display: block;
-  margin: 0 auto;
-}
-
 #search {
   font-size: unset;
   font-family: var(--font-family);

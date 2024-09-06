@@ -6,7 +6,7 @@
 
 .type-selection {
   display: grid;
-  grid-template-columns: repeat(3, minmax(100px, 1fr));
+  grid-template-columns: repeat(3, minmax(75px, 1fr));
   gap: 1em;
 }
 
@@ -52,6 +52,21 @@ button > .icon {
 button > .icon > svg {
   height: 2em;
   width: 2em;
+}
+
+button#open-filter,
+button#close-filter,
+button#apply-filter {
+  background-color: var(--background-mediumblue);
+}
+button#open-filter {
+  flex: 1 1 auto;
+  margin-bottom: 1em;
+}
+@media screen and (min-width: 530px) {
+  button#open-filter {
+    flex: unset;
+  }
 }
 
 button#apply-filter {
