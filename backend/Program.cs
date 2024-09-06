@@ -68,7 +68,7 @@ foreach (var scraper in scrapers)
 
 if (exceptions.Count != 0)
 {
-    throw new AggregateException("One or more scrapers failed.", exceptions);
+    logger.LogError("The following scrapers failed: {Scrapers}", string.Join(", ", scrapers.Select(e => e.GetType().Name)));
 }
 
 var renderers = scope.ServiceProvider.GetServices<IRenderer>();
