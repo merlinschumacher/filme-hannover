@@ -10,7 +10,7 @@ using backend.Data;
 
 namespace kinohannover.Migrations
 {
-    [DbContext(typeof(KinohannoverContext))]
+    [DbContext(typeof(DatabaseContext))]
     [Migration("20240603231250_Refactor3")]
     partial class Refactor3
     {

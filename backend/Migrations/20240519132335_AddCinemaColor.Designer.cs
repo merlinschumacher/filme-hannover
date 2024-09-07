@@ -10,7 +10,7 @@ using backend.Data;
 
 namespace kinohannover.Migrations
 {
-    [DbContext(typeof(KinohannoverContext))]
+    [DbContext(typeof(DatabaseContext))]
     [Migration("20240519132335_AddCinemaColor")]
     partial class AddCinemaColor
     {

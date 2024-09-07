@@ -10,7 +10,7 @@ using backend.Data;
 
 namespace kinohannover.Migrations
 {
-    [DbContext(typeof(KinohannoverContext))]
+    [DbContext(typeof(DatabaseContext))]
     [Migration("20240522210932_AddShowTimeUrl")]
     partial class AddShowTimeUrl
     {

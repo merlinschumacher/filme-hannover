@@ -10,7 +10,7 @@ using backend.Data;
 
 namespace kinohannover.Migrations
 {
-    [DbContext(typeof(KinohannoverContext))]
+    [DbContext(typeof(DatabaseContext))]
     [Migration("20240529232906_AddTmdbId")]
     partial class AddTmdbId
     {

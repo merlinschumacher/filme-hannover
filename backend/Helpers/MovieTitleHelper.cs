@@ -8,7 +8,7 @@ namespace kinohannover.Helpers
     {
         private const string _translationConst = "Translation";
 
-        public static string DetermineMovieTitle(string title, TMDbLib.Objects.Movies.Movie tmdbMovieDetails, bool guessHarder = true)
+        public static string DetermineMovieTitle(string title, Movie tmdbMovieDetails, bool guessHarder = true)
         {
             var matchedTitle = GetTitleFromTmdbData(title, tmdbMovieDetails);
             if (matchedTitle is not null)

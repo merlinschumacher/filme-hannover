@@ -2,7 +2,7 @@
 
 namespace backend.Data
 {
-    public class KinohannoverContext(DbContextOptions<KinohannoverContext> options) : DbContext(options)
+    public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbContext(options)
     {
         public DbSet<Models.Movie> Movies { get; set; } = default!;
         public DbSet<Models.Alias> Aliases { get; set; } = default!;

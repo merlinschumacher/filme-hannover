@@ -10,7 +10,7 @@ using backend.Data;
 
 namespace kinohannover.Migrations
 {
-    [DbContext(typeof(KinohannoverContext))]
+    [DbContext(typeof(DatabaseContext))]
     [Migration("20240522215616_RenamedProperties")]
     partial class RenamedProperties
     {

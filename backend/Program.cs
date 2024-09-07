@@ -8,91 +8,53 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using System.Globalization;
-using TMDbLib.Client;
+
+void ConfigureDatabase(IServiceCollection services, IConfiguration configuration)
+{
+    var connectionString = configuration.GetConnectionString("Database");
+    if (string.IsNullOrWhiteSpace(connectionString))
+    {
+        throw new InvalidOperationException("No database connection string found.");
+    }
+
+    services.AddDbContext<DatabaseContext>(options => options.UseSqlite(connectionString, o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
+}
+
+static void ConfigureServices(HostApplicationBuilder builder)
+{
+    builder.Services.AddOptions<AppOptions>().BindConfiguration(nameof(AppOptions)).ValidateOnStart();
+    builder.Services.AddScoped<CinemaService>();
+    builder.Services.AddScoped<MovieService>();
+    builder.Services.AddScoped<ShowTimeService>();
+
+    builder.Services.AddServicesByInterface<IScraper>();
+    builder.Services.AddServicesByInterface<IRenderer>();
+
+    builder.Services.AddSingleton<DatabaseMigrationService>();
+    builder.Services.AddSingleton<ScrapingService>();
+    builder.Services.AddSingleton<RenderingService>();
+    builder.Services.AddSingleton<CleanupService>();
+}
 
 var culture = new CultureInfo("de-DE", true);
 CultureInfo.CurrentCulture = culture;
 CultureInfo.DefaultThreadCurrentCulture = culture;
 
 var builder = Host.CreateApplicationBuilder(args);
-// Add services to the container.
-builder.Configuration.AddUserSecrets<Program>();
-builder.Services.AddDbContext<KinohannoverContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("kinohannoverContext") ?? throw new InvalidOperationException("Connection string 'kinohannoverContext' not found.")));
 
-var apiKey = builder.Configuration.GetConnectionString("TMDB");
-if (string.IsNullOrWhiteSpace(apiKey))
-{
-    throw new InvalidOperationException("No TMDB API key found.");
-}
-
-var tmdbClient = new TMDbClient(apiKey);
-builder.Services.AddSingleton(tmdbClient);
-builder.Services.AddScoped<CleanupService>();
-builder.Services.AddScoped<MovieService>();
-builder.Services.AddTransient<CinemaService>();
-builder.Services.AddScoped<ShowTimeService>();
-
-builder.Services.AddServicesByInterface<IScraper>();
-builder.Services.AddServicesByInterface<IRenderer>();
+ConfigureDatabase(builder.Services, builder.Configuration);
+ConfigureServices(builder);
 
 var app = builder.Build();
-
-var configuration = app.Services.GetRequiredService<IConfiguration>();
-var defaultOutputDirectory = CreateOutputDirectory(configuration);
-using var scope = app.Services.CreateScope();
-var context = scope.ServiceProvider.GetRequiredService<KinohannoverContext>();
-await context.Database.MigrateAsync();
-
-var cleanupService = scope.ServiceProvider.GetRequiredService<CleanupService>();
-await cleanupService.CleanupAsync();
-
-var scrapers = scope.ServiceProvider.GetServices<IScraper>().OrderByDescending(e => e.ReliableMetadata);
-var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-
-var exceptions = new List<Exception>();
-foreach (var scraper in scrapers)
+var applicationLifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
+applicationLifetime.ApplicationStarted.Register(async () =>
 {
-    try
-    {
-        await scraper.ScrapeAsync();
-    }
-    catch (Exception e)
-    {
-        logger.LogError(e, "The {ScraperName} failed due to an exception.", scraper.GetType().Name);
-        exceptions.Add(e);
-    }
-}
+    await app.Services.GetRequiredService<DatabaseMigrationService>().ExecuteAsync(applicationLifetime.ApplicationStopping);
+    await app.Services.GetRequiredService<ScrapingService>().ExecuteAsync(applicationLifetime.ApplicationStopping);
+    await app.Services.GetRequiredService<RenderingService>().ExecuteAsync();
+    await app.Services.GetRequiredService<CleanupService>().ExecuteAsync(applicationLifetime.ApplicationStopping);
+    applicationLifetime.StopApplication();
+});
 
-if (exceptions.Count != 0)
-{
-    logger.LogError("The following scrapers failed: {Scrapers}", string.Join(", ", scrapers.Select(e => e.GetType().Name)));
-}
-
-var renderers = scope.ServiceProvider.GetServices<IRenderer>();
-foreach (var renderer in renderers)
-{
-    renderer.Render(defaultOutputDirectory);
-}
-
-static string CreateOutputDirectory(IConfiguration config)
-{
-    var defaultOutputDirectory = config["DataOutputPath"];
-    if (string.IsNullOrWhiteSpace(defaultOutputDirectory))
-    {
-        throw new InvalidOperationException("No output directory found.");
-    }
-    if (!Directory.Exists(defaultOutputDirectory))
-    {
-        var info = Directory.CreateDirectory(defaultOutputDirectory);
-        defaultOutputDirectory = info.FullName;
-    }
-    else
-    {
-        Path.GetFullPath(defaultOutputDirectory);
-    }
-
-    return defaultOutputDirectory;
-}
+await app.RunAsync();

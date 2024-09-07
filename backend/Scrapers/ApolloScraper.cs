@@ -1,5 +1,4 @@
-﻿using backend.Extensions;
-using backend.Helpers;
+﻿using backend.Helpers;
 using backend.Models;
 using backend.Scrapers;
 using backend.Services;
@@ -95,7 +94,7 @@ namespace kinohannover.Scrapers.FilmkunstKinos
 
                     var titleNode = GetTitleNode(movieNode);
                     var (title, type, language) = GetMovieDetails(titleNode);
-                    var movieUrl = new Uri(_cinema.Url, titleNode.GetHref());
+                    var movieUrl = new Uri(_cinema.Url, titleNode.GetAttributeValue("href", ""));
                     Movie movie = await ProcessMovieAsync(title);
                     var showDateTime = GetShowDateTime(date, movieNode);
                     if (showDateTime == null) continue;

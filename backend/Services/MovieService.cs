@@ -1,15 +1,16 @@
-﻿using backend;
-using backend.Data;
+﻿using backend.Data;
 using backend.Models;
 using kinohannover.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using TMDbLib.Client;
 
 namespace backend.Services
 {
-    public class MovieService(KinohannoverContext context, ILogger<MovieService> logger, TMDbClient tmdbClient)
+    public class MovieService(DatabaseContext context, ILogger<MovieService> logger, IOptions<AppOptions> appOptions)
     {
+        private readonly TMDbClient _tmdbClient = new(appOptions.Value.TmdbApiKey);
         private static readonly Uri _tmdbPosterBaseUrl = new("https://image.tmdb.org/t/p/w500");
         private const string _tmdbSearchLanguageDE = "de-DE";
         private static readonly Uri _youtubeVideoBaseUrl = new("https://www.youtube.com/watch?v=");
@@ -41,7 +42,7 @@ namespace backend.Services
 
         private async Task<Movie> AddMovieAsync(Movie movie)
         {
-            logger.LogInformation("Adding movie {Title}", movie.DisplayName);
+            logger.LogInformation("Creating movie {Title}", movie.DisplayName);
             await context.Movies.AddAsync(movie);
             await context.SaveChangesAsync();
             return movie;
@@ -87,13 +88,13 @@ namespace backend.Services
         {
             try
             {
-                var tmdbResult = (await tmdbClient.SearchMovieAsync(movie.DisplayName,
+                var tmdbResult = (await _tmdbClient.SearchMovieAsync(movie.DisplayName,
                                                                     language: _tmdbSearchLanguageDE,
                                                                     primaryReleaseYear: movie.ReleaseDate?.Year ?? 0)).Results.FirstOrDefault();
 
                 if (tmdbResult is not null)
                 {
-                    var tmdbMovieDetails = await tmdbClient.GetMovieAsync(tmdbResult.Id,
+                    var tmdbMovieDetails = await _tmdbClient.GetMovieAsync(tmdbResult.Id,
                                                                            language: _tmdbSearchLanguageDE,
                                                                            extraMethods: TMDbLib.Objects.Movies.MovieMethods.Videos | TMDbLib.Objects.Movies.MovieMethods.AlternativeTitles);
 

@@ -117,14 +117,14 @@ csharp_style_prefer_primary_constructors = true:suggestion
 csharp_style_prefer_top_level_statements = true:silent
 
 # Expression-level preferences
-csharp_prefer_simple_default_expression = true
+csharp_prefer_simple_default_expression = true:suggestion
 csharp_style_deconstructed_variable_declaration = true
 csharp_style_implicit_object_creation_when_type_is_apparent = true
 csharp_style_inlined_variable_declaration = true
-csharp_style_prefer_index_operator = true
-csharp_style_prefer_local_over_anonymous_function = true
+csharp_style_prefer_index_operator = true:suggestion
+csharp_style_prefer_local_over_anonymous_function = true:suggestion
 csharp_style_prefer_null_check_over_type_check = true:suggestion
-csharp_style_prefer_range_operator = true
+csharp_style_prefer_range_operator = true:suggestion
 csharp_style_prefer_tuple_swap = true
 csharp_style_prefer_utf8_string_literals = true
 csharp_style_throw_expression = true:suggestion
@@ -260,7 +260,7 @@ dotnet_style_prefer_simplified_interpolation = true:suggestion
 dotnet_style_prefer_collection_expression = when_types_loosely_match:suggestion
 dotnet_style_namespace_match_folder = true:suggestion
 dotnet_naming_rule.private_members_with_underscore.symbols  = private_fields
-dotnet_naming_rule.private_members_with_underscore.style    = prefix_underscore
+dotnet_naming_rule.private_members_with_underscore.style = prefix_underscore
 dotnet_naming_rule.private_members_with_underscore.severity = suggestion
 
 dotnet_naming_symbols.private_fields.applicable_kinds           = field

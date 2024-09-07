@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace backend.Services
 {
-    public class CinemaService(KinohannoverContext context, ILogger<CinemaService> logger)
+    public class CinemaService(DatabaseContext context, ILogger<CinemaService> logger)
     {
         public async Task AddMovieToCinemaAsync(Movie movie, Cinema cinema)
         {

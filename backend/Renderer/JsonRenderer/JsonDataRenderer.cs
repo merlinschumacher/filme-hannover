@@ -40,7 +40,7 @@ namespace backend.Renderer.JsonRenderer
         public required Uri Url { get; init; }
     }
 
-    public class JsonDataRenderer(KinohannoverContext context) : IRenderer
+    public class JsonDataRenderer(DatabaseContext context) : IRenderer
     {
         private sealed class JsonData
         {
@@ -101,8 +101,6 @@ namespace backend.Renderer.JsonRenderer
             {
                 ContractResolver = contractResolver,
                 Formatting = Formatting.None,
-                //ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                //PreserveReferencesHandling = PreserveReferencesHandling.Objects,
                 DateTimeZoneHandling = DateTimeZoneHandling.Utc,
             });
             File.WriteAllText(path, serializedEventSources);

@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace backend.Renderer.CalendarRenderer
 {
-    public class CalendarRenderer(KinohannoverContext context) : IRenderer
+    public class CalendarRenderer(DatabaseContext context) : IRenderer
     {
         private readonly List<CinemaInfo> _cinemaInfos = [];
 

@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace backend.Services
 {
-    public class ShowTimeService(KinohannoverContext context, ILogger<ShowTimeService> logger)
+    public class ShowTimeService(DatabaseContext context, ILogger<ShowTimeService> logger)
     {
         public async Task<ShowTime?> CreateAsync(ShowTime showTime)
         {
@@ -24,7 +24,7 @@ namespace backend.Services
 
             if (existingShowTime is null)
             {
-                logger.LogInformation("Adding Showtime for {Movie} at {Time} at {Cinema}", showTime.Movie.DisplayName, showTime.StartTime, showTime.Cinema);
+                logger.LogDebug("Adding Showtime for {Movie} at {Time} at {Cinema}", showTime.Movie.DisplayName, showTime.StartTime, showTime.Cinema);
                 await context.ShowTime.AddAsync(showTime);
                 await context.SaveChangesAsync();
             }
