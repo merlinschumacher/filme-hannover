@@ -22,7 +22,6 @@ RUN npm run build
 FROM scratch AS artifacts 
 # Copy the appsettings.json with the default values
 COPY entrypoint.sh .
-RUN chmod +x entrypoint.sh
 COPY ./backend/appsettings.json .
 # Copy the output from the build environments
 COPY --from=be-build-env /app/out .
@@ -36,6 +35,7 @@ LABEL org.opencontainers.image.source="https://github.com/merlinschumacher/filme
 RUN apk add --no-cache icu-libs tzdata
 WORKDIR /app
 COPY --from=artifacts / .
+RUN chmod +x /app/entrypoint.sh
 VOLUME /output /wwwroot/data
 # Start the application
 ENTRYPOINT /app/entrypoint.sh
