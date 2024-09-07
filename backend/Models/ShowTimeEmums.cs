@@ -53,6 +53,7 @@
             { "IT", ShowTimeLanguage.Italian},
             { "jap", ShowTimeLanguage.Japanese},
             { "JP", ShowTimeLanguage.Japanese},
+            { "JA", ShowTimeLanguage.Japanese},
             { "georg", ShowTimeLanguage.Georgian },
             { "russ", ShowTimeLanguage.Russian },
             { "türk", ShowTimeLanguage.Turkish },
