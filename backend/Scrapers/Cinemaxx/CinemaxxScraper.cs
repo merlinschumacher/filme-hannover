@@ -1,6 +1,5 @@
 ﻿using backend.Helpers;
 using backend.Models;
-using backend.Scrapers;
 using backend.Services;
 using kinohannover.Scrapers.Cinemaxx;
 using System.Globalization;

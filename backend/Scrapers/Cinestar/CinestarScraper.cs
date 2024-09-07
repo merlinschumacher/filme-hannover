@@ -46,7 +46,7 @@ namespace backend.Scrapers.Cinestar
             foreach (var cinestarMovie in movieList)
             {
                 var movie = await ProcessMovieAsync(cinestarMovie);
-                foreach (var cinestarShowTime in cinestarMovie.showtimes)
+                foreach (var cinestarShowTime in cinestarMovie.Showtimes)
                 {
                     await ProcessShowTimeAsync(movie, cinestarShowTime);
                 }
@@ -55,7 +55,7 @@ namespace backend.Scrapers.Cinestar
 
         private async Task<Movie> ProcessMovieAsync(CinestarMovie cinestarMovie)
         {
-            var title = cinestarMovie.title;
+            var title = cinestarMovie.Title;
             title = SanitizeTitle(title);
 
             var movie = new Movie()
@@ -71,16 +71,16 @@ namespace backend.Scrapers.Cinestar
 
         private async Task ProcessShowTimeAsync(Movie movie, CinestarShowtime cinestarShowtime)
         {
-            var firstLangAttribute = cinestarShowtime.attributes.FirstOrDefault(e => e.StartsWith("LANG_"), "DE");
+            var firstLangAttribute = cinestarShowtime.Attributes.FirstOrDefault(e => e.StartsWith("LANG_"), "DE");
             firstLangAttribute = firstLangAttribute.Replace("LANG_", string.Empty);
             var language = ShowTimeHelper.GetLanguage(firstLangAttribute);
 
-            var type = GetShowTimeType(cinestarShowtime.attributes);
+            var type = GetShowTimeType(cinestarShowtime.Attributes);
 
-            var dateTimeString = cinestarShowtime.datetime.Replace("UTC", string.Empty).Trim();
+            var dateTimeString = cinestarShowtime.Datetime.Replace("UTC", string.Empty).Trim();
             var dateTime = DateTime.Parse(dateTimeString, CultureInfo.CurrentCulture);
 
-            var showTimeUrl = QueryHelpers.AddQueryString(_shopUrlTemplate.ToString(), "movieSessionId", cinestarShowtime.systemId);
+            var showTimeUrl = QueryHelpers.AddQueryString(_shopUrlTemplate.ToString(), "movieSessionId", cinestarShowtime.SystemId.ToString());
 
             var showTime = new ShowTime()
             {
@@ -132,7 +132,7 @@ namespace backend.Scrapers.Cinestar
 
                 foreach (var movie in json)
                 {
-                    if (movie?.showtimes.Count == null)
+                    if (movie?.Showtimes.Count == null)
                         continue;
 
                     cinestarMovies.Add(movie);
