@@ -21,6 +21,7 @@ RUN npm run build
 # Create an empty image to merge the output
 FROM scratch AS artifacts 
 # Copy the appsettings.json with the default values
+COPY entrypoint.sh .
 COPY ./backend/appsettings.json .
 # Copy the output from the build environments
 COPY --from=be-build-env /app/out .
@@ -36,5 +37,4 @@ WORKDIR /app
 COPY --from=artifacts / .
 VOLUME /output /wwwroot/data
 # Start the application
-#CMD ["/bin/sh", "-c", "/app/backend", ";", "cp -var /app/wwwroot/* /output/"]
-CMD /app/backend; cp -var /app/wwwroot/* /output/
+ENTRYPOINT /app/entrypoint.sh
