@@ -9,7 +9,7 @@ using System.Web;
 
 namespace kinohannover.Scrapers
 {
-    public partial class KoKiScraper : IScraper
+    public partial class KoKiCinetixxScraper : IScraper
     {
         private readonly Cinema _cinema = new()
         {
@@ -37,7 +37,7 @@ namespace kinohannover.Scrapers
         private const string _eventTimeNodeSelector = ".//td[contains(@class, 'date-picker-shows')]";
         private const string _spanNodeSelector = ".//span";
 
-        public KoKiScraper(MovieService movieService, ShowTimeService showTimeService, CinemaService cinemaService)
+        public KoKiCinetixxScraper(MovieService movieService, ShowTimeService showTimeService, CinemaService cinemaService)
         {
             _cinemaService = cinemaService;
             _cinema = _cinemaService.Create(_cinema);
@@ -132,7 +132,7 @@ namespace kinohannover.Scrapers
         {
             var dateText = dateNode.InnerText;
             var dateString = DateRegex().Match(dateText).Groups[1].Value;
-            return DateOnly.Parse(dateString, CultureInfo.CurrentCulture);
+            return DateOnly.ParseExact(dateString, "dd.MM", CultureInfo.CurrentCulture);
         }
 
         private static (ShowTimeType, ShowTimeLanguage) GetShowTimeTypeLanguage(HtmlNode eventDetailElement)
@@ -179,16 +179,30 @@ namespace kinohannover.Scrapers
 
         private static ShowTimeLanguage GetLanguage(HtmlNodeCollection spans)
         {
-            var language = ShowTimeLanguage.German;
-            var landSpan = spans.FirstOrDefault(s => s.InnerText.Contains("Land:"));
-            if (landSpan != null)
+            var spracheSpan = spans.FirstOrDefault(s => s.InnerText.Contains("Sprache:"));
+            var spracheInnerText = spracheSpan?.InnerText.Replace("Sprache:", string.Empty);
+            var language = ParseLanguageSpan(spracheInnerText);
+            if (language != null)
             {
-                var languages = landSpan.InnerText.Split(",");
+                return language.Value;
+            }
+            var landSpan = spans.FirstOrDefault(s => s.InnerText.Contains("Land:"));
+            var landInnerText = landSpan?.InnerText.Replace("Land:", string.Empty);
+            language = ParseLanguageSpan(landInnerText);
+            return language ?? ShowTimeLanguage.German;
+        }
+
+        private static ShowTimeLanguage? ParseLanguageSpan(string? text)
+        {
+            ShowTimeLanguage? language = null;
+            if (text != null)
+            {
+                var languages = text.Split(",");
                 language = ShowTimeHelper.GetLanguage(languages[0]);
                 // This being an OV or OmU with German as language is improbable.
                 if (language == ShowTimeLanguage.German && languages.Length > 1)
                 {
-                    language = ShowTimeHelper.GetLanguage(languages[1]);
+                    language = ShowTimeHelper.TryGetLanguage(languages[1], null);
                 }
             }
 

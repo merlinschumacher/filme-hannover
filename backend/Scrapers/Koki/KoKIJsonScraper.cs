@@ -135,13 +135,7 @@ namespace kinohannover.Scrapers
         {
             var pageHtml = await HttpHelper.GetHtmlDocumentAsync(new Uri(_shopLink));
 
-            var moreButton = pageHtml.DocumentNode.SelectNodes(_moreButtonSelector).FirstOrDefault();
-
-            if (moreButton is null)
-            {
-                throw new InvalidOperationException("Could not find the more button to get the view id");
-            }
-
+            var moreButton = pageHtml.DocumentNode.SelectNodes(_moreButtonSelector).FirstOrDefault() ?? throw new InvalidOperationException("Could not find the more button to get the view id");
             var viewQuery = moreButton.GetAttributeValue("data-tile_query", "");
 
             return _viewIdRegex.Match(viewQuery).Groups[1].Value;
