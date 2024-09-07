@@ -26,7 +26,7 @@ namespace backend.Scrapers.Cinestar
         private readonly MovieService _movieService;
         private readonly ILogger<CinestarScraper> _logger;
         private readonly CinemaService _cinemaService;
-        private readonly IEnumerable<string> EventTitles = ["CineSpecial:", "Cinelady Preview", "Kinofest:", "Preview", "Happy Family Preview", "Mein Erster Kinobesuch", "CineAnime:"];
+        private readonly IEnumerable<string> _eventTitles = ["CineSpecial:", "Cinelady Preview", "Kinofest:", "Happy Family Preview", "Mein Erster Kinobesuch", "CineAnime:", "Preview"];
 
         public CinestarScraper(ILogger<CinestarScraper> logger, MovieService movieService, ShowTimeService showTimeService, CinemaService cinemaService)
         {
@@ -111,11 +111,11 @@ namespace backend.Scrapers.Cinestar
 
         private string SanitizeTitle(string title)
         {
-            foreach (var eventTitle in EventTitles)
+            foreach (var eventTitle in _eventTitles)
             {
-                title = title.Replace(eventTitle, string.Empty);
+                title = title.Replace(eventTitle, string.Empty, StringComparison.CurrentCultureIgnoreCase);
             }
-            return title;
+            return title.Trim();
         }
 
         private async Task<IEnumerable<CinestarMovie>> GetMovieListAsync()
