@@ -1,0 +1,14 @@
+{
+    "recommendations": [
+        "esbenp.prettier-vscode",
+        "editorconfig.editorconfig",
+        "dbaeumer.vscode-eslint",
+        "ms-azuretools.vscode-docker",
+        "christian-kohler.npm-intellisense",
+        "steoates.autoimport",
+        "github.vscode-github-actions",
+        "ms-dotnettools.csdevkit",
+        "redhat.vscode-yaml",
+        "xabikos.javascriptsnippets"
+    ]
+}
