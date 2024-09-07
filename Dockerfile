@@ -38,4 +38,4 @@ COPY --from=artifacts / .
 RUN chmod +x /app/entrypoint.sh
 VOLUME /output /wwwroot/data
 # Start the application
-ENTRYPOINT /app/entrypoint.sh
+ENTRYPOINT ["/app/entrypoint.sh"]

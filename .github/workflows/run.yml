@@ -29,7 +29,7 @@ jobs:
     - name: Pull image
       run: docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
     - name: Run image
-      run: docker run -v ${{ github.workspace }}/public:/output -e CONNECTIONSTRINGS__TMDB=${{ secrets.CONNECTIONSTRINGS__TMDB }} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+      run: docker run -v ${{ github.workspace }}/public:/output -e APPOPTIONS__TMDBAPIKEY=${{ secrets.APPOPTIONS__TMDBAPIKEY}} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
       with:
