@@ -23,7 +23,7 @@ export default class CinemaDb extends Dexie {
     super("CinemaDb");
     this.version(2).stores({
       cinemas: "id, displayName",
-      movies: "id, displayName",
+      movies: "id, displayName, runtime, releaseDate",
       showTimes:
         "id, date, startTime, endTime, movie, cinema, language, dubtype",
       configurations: "id",
@@ -113,6 +113,9 @@ export default class CinemaDb extends Dexie {
   }
 
   private parseWithDate(jsonString: string): unknown {
+    if (!jsonString || jsonString === "") {
+      return {};
+    }
     const reDateDetect = /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/; // startswith: 2015-04-29T22:06:55
     const resultObject = JSON.parse(
       jsonString,
@@ -167,11 +170,19 @@ export default class CinemaDb extends Dexie {
 
   public async GetAllMovies(): Promise<Movie[]> {
     const movieIds = await this.showTimes.orderBy("movie").uniqueKeys();
-    return this.movies
-      .orderBy("displayName")
-      .and((movie) => movieIds.includes(movie.id))
+    const movieArray = await this.movies
+      .filter((movie) => movieIds.includes(movie.id))
       .toArray();
+
+    const collator = new Intl.Collator(undefined, {
+      numeric: true,
+      sensitivity: "base",
+    });
+    return movieArray.sort((a, b) =>
+      collator.compare(a.displayName, b.displayName),
+    );
   }
+
   public async GetEarliestShowTimeDate(
     selectedCinemaIds: number[],
     selectedMovieIds: number[],
