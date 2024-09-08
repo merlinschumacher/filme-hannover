@@ -21,10 +21,11 @@ export default class CinemaDb extends Dexie {
 
   private constructor() {
     super("CinemaDb");
-    this.version(1).stores({
+    this.version(2).stores({
       cinemas: "id, displayName",
       movies: "id, displayName",
-      showTimes: "id, date, startTime, endTime, movie, cinema, language, type",
+      showTimes:
+        "id, date, startTime, endTime, movie, cinema, language, dubtype",
       configurations: "id",
     });
 
@@ -174,7 +175,7 @@ export default class CinemaDb extends Dexie {
   public async GetEarliestShowTimeDate(
     selectedCinemaIds: number[],
     selectedMovieIds: number[],
-    selectedShowTimeTypes: number[],
+    selectedShowTimeDubTypes: number[],
   ): Promise<Date | null> {
     // get the first showtime date for the selected cinemas and movies
     const earliestShowTime = await this.showTimes
@@ -184,7 +185,7 @@ export default class CinemaDb extends Dexie {
           showTime.startTime.getTime() >= new Date().getTime() &&
           selectedCinemaIds.includes(showTime.cinema) &&
           selectedMovieIds.includes(showTime.movie) &&
-          selectedShowTimeTypes.includes(showTime.type),
+          selectedShowTimeDubTypes.includes(showTime.dubType),
       )
       .first();
 
@@ -200,7 +201,7 @@ export default class CinemaDb extends Dexie {
     endDate: Date,
     selectedCinemaIds: number[],
     selectedMovieIds: number[],
-    selectedShowTimeTypes: number[],
+    selectedShowTimeDubTypes: number[],
   ): Promise<EventData[]> {
     const showTimeResults = await this.showTimes
       .where("startTime")
@@ -209,7 +210,7 @@ export default class CinemaDb extends Dexie {
         (showtime) =>
           selectedCinemaIds.includes(showtime.cinema) &&
           selectedMovieIds.includes(showtime.movie) &&
-          selectedShowTimeTypes.includes(showtime.type),
+          selectedShowTimeDubTypes.includes(showtime.dubType),
       )
       .sortBy("startTime");
 
@@ -235,7 +236,7 @@ export default class CinemaDb extends Dexie {
     startDate: Date,
     selectedCinemaIds: number[],
     selectedMovieIds: number[],
-    selectedShowTimeTypes: number[],
+    selectedShowTimeDubTypes: number[],
     visibleDays: number,
   ): Promise<Date> {
     const showTimes = await this.showTimes
@@ -245,7 +246,7 @@ export default class CinemaDb extends Dexie {
           showtime.date.getTime() >= startDate.getTime() &&
           selectedCinemaIds.includes(showtime.cinema) &&
           selectedMovieIds.includes(showtime.movie) &&
-          selectedShowTimeTypes.includes(showtime.type),
+          selectedShowTimeDubTypes.includes(showtime.dubType),
       )
       .keys();
 

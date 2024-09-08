@@ -36,7 +36,7 @@ namespace backend.Renderer.JsonRenderer
         public int Movie { get; init; }
         public int Cinema { get; init; }
         public ShowTimeLanguage Language { get; init; }
-        public ShowTimeType Type { get; init; }
+        public ShowTimeDubType DubType { get; init; }
         public required Uri Url { get; init; }
     }
 
@@ -80,7 +80,7 @@ namespace backend.Renderer.JsonRenderer
                     Movie = s.Movie.Id,
                     Cinema = s.Cinema.Id,
                     Language = s.Language,
-                    Type = s.Type,
+                    DubType = s.DubType,
                     Url = s.Url ?? s.Cinema.Url,
                 })
             };

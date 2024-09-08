@@ -59,15 +59,15 @@ export class Application {
     const movies = this.filterService.GetAllMovies();
     const cinemas = this.filterService.GetAllCinemas();
     const filterModal = FilterModal.BuildElement(cinemas, movies);
-    filterModal.onFilterChanged = (cinemas, movies, showTimeTypes) => {
+    filterModal.onFilterChanged = (cinemas, movies, showTimeDubTypes) => {
       this.nextVisibleDate = new Date();
       this.filterService
-        .SetSelection(cinemas, movies, showTimeTypes)
+        .SetSelection(cinemas, movies, showTimeDubTypes)
         .then(() => {
           console.log("Filter changed.");
           console.debug("Cinemas:", cinemas);
           console.debug("Movies:", movies);
-          console.debug("ShowTimeTypes:", showTimeTypes);
+          console.debug("ShowTimeDubTypes:", showTimeDubTypes);
         })
         .catch((error: unknown) => {
           console.error("Failed to set selection.", error);

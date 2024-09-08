@@ -19,7 +19,7 @@ namespace backend.Services
             var existingShowTime = await context.ShowTime.FirstOrDefaultAsync(s => s.StartTime == showTime.StartTime
                                                                       && s.Movie == showTime.Movie
                                                                       && s.Cinema == showTime.Cinema
-                                                                      && s.Type == showTime.Type
+                                                                      && s.DubType == showTime.DubType
                                                                       && s.Language == showTime.Language);
 
             if (existingShowTime is null)

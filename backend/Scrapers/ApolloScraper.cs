@@ -57,18 +57,18 @@ namespace kinohannover.Scrapers.FilmkunstKinos
             return titleNode;
         }
 
-        private static (string, ShowTimeType, ShowTimeLanguage) GetMovieDetails(HtmlNode titleNode)
+        private static (string, ShowTimeDubType, ShowTimeLanguage) GetMovieDetails(HtmlNode titleNode)
         {
             var title = titleNode.InnerText;
             var titleRegex = TitleRegex().Match(title);
             var language = ShowTimeLanguage.German;
-            var type = ShowTimeType.Regular;
+            var type = ShowTimeDubType.Regular;
 
             if (titleRegex.Success)
             {
                 title = titleRegex.Groups[1].Value;
                 language = ShowTimeHelper.GetLanguage(titleRegex.Groups[2].Value);
-                type = ShowTimeHelper.GetType(titleRegex.Groups[3].Value);
+                type = ShowTimeHelper.GetDubType(titleRegex.Groups[3].Value);
             }
             return (title, type, language);
         }
@@ -123,13 +123,13 @@ namespace kinohannover.Scrapers.FilmkunstKinos
             return date;
         }
 
-        private async Task ProcessShowTimeAsync(Movie movie, string? specialEventTitle, DateTime dateTime, ShowTimeType type, ShowTimeLanguage language, Uri performanceUri)
+        private async Task ProcessShowTimeAsync(Movie movie, string? specialEventTitle, DateTime dateTime, ShowTimeDubType type, ShowTimeLanguage language, Uri performanceUri)
         {
             var showTime = new ShowTime()
             {
                 Movie = movie,
                 StartTime = dateTime,
-                Type = type,
+                DubType = type,
                 Language = language,
                 Url = performanceUri,
                 Cinema = _cinema,

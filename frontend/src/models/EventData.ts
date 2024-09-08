@@ -1,4 +1,4 @@
-import { ShowTimeType } from "./ShowTimeType";
+import { ShowTimeDubType } from "./ShowTimeDubType";
 import { ShowTimeLanguage } from "./ShowTimeLanguage";
 import ShowTime from "./ShowTime";
 import Movie from "./Movie";
@@ -15,7 +15,7 @@ export class EventData {
     this.color = cinema.color;
     this.url = showTime.url;
     this.language = showTime.language;
-    this.type = showTime.type;
+    this.dubType = showTime.dubType;
   }
 
   startTime: Date;
@@ -27,5 +27,5 @@ export class EventData {
   color: string;
   url: URL;
   language: ShowTimeLanguage;
-  type: ShowTimeType;
+  dubType: ShowTimeDubType;
 }

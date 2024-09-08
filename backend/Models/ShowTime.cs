@@ -6,19 +6,19 @@
         public required DateTime StartTime { get; set; }
         public required Movie Movie { get; set; }
         public required Cinema Cinema { get; set; }
-        public ShowTimeType Type { get; set; } = ShowTimeType.Regular;
+        public ShowTimeDubType DubType { get; set; } = ShowTimeDubType.Regular;
         public ShowTimeLanguage Language { get; set; } = ShowTimeLanguage.German;
         public Uri? Url { get; set; }
         public string? SpecialEvent { get; set; }
 
         public string GetShowTimeSuffix()
         {
-            if (Type == ShowTimeType.Regular && Language == ShowTimeLanguage.German)
+            if (DubType == ShowTimeDubType.Regular && Language == ShowTimeLanguage.German)
             {
                 return "";
             }
 
-            var typeString = ShowTimeHelper.GetTypeName(Type);
+            var typeString = ShowTimeHelper.GetTypeName(DubType);
             var languageString = ShowTimeHelper.GetLanguageName(Language);
 
             return $"({typeString}/{languageString})";

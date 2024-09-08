@@ -1,7 +1,7 @@
 import html from "./event-item.component.html?raw";
 import css from "./event-item.component.css?inline";
 import { EventData } from "../../models/EventData";
-import { getShowTimeTypeAttributeString } from "../../models/ShowTimeType";
+import { getShowTimeDubTypeAttributeString as getShowTimeDubTypeAttributeString } from "../../models/ShowTimeDubType";
 import { getShowTimeLanguageString } from "../../models/ShowTimeLanguage";
 
 const style = new CSSStyleSheet();
@@ -68,11 +68,11 @@ export default class EventItem extends HTMLElement {
     }
   }
 
-  private static BuildSuffixString(type: string, language: string) {
-    if (!type && !language) {
+  private static BuildSuffixString(dubType: string, language: string) {
+    if (!dubType && !language) {
       return "";
     }
-    let suffix = type;
+    let suffix = dubType;
     if (suffix && language) {
       suffix += ",\xa0";
     }
@@ -88,7 +88,7 @@ export default class EventItem extends HTMLElement {
     item.setAttribute("color", event.color);
     item.setAttribute("time", event.startTime.toISOString());
     item.setAttribute("title", event.title);
-    const typeString = getShowTimeTypeAttributeString(event.type);
+    const typeString = getShowTimeDubTypeAttributeString(event.dubType);
     const languageString = getShowTimeLanguageString(event.language);
     const suffixString = EventItem.BuildSuffixString(
       typeString,

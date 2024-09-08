@@ -1,6 +1,6 @@
 ﻿namespace backend.Models
 {
-    public enum ShowTimeType
+    public enum ShowTimeDubType
     {
         Regular,
         OriginalVersion,
@@ -26,11 +26,11 @@
 
     public static class ShowTimeHelper
     {
-        private static readonly Dictionary<ShowTimeType, string[]> _showTimeTypeMap = new()
+        private static readonly Dictionary<ShowTimeDubType, string[]> _showTimeDubTypeMap = new()
         {
-            { ShowTimeType.Regular, [""] },
-            { ShowTimeType.OriginalVersion, ["OV", "OF", "Original Version", "Originalversion", "Originalfassung", "Original Fassung"] },
-            { ShowTimeType.Subtitled, ["OmU", "OmeU", "OmdU", "Untertitel"] },
+            { ShowTimeDubType.Regular, [""] },
+            { ShowTimeDubType.OriginalVersion, ["OV", "OF", "Original Version", "Originalversion", "Originalfassung", "Original Fassung"] },
+            { ShowTimeDubType.Subtitled, ["OmU", "OmeU", "OmdU", "Untertitel"] },
         };
 
         private static readonly Dictionary<ShowTimeLanguage, string[]> _showTimeLanguageMap = new()
@@ -56,9 +56,9 @@
             return values[0];
         }
 
-        public static string GetTypeName(ShowTimeType type)
+        public static string GetTypeName(ShowTimeDubType type)
         {
-            var values = _showTimeTypeMap[type];
+            var values = _showTimeDubTypeMap[type];
             return values[0];
         }
 
@@ -77,11 +77,11 @@
             return GetMatchingDictionaryKey(language, _showTimeLanguageMap, ShowTimeLanguage.German);
         }
 
-        public static ShowTimeType GetType(string type)
+        public static ShowTimeDubType GetDubType(string type)
         {
             type = type.Trim().Replace(".", null).Replace("(", null).Replace(")", null);
 
-            return GetMatchingDictionaryKey(type, _showTimeTypeMap, ShowTimeType.Regular);
+            return GetMatchingDictionaryKey(type, _showTimeDubTypeMap, ShowTimeDubType.Regular);
         }
 
         private static T GetMatchingDictionaryKey<T>(string needle, Dictionary<T, string[]> dictionary, T defaultValue) where T : notnull

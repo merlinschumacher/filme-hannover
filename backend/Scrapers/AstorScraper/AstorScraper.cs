@@ -105,7 +105,7 @@ namespace backend.Scrapers.AstorScraper
 
         private async Task ProcessShowTimeAsync(Movie movie, Performance performance)
         {
-            var type = GetShowTimeType(performance);
+            var type = GetShowTimeDubType(performance);
             var language = GetShowTimeLanguage(performance.language);
 
             var performanceUrl = new Uri(_showTimeBaseUrl + $"{performance.slug}/0/0/{performance.crypt_id}");
@@ -113,7 +113,7 @@ namespace backend.Scrapers.AstorScraper
             var showTime = new ShowTime()
             {
                 StartTime = performance.begin,
-                Type = type,
+                DubType = type,
                 Language = language,
                 Url = performanceUrl,
                 Cinema = _cinema,
@@ -137,18 +137,18 @@ namespace backend.Scrapers.AstorScraper
             return ShowTimeLanguage.Unknown;
         }
 
-        private static ShowTimeType GetShowTimeType(Performance performance)
+        private static ShowTimeDubType GetShowTimeDubType(Performance performance)
         {
             if (performance?.is_ov == true)
             {
-                return ShowTimeType.OriginalVersion;
+                return ShowTimeDubType.OriginalVersion;
             }
             else if (performance?.is_omu == true)
             {
-                return ShowTimeType.Subtitled;
+                return ShowTimeDubType.Subtitled;
             }
 
-            return ShowTimeType.Regular;
+            return ShowTimeDubType.Regular;
         }
 
         private async Task<IEnumerable<AstorMovie>> GetMovieListAsync()

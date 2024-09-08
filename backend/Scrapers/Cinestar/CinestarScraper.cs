@@ -75,7 +75,7 @@ namespace backend.Scrapers.Cinestar
             firstLangAttribute = firstLangAttribute.Replace("LANG_", string.Empty);
             var language = ShowTimeHelper.GetLanguage(firstLangAttribute);
 
-            var type = GetShowTimeType(cinestarShowtime.Attributes);
+            var type = GetShowTimeDubType(cinestarShowtime.Attributes);
 
             var dateTimeString = cinestarShowtime.Datetime.Replace("UTC", string.Empty).Trim();
             var dateTime = DateTime.Parse(dateTimeString, CultureInfo.CurrentCulture);
@@ -85,7 +85,7 @@ namespace backend.Scrapers.Cinestar
             var showTime = new ShowTime()
             {
                 StartTime = dateTime,
-                Type = type,
+                DubType = type,
                 Language = language,
                 Url = new Uri(showTimeUrl),
                 Cinema = _cinema,
@@ -95,18 +95,18 @@ namespace backend.Scrapers.Cinestar
             await _showTimeService.CreateAsync(showTime);
         }
 
-        private static ShowTimeType GetShowTimeType(List<string> attributes)
+        private static ShowTimeDubType GetShowTimeDubType(List<string> attributes)
         {
             if (attributes.Contains("OmU", StringComparer.CurrentCultureIgnoreCase))
             {
-                return ShowTimeType.Subtitled;
+                return ShowTimeDubType.Subtitled;
             }
             else if (attributes.Contains("OV", StringComparer.CurrentCultureIgnoreCase))
             {
-                return ShowTimeType.OriginalVersion;
+                return ShowTimeDubType.OriginalVersion;
             }
 
-            return ShowTimeType.Regular;
+            return ShowTimeDubType.Regular;
         }
 
         private string SanitizeTitle(string title)

@@ -38,17 +38,17 @@ namespace kinohannover.Scrapers.FilmkunstKinos
             }
         }
 
-        private async Task<(Movie, ShowTimeType, ShowTimeLanguage)> ProcessMovieAsync(HtmlNode movieNode)
+        private async Task<(Movie, ShowTimeDubType, ShowTimeLanguage)> ProcessMovieAsync(HtmlNode movieNode)
         {
             var title = movieNode.SelectSingleNode(_titleSelector).InnerText;
             var match = TitleRegex().Match(title);
-            var type = ShowTimeType.Regular;
+            var type = ShowTimeDubType.Regular;
             var language = ShowTimeLanguage.German;
             if (match.Success)
             {
                 title = match.Groups[1].Value;
                 language = ShowTimeHelper.GetLanguage(match.Groups[2].Value);
-                type = ShowTimeHelper.GetType(match.Groups[3].Value);
+                type = ShowTimeHelper.GetDubType(match.Groups[3].Value);
             }
 
             var movie = new Movie()
@@ -62,7 +62,7 @@ namespace kinohannover.Scrapers.FilmkunstKinos
             return (movie, type, language);
         }
 
-        private async Task ProcessShowTimesAsync(HtmlNode filmTagNode, Movie movie, ShowTimeType type, ShowTimeLanguage language)
+        private async Task ProcessShowTimesAsync(HtmlNode filmTagNode, Movie movie, ShowTimeDubType type, ShowTimeLanguage language)
         {
             var dateString = filmTagNode.SelectSingleNode(_dateSelector).InnerText;
             var date = DateOnly.ParseExact(dateString, _dateFormat, CultureInfo.CurrentCulture);
@@ -79,7 +79,7 @@ namespace kinohannover.Scrapers.FilmkunstKinos
                     Cinema = _cinema,
                     Movie = movie,
                     StartTime = showDateTime.Value,
-                    Type = type,
+                    DubType = type,
                     Language = language,
                     Url = performanceUri,
                 };

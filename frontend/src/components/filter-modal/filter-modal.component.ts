@@ -5,11 +5,11 @@ import SelectionListElement from "../selection-list/selection-list.component";
 import Cinema from "../../models/Cinema";
 import Movie from "../../models/Movie";
 import {
-  getAllShowTimeTypes,
-  getShowTimeTypeByNumber,
-  getShowTimeTypeLabelString,
-  ShowTimeType,
-} from "../../models/ShowTimeType";
+  getAllShowTimeDubTypes,
+  getShowTimeDubTypeByNumber,
+  getShowTimeDubTypeLabelString,
+  ShowTimeDubType,
+} from "../../models/ShowTimeDubType";
 import FilterIcon from "@material-symbols/svg-400/rounded/filter_alt.svg?raw";
 import Check from "@material-symbols/svg-400/outlined/check.svg?raw";
 import Close from "@material-symbols/svg-400/outlined/close.svg?raw";
@@ -26,14 +26,14 @@ export default class FilterModal extends HTMLElement {
 
   private SelectedCinemas: Cinema[] = [];
   private SelectedMovies: Movie[] = [];
-  private SelectedShowTimeTypes: ShowTimeType[] = [];
+  private SelectedShowDubTimeTypes: ShowTimeDubType[] = [];
   private shadow: ShadowRoot;
   private dialogEl: HTMLDialogElement;
 
   public onFilterChanged?: (
     cinemas: Cinema[],
     movies: Movie[],
-    showTimeTypes: ShowTimeType[],
+    showTimeDubTypes: ShowTimeDubType[],
   ) => void;
 
   constructor() {
@@ -66,16 +66,16 @@ export default class FilterModal extends HTMLElement {
     }
   }
 
-  handleShowTimeTypeSelected(e: Event) {
+  handleShowTimeDubTypeSelected(e: Event) {
     if (e.target instanceof CheckableButtonElement) {
       const value = e.target.getAttribute("value") ?? "";
       const typeNumber = parseInt(value);
-      const showTimeType = getShowTimeTypeByNumber(typeNumber);
-      if (!this.SelectedShowTimeTypes.includes(showTimeType)) {
-        this.SelectedShowTimeTypes.push(showTimeType);
+      const showTimeDubType = getShowTimeDubTypeByNumber(typeNumber);
+      if (!this.SelectedShowDubTimeTypes.includes(showTimeDubType)) {
+        this.SelectedShowDubTimeTypes.push(showTimeDubType);
       } else {
-        this.SelectedShowTimeTypes = this.SelectedShowTimeTypes.filter(
-          (t) => t !== showTimeType,
+        this.SelectedShowDubTimeTypes = this.SelectedShowDubTimeTypes.filter(
+          (t) => t !== showTimeDubType,
         );
       }
     }
@@ -87,9 +87,9 @@ export default class FilterModal extends HTMLElement {
     const cinemaButtons: CheckableButtonElement[] =
       this.generateCinemaButtons();
 
-    this.SelectedShowTimeTypes = getAllShowTimeTypes();
-    const showTimeTypeButtons: CheckableButtonElement[] =
-      this.generateShowTimeTypeButtons();
+    this.SelectedShowDubTimeTypes = getAllShowTimeDubTypes();
+    const showTimeDubTypeButtons: CheckableButtonElement[] =
+      this.generateShowTimeDubTypeButtons();
 
     const cinemaLegend: EventItem[] = this.generateCinemaLegend();
     this.append(...cinemaLegend);
@@ -100,7 +100,7 @@ export default class FilterModal extends HTMLElement {
     };
     movieList.slot = "movie-selection";
 
-    this.append(...showTimeTypeButtons);
+    this.append(...showTimeDubTypeButtons);
     this.append(...cinemaButtons);
     this.append(movieList);
 
@@ -119,19 +119,19 @@ export default class FilterModal extends HTMLElement {
         ? "alle"
         : this.SelectedMovies.length;
     const filterInfo = this.shadow.safeQuerySelector("#filter-info");
-    let showTimeTypeStringList = this.SelectedShowTimeTypes.map((t) =>
-      getShowTimeTypeLabelString(t),
+    let showTimeDubTypeStringList = this.SelectedShowDubTimeTypes.map((t) =>
+      getShowTimeDubTypeLabelString(t),
     )
       .sort((a, b) => a.localeCompare(b))
       .join(", ");
-    showTimeTypeStringList =
-      this.SelectedShowTimeTypes.length === 0 ||
-      this.SelectedShowTimeTypes.length == getAllShowTimeTypes().length
+    showTimeDubTypeStringList =
+      this.SelectedShowDubTimeTypes.length === 0 ||
+      this.SelectedShowDubTimeTypes.length == getAllShowTimeDubTypes().length
         ? "alle Vorführungen"
-        : showTimeTypeStringList;
+        : showTimeDubTypeStringList;
     const moviePluralSuffix = this.SelectedMovies.length === 1 ? "" : "e";
     const cinemaPluralSuffix = this.SelectedCinemas.length === 1 ? "" : "s";
-    filterInfo.textContent = `Aktueller Filter: ${cinemaCount.toString()} Kino${cinemaPluralSuffix}, ${movieCount.toString()} Film${moviePluralSuffix}, ${showTimeTypeStringList}`;
+    filterInfo.textContent = `Aktueller Filter: ${cinemaCount.toString()} Kino${cinemaPluralSuffix}, ${movieCount.toString()} Film${moviePluralSuffix}, ${showTimeDubTypeStringList}`;
   }
 
   private buildButtonEvents() {
@@ -153,7 +153,7 @@ export default class FilterModal extends HTMLElement {
         this.onFilterChanged(
           this.SelectedCinemas,
           this.SelectedMovies,
-          this.SelectedShowTimeTypes,
+          this.SelectedShowDubTimeTypes,
         );
         this.updateFilterInfo();
       }
@@ -192,27 +192,27 @@ export default class FilterModal extends HTMLElement {
     return cinemaButtons;
   }
 
-  private generateShowTimeTypeButtons() {
-    const showTimeTypeButtons: CheckableButtonElement[] = [];
-    const showTimeTypes: ShowTimeType[] = [
-      ShowTimeType.Regular,
-      ShowTimeType.Subtitled,
-      ShowTimeType.OriginalVersion,
+  private generateShowTimeDubTypeButtons() {
+    const showTimeDubTypeButtons: CheckableButtonElement[] = [];
+    const showTimeDubTypes: ShowTimeDubType[] = [
+      ShowTimeDubType.Regular,
+      ShowTimeDubType.Subtitled,
+      ShowTimeDubType.OriginalVersion,
     ];
 
-    showTimeTypes.forEach((showTimeType) => {
-      const showTimeTypeButton = CheckableButtonElement.BuildElement(
-        getShowTimeTypeLabelString(showTimeType),
-        showTimeType.valueOf().toString(),
+    showTimeDubTypes.forEach((showTimeDubType) => {
+      const showTimeDubTypeButton = CheckableButtonElement.BuildElement(
+        getShowTimeDubTypeLabelString(showTimeDubType),
+        showTimeDubType.valueOf().toString(),
       );
-      showTimeTypeButton.slot = "type-selection";
-      showTimeTypeButton.addEventListener(
+      showTimeDubTypeButton.slot = "type-selection";
+      showTimeDubTypeButton.addEventListener(
         "click",
-        this.handleShowTimeTypeSelected.bind(this),
+        this.handleShowTimeDubTypeSelected.bind(this),
       );
-      showTimeTypeButtons.push(showTimeTypeButton);
+      showTimeDubTypeButtons.push(showTimeDubTypeButton);
     });
-    return showTimeTypeButtons;
+    return showTimeDubTypeButtons;
   }
 
   private generateCinemaLegend() {

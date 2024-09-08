@@ -66,14 +66,14 @@ namespace kinohannover.Scrapers
 
                 var eventId = movieNode.GetAttributeValue("id", "").Split('#')[1];
                 var performanceUri = new Uri(_shopUrlBase + eventId);
-                var (type, language) = GetShowTimeTypeLanguage(movieNode);
+                var (type, language) = GetShowTimeDubTypeLanguage(movieNode);
                 foreach (var showDateTime in GetShowDateTimes(movieNode))
                 {
                     var showTime = new ShowTime()
                     {
                         Movie = movie,
                         StartTime = showDateTime,
-                        Type = type,
+                        DubType = type,
                         Language = language,
                         Url = performanceUri,
                         Cinema = _cinema,
@@ -135,14 +135,14 @@ namespace kinohannover.Scrapers
             return DateOnly.ParseExact(dateString, "dd.MM", CultureInfo.CurrentCulture);
         }
 
-        private static (ShowTimeType, ShowTimeLanguage) GetShowTimeTypeLanguage(HtmlNode eventDetailElement)
+        private static (ShowTimeDubType, ShowTimeLanguage) GetShowTimeDubTypeLanguage(HtmlNode eventDetailElement)
         {
             var eventDetails = eventDetailElement.SelectSingleNode(_eventDetailsNodeSelector);
             var spans = eventDetails.SelectNodes(_spanNodeSelector);
 
             var type = GetType(spans);
 
-            if (type != ShowTimeType.Regular)
+            if (type != ShowTimeDubType.Regular)
             {
                 var language = GetLanguage(spans);
                 return (type, language);
@@ -165,16 +165,16 @@ namespace kinohannover.Scrapers
             return TimeSpan.FromMinutes(runtimeInt);
         }
 
-        private static ShowTimeType GetType(HtmlNodeCollection spans)
+        private static ShowTimeDubType GetType(HtmlNodeCollection spans)
         {
             // Sprache here indicates the type, but if it's Deutsch, it's a German movie with German audio
             var spracheSpan = spans.FirstOrDefault(s => s.InnerText.Contains("Sprache:"));
             if (spracheSpan?.InnerText.Contains("Deutsch") == true)
             {
-                return ShowTimeType.Regular;
+                return ShowTimeDubType.Regular;
             }
 
-            return ShowTimeHelper.GetType(spracheSpan?.InnerText ?? "");
+            return ShowTimeHelper.GetDubType(spracheSpan?.InnerText ?? "");
         }
 
         private static ShowTimeLanguage GetLanguage(HtmlNodeCollection spans)

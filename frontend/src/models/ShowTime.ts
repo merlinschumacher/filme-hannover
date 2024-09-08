@@ -1,7 +1,7 @@
 import { Entity } from "dexie";
 import CinemaDb from "../services/CinemaDb";
 import { ShowTimeLanguage } from "./ShowTimeLanguage";
-import { ShowTimeType } from "./ShowTimeType";
+import { ShowTimeDubType } from "./ShowTimeDubType";
 
 export default class ShowTime extends Entity<CinemaDb> {
   constructor(
@@ -13,7 +13,7 @@ export default class ShowTime extends Entity<CinemaDb> {
     cinema: number,
     url: URL,
     language: ShowTimeLanguage,
-    type: ShowTimeType,
+    dubType: ShowTimeDubType,
   ) {
     super();
     this.id = id;
@@ -24,7 +24,7 @@ export default class ShowTime extends Entity<CinemaDb> {
     this.cinema = cinema;
     this.url = url;
     this.language = language;
-    this.type = type;
+    this.dubType = dubType;
   }
 
   id!: number;
@@ -35,5 +35,5 @@ export default class ShowTime extends Entity<CinemaDb> {
   cinema!: number;
   url!: URL;
   language!: ShowTimeLanguage;
-  type!: ShowTimeType;
+  dubType!: ShowTimeDubType;
 }

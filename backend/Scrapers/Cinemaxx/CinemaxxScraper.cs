@@ -76,14 +76,14 @@ namespace backend.Scrapers.Cinemaxx
             if (!DateTime.TryParse(schedule.Time, CultureInfo.CurrentCulture, out var time))
                 return;
             var language = GetShowTimeLanguage(schedule.VersionTitle);
-            var type = GetShowTimeType(schedule.VersionTitle);
+            var type = GetShowTimeDubType(schedule.VersionTitle);
             var performanceUri = new Uri(_cinema.Url, schedule.BookingLink);
 
             var showTime = new ShowTime()
             {
                 Cinema = _cinema,
                 StartTime = time,
-                Type = type,
+                DubType = type,
                 Language = language,
                 Url = performanceUri,
                 Movie = movie,
@@ -103,15 +103,15 @@ namespace backend.Scrapers.Cinemaxx
             return ShowTimeHelper.GetLanguage(languageString);
         }
 
-        private static ShowTimeType GetShowTimeType(string versionTitle)
+        private static ShowTimeDubType GetShowTimeDubType(string versionTitle)
         {
             var versionTitleSplit = versionTitle.Split(",");
             if (versionTitleSplit.Length < 3)
             {
-                return ShowTimeType.Regular;
+                return ShowTimeDubType.Regular;
             }
             var typeString = versionTitleSplit[2].Trim();
-            return ShowTimeHelper.GetType(typeString);
+            return ShowTimeHelper.GetDubType(typeString);
         }
 
         private async Task<(Movie, string?)> ProcessMovieAsync(WhatsOnAlphabeticFilm film)
