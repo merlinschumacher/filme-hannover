@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 
 namespace backend.Scrapers.AstorScraper
 {
-    public class AstorScraper : IScraper
+    public partial class AstorScraper : IScraper
     {
         private readonly Cinema _cinema = new()
         {
@@ -106,7 +106,7 @@ namespace backend.Scrapers.AstorScraper
         private async Task ProcessShowTimeAsync(Movie movie, Performance performance)
         {
             var type = GetShowTimeType(performance);
-            var language = ShowTimeHelper.GetLanguage(performance.language);
+            var language = GetShowTimeLanguage(performance.language);
 
             var performanceUrl = new Uri(_showTimeBaseUrl + $"{performance.slug}/0/0/{performance.crypt_id}");
 
@@ -121,6 +121,20 @@ namespace backend.Scrapers.AstorScraper
             };
 
             await _showTimeService.CreateAsync(showTime);
+        }
+
+        private static ShowTimeLanguage GetShowTimeLanguage(string language)
+        {
+            var languageString = language.Split(',')
+                .FirstOrDefault(e => e.Contains("Sprache:", StringComparison.CurrentCultureIgnoreCase), "");
+            var spracheRegex = SpracheRegex();
+            var spracheMatch = spracheRegex.Match(languageString);
+            if (spracheMatch.Success)
+            {
+                var sprache = spracheMatch.Groups[1].Value;
+                return ShowTimeHelper.GetLanguage(sprache);
+            }
+            return ShowTimeLanguage.Unknown;
         }
 
         private static ShowTimeType GetShowTimeType(Performance performance)
@@ -164,5 +178,8 @@ namespace backend.Scrapers.AstorScraper
                 return astorMovies;
             }
         }
+
+        [GeneratedRegex(@"Sprache:\s*(.*)\s*", RegexOptions.IgnoreCase, "de-DE")]
+        private static partial Regex SpracheRegex();
     }
 }

@@ -13,31 +13,13 @@
 
         public string GetShowTimeSuffix()
         {
-            var typeString = Type switch
+            if (Type == ShowTimeType.Regular && Language == ShowTimeLanguage.German)
             {
-                ShowTimeType.OriginalVersion => "OV",
-                ShowTimeType.Subtitled => "OmU",
-                _ => null
-            };
-            if (typeString == null)
-            {
-                return string.Empty;
+                return "";
             }
 
-            var languageString = Language switch
-            {
-                ShowTimeLanguage.German => "Deutsch",
-                ShowTimeLanguage.English => "Englisch",
-                ShowTimeLanguage.French => "Französisch",
-                ShowTimeLanguage.Spanish => "Spanisch",
-                ShowTimeLanguage.Italian => "Italienisch",
-                ShowTimeLanguage.Georgian => "Georgisch",
-                ShowTimeLanguage.Russian => "Russisch",
-                ShowTimeLanguage.Turkish => "Türkisch",
-                ShowTimeLanguage.Miscellaneous => "Verschiedene",
-                ShowTimeLanguage.Other => "Sonstige",
-                _ => "Sonstige"
-            };
+            var typeString = ShowTimeHelper.GetTypeName(Type);
+            var languageString = ShowTimeHelper.GetLanguageName(Language);
 
             return $"({typeString}/{languageString})";
         }

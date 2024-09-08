@@ -11,7 +11,7 @@ namespace backend.Services
         private async Task ExecuteScrapers(CancellationToken cancellationToken)
         {
             using var scope = serviceScopeFactory.CreateScope();
-            var scrapers = scope.ServiceProvider.GetServices<IScraper>().OrderByDescending(e => e.ReliableMetadata);
+            var scrapers = scope.ServiceProvider.GetServices<IScraper>().OrderByDescending(e => e.ReliableMetadata).ThenBy(e => e.GetType().Name);
             // Build a retry policy that retries 3 times with an exponential backoff
             var retryPolicy = Policy.Handle<Exception>().WaitAndRetryAsync(
                 3,

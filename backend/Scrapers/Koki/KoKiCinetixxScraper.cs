@@ -45,7 +45,7 @@ namespace kinohannover.Scrapers
             _movieService = movieService;
         }
 
-        public bool ReliableMetadata => false;
+        public bool ReliableMetadata => true;
 
         public async Task ScrapeAsync()
         {
@@ -169,12 +169,12 @@ namespace kinohannover.Scrapers
         {
             // Sprache here indicates the type, but if it's Deutsch, it's a German movie with German audio
             var spracheSpan = spans.FirstOrDefault(s => s.InnerText.Contains("Sprache:"));
-            if (spracheSpan?.InnerText.Contains("Deutsch") != false)
+            if (spracheSpan?.InnerText.Contains("Deutsch") == true)
             {
                 return ShowTimeType.Regular;
             }
 
-            return ShowTimeHelper.GetType(spracheSpan.InnerText);
+            return ShowTimeHelper.GetType(spracheSpan?.InnerText ?? "");
         }
 
         private static ShowTimeLanguage GetLanguage(HtmlNodeCollection spans)

@@ -40,7 +40,7 @@ namespace backend.Services
                 }
                 catch (Exception e)
                 {
-                    logger.LogError(e, "An error occurred while scraping.");
+                    logger.LogError(e, "An error occurred while rendering.");
                     Environment.ExitCode = (int)Constants.ExitCodes.ScrapingError;
                 }
             }

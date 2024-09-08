@@ -97,13 +97,13 @@ namespace backend.Scrapers.Cinestar
 
         private static ShowTimeType GetShowTimeType(List<string> attributes)
         {
-            if (attributes.Contains("OV", StringComparer.CurrentCultureIgnoreCase))
-            {
-                return ShowTimeType.OriginalVersion;
-            }
-            else if (attributes.Contains("OmU", StringComparer.CurrentCultureIgnoreCase))
+            if (attributes.Contains("OmU", StringComparer.CurrentCultureIgnoreCase))
             {
                 return ShowTimeType.Subtitled;
+            }
+            else if (attributes.Contains("OV", StringComparer.CurrentCultureIgnoreCase))
+            {
+                return ShowTimeType.OriginalVersion;
             }
 
             return ShowTimeType.Regular;
