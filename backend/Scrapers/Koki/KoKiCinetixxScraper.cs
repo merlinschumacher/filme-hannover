@@ -1,30 +1,17 @@
 using backend.Helpers;
 using backend.Models;
-using backend.Scrapers;
 using backend.Services;
 using HtmlAgilityPack;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Web;
 
-namespace kinohannover.Scrapers
+namespace backend.Scrapers.Koki
 {
-    public partial class KoKiCinetixxScraper : IScraper
+    public partial class KoKiCinetixxScraper(MovieService movieService, ShowTimeService showTimeService, CinemaService cinemaService, Cinema cinema)
     {
-        private readonly Cinema _cinema = new()
-        {
-            DisplayName = "Kino im Künstlerhaus",
-            Url = new("https://www.koki-hannover.de"),
-            ShopUrl = new("https://booking.cinetixx.de/Program?cinemaId=2995877579"),
-            Color = "#2c2e35",
-            HasShop = true,
-        };
-
         private readonly Uri _dataUrl = new("https://booking.cinetixx.de/Program?cinemaId=2995877579");
         private readonly Uri _shopUrlBase = new("https://booking.cinetixx.de/frontend/#/movie/2995877579/");
-        private readonly CinemaService _cinemaService;
-        private readonly ShowTimeService _showTimeService;
-        private readonly MovieService _movieService;
         private const string _cinetixxId = "2995877579";
         private const string _movieNodeSelector = $"//div[contains(@id, '{_cinetixxId}#')]";
         private const string _eventTitleNodeSelector = ".//h3";
@@ -36,16 +23,6 @@ namespace kinohannover.Scrapers
         private const string _eventTimeRowNodeSelector = ".//tr[td[contains(@class, 'date-picker-shows')]]";
         private const string _eventTimeNodeSelector = ".//td[contains(@class, 'date-picker-shows')]";
         private const string _spanNodeSelector = ".//span";
-
-        public KoKiCinetixxScraper(MovieService movieService, ShowTimeService showTimeService, CinemaService cinemaService)
-        {
-            _cinemaService = cinemaService;
-            _cinema = _cinemaService.Create(_cinema);
-            _showTimeService = showTimeService;
-            _movieService = movieService;
-        }
-
-        public bool ReliableMetadata => true;
 
         public async Task ScrapeAsync()
         {
@@ -76,9 +53,9 @@ namespace kinohannover.Scrapers
                         DubType = type,
                         Language = language,
                         Url = performanceUri,
-                        Cinema = _cinema,
+                        Cinema = cinema,
                     };
-                    await _showTimeService.CreateAsync(showTime);
+                    await showTimeService.CreateAsync(showTime);
                 }
             }
         }
@@ -98,8 +75,8 @@ namespace kinohannover.Scrapers
                 Runtime = runtime,
             };
 
-            movie = await _movieService.CreateAsync(movie);
-            await _cinemaService.AddMovieToCinemaAsync(movie, _cinema);
+            movie = await movieService.CreateAsync(movie);
+            await cinemaService.AddMovieToCinemaAsync(movie, cinema);
 
             return movie;
         }

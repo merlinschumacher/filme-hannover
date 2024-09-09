@@ -11,10 +11,11 @@ namespace backend.Scrapers.Cinestar
     {
         private readonly Cinema _cinema = new()
         {
-            DisplayName = "Cinestar (Garbsen)",
+            DisplayName = "CineStar (Garbsen)",
             Url = new("https://www.cinestar.de/kino-garbsen"),
             ShopUrl = new("https://www.cinestar.de/kino-garbsen"),
-            Color = "#ffd618",
+            Color = "#f58231",
+            IconClass = "star",
             ReliableMetadata = true,
             HasShop = true,
         };

@@ -1,24 +1,13 @@
 ﻿using backend.Helpers;
 using backend.Models;
-using backend.Scrapers;
 using backend.Services;
 using HtmlAgilityPack;
-using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
 
-namespace kinohannover.Scrapers
+namespace backend.Scrapers.Koki
 {
-    public partial class KoKiHannoverDeScraper : IScraper
+    public partial class KoKiHannoverDeScraper(MovieService movieService, ShowTimeService showTimeService, CinemaService cinemaService, Cinema cinema)
     {
-        private readonly Cinema _cinema = new()
-        {
-            DisplayName = "Kino im Künstlerhaus",
-            Url = new("https://www.hannover.de/Kommunales-Kino/"),
-            ShopUrl = new("https://www.hannover.de/Kommunales-Kino/"),
-            Color = "#2c2e35",
-            HasShop = false,
-        };
-
         private const string _eventDetailElementsSelector = ".//span[contains(@class, 'react-ical')]";
 
         private const string _eventElementSelector = "//div[contains(@class, 'interesting-single__content')]";
@@ -40,28 +29,12 @@ namespace kinohannover.Scrapers
 
         private readonly Regex _titleRegex = TitleRegex();
         private readonly Regex _viewIdRegex = ViewIdRegex();
-        private readonly MovieService _movieService;
-        private readonly CinemaService _cinemaService;
-        private readonly ShowTimeService _showTimeService;
-        private readonly ILogger<KoKiHannoverDeScraper> _logger;
-
-        public KoKiHannoverDeScraper(ILogger<KoKiHannoverDeScraper> logger, MovieService movieService, ShowTimeService showTimeService, CinemaService cinemaService)
-        {
-            _cinemaService = cinemaService;
-            _cinema = _cinemaService.Create(_cinema);
-            _movieService = movieService;
-            _showTimeService = showTimeService;
-            _logger = logger;
-        }
-
-        public bool ReliableMetadata => false;
 
         public async Task ScrapeAsync()
         {
             var eventHtml = await GetEventElementsAsync();
             if (eventHtml is null)
             {
-                _logger.LogWarning("Failed to get event elements.");
                 return;
             }
             var eventElements = eventHtml.DocumentNode.SelectNodes(_eventElementSelector);
@@ -95,7 +68,7 @@ namespace kinohannover.Scrapers
 
             if (string.IsNullOrWhiteSpace(readMoreHref))
             {
-                showTimeUrl = _cinema.Url;
+                showTimeUrl = cinema.Url;
             }
 
             var showTime = new ShowTime()
@@ -105,9 +78,9 @@ namespace kinohannover.Scrapers
                 DubType = dubType,
                 Language = language,
                 Url = showTimeUrl,
-                Cinema = _cinema,
+                Cinema = cinema,
             };
-            await _showTimeService.CreateAsync(showTime);
+            await showTimeService.CreateAsync(showTime);
         }
 
         private async Task<Movie> ProcessMovie(EventDetailJson eventJson)
@@ -118,8 +91,8 @@ namespace kinohannover.Scrapers
                 DisplayName = movieTitle,
                 Runtime = eventJson.EndDate - eventJson.StartDate,
             };
-            movie = await _movieService.CreateAsync(movie);
-            await _cinemaService.AddMovieToCinemaAsync(movie, _cinema);
+            movie = await movieService.CreateAsync(movie);
+            await cinemaService.AddMovieToCinemaAsync(movie, cinema);
             return movie;
         }
 

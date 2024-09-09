@@ -220,8 +220,9 @@ export default class FilterModal extends HTMLElement {
     this.SelectedCinemas.forEach((cinema) => {
       const cinemaLegendItem = new EventItem();
       cinemaLegendItem.setAttribute("color", cinema.color);
+      cinemaLegendItem.setAttribute("icon", cinema.iconClass);
       cinemaLegendItem.setAttribute("title", cinema.displayName);
-      cinemaLegendItem.setAttribute("href", "");
+      cinemaLegendItem.setAttribute("href", cinema.url);
       cinemaLegendItem.slot = "cinema-legend";
       elements.push(cinemaLegendItem);
     });

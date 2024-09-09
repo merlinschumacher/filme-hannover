@@ -13,6 +13,7 @@ export class EventData {
     this.runtime = movie.runtime;
     this.cinema = cinema.displayName;
     this.color = cinema.color;
+    this.iconClass = cinema.iconClass;
     this.url = showTime.url;
     this.language = showTime.language;
     this.dubType = showTime.dubType;
@@ -25,6 +26,7 @@ export class EventData {
   runtime: number;
   cinema: string;
   color: string;
+  iconClass: string;
   url: URL;
   language: ShowTimeLanguage;
   dubType: ShowTimeDubType;

@@ -15,6 +15,8 @@ namespace backend.Renderer.JsonRenderer
 
         public required string Color { get; init; }
 
+        public required string IconClass { get; init; }
+
         public IEnumerable<int> Movies { get; init; } = [];
     }
     public record MovieDto
@@ -61,6 +63,7 @@ namespace backend.Renderer.JsonRenderer
                     Url = c.Url,
                     ShopUrl = c.ShopUrl,
                     Color = c.Color,
+                    IconClass = c.IconClass,
                     Movies = c.Movies.Select(m => m.Id)
                 }),
                 Movies = context.Movies.OrderBy(e => e.DisplayName).Select(m => new MovieDto

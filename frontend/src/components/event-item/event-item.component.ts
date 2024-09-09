@@ -1,23 +1,33 @@
 import html from "./event-item.component.html?raw";
 import css from "./event-item.component.css?inline";
+import cssicons from "./event-item.component.icons.css?inline";
 import { EventData } from "../../models/EventData";
 import { getShowTimeDubTypeAttributeString as getShowTimeDubTypeAttributeString } from "../../models/ShowTimeDubType";
 import { getShowTimeLanguageString } from "../../models/ShowTimeLanguage";
 
 const style = new CSSStyleSheet();
 style.replaceSync(css);
+const iconStyle = new CSSStyleSheet();
+iconStyle.replaceSync(cssicons);
 const template = document.createElement("template");
 template.innerHTML = html;
 
 export default class EventItem extends HTMLElement {
-  static observedAttributes = ["href", "color", "time", "title", "suffix"];
+  static observedAttributes = [
+    "href",
+    "color",
+    "icon",
+    "time",
+    "title",
+    "suffix",
+  ];
 
   private shadow: ShadowRoot;
 
   constructor() {
     super();
     this.shadow = this.attachShadow({ mode: "open" });
-    this.shadow.adoptedStyleSheets = [style];
+    this.shadow.adoptedStyleSheets = [style, iconStyle];
     this.shadow.appendChild(template.content.cloneNode(true));
   }
 
@@ -46,10 +56,16 @@ export default class EventItem extends HTMLElement {
         break;
       case "color":
         this.shadow.updateElement(
-          ".dot",
+          ".icon",
           (el) => (el.style.backgroundColor = newValue),
         );
         break;
+      case "icon": {
+        this.shadow.updateElement(".icon", (el) => {
+          el.classList.add("cinema-icon-" + newValue);
+        });
+        break;
+      }
       case "time": {
         const date = new Date(newValue);
         const dateString = date.toLocaleTimeString([], { timeStyle: "short" });
@@ -86,6 +102,7 @@ export default class EventItem extends HTMLElement {
     const item = new EventItem();
     item.setAttribute("href", event.url.toString());
     item.setAttribute("color", event.color);
+    item.setAttribute("icon", event.iconClass);
     item.setAttribute("time", event.startTime.toISOString());
     item.setAttribute("title", event.title);
     const typeString = getShowTimeDubTypeAttributeString(event.dubType);

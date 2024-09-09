@@ -11,10 +11,11 @@ namespace backend.Scrapers.Cinemaxx
     {
         private readonly Cinema _cinema = new()
         {
-            DisplayName = "Cinemaxx",
+            DisplayName = "CinemaxX",
             Url = new("https://www.cinemaxx.de/"),
             ShopUrl = new("https://www.cinemaxx.de/kinoprogramm/hannover/"),
-            Color = "#ca01ca",
+            Color = "#f032e6",
+            IconClass = "triangle-up",
             HasShop = true,
         };
 

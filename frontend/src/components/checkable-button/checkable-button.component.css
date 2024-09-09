@@ -20,12 +20,12 @@
   overflow: hidden;
 }
 
-.checkable-button-input + label:hover {
-  background-color: var(--light-accent);
-}
-
 .checkable-button-input:checked + label {
   background-color: var(--background-mediumblue);
+}
+
+.checkable-button-input + label:hover {
+  background-color: var(--light-accent);
 }
 
 .border {
@@ -39,7 +39,7 @@
   margin-left: 1.3em;
 }
 
-.text {
+.label {
   margin-left: 0.5em;
   margin-right: 1em;
 }

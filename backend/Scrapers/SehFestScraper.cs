@@ -5,7 +5,7 @@ namespace backend.Scrapers
 {
     public class SehFestScraper : CsvScraper, IScraper
     {
-        public bool ReliableMetadata => false;
+        public bool ReliableMetadata => true;
 
         private readonly Uri _uri = new("https://www.seh-fest.de/");
 
@@ -18,7 +18,8 @@ namespace backend.Scrapers
                 HasShop = false,
                 Url = _uri,
                 ShopUrl = _uri,
-                Color = "#003eaa",
+                Color = "#3cb44b",
+                IconClass = "cross",
             };
         }
     }

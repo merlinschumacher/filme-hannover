@@ -1,5 +1,4 @@
 ﻿using backend.Models;
-using backend.Scrapers;
 using backend.Services;
 using kinohannover.Scrapers.FilmkunstKinos;
 
@@ -12,7 +11,8 @@ namespace backend.Scrapers.FilmkunstKinos
             DisplayName = "Hochhaus Lichtspiele",
             Url = new("https://www.hochhaus-lichtspiele.de/pages/programm.php"),
             ShopUrl = new("https://kinotickets.express/hannover-hls/movies"),
-            Color = "#bfa602",
+            Color = "#3cb44b",
+            IconClass = "frame",
             HasShop = true,
         };
 

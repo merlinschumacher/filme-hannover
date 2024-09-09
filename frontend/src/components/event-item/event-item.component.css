@@ -27,10 +27,10 @@
   font-variant-numeric: tabular-nums;
 }
 
-.dot {
+.icon {
   flex: 0 0 auto;
-  border-radius: 50%;
+  aspect-ratio: 1;
   margin-top: 0.4em;
-  height: 0.666em;
-  width: 0.666em;
+  height: 0.8em;
+  width: 0.8em;
 }

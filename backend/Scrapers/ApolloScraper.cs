@@ -12,15 +12,16 @@ namespace kinohannover.Scrapers.FilmkunstKinos
     {
         private readonly Cinema _cinema = new()
         {
-            DisplayName = "Apollo Kino",
+            DisplayName = "Apollokino",
             Url = new("https://www.apollokino.de/"),
             ShopUrl = new("https://www.apollokino.de/?v=&mp=Tickets"),
-            Color = "#0000ff",
+            Color = "#000075",
+            IconClass = "square",
         };
 
         public bool ReliableMetadata => false;
         private readonly Uri _dataUri = new("https://www.apollokino.de/?v=&mp=Vorschau");
-        private readonly List<string> _showsToIgnore = ["00010032", "spezialclub.de"];
+        private readonly List<string> _showsToIgnore = ["00010032", "spezialclub.de", "01000450"];
         private readonly List<string> _specialEventTitles = ["MonGay-Filmnacht", "WoMonGay"];
         private readonly ShowTimeService _showTimeService;
         private readonly MovieService _movieService;

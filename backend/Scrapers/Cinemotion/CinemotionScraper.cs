@@ -11,10 +11,11 @@ namespace backend.Scrapers.Cinemotion
 
         private readonly Cinema _cinema = new()
         {
-            DisplayName = "Cinemotion (Langenhagen)",
+            DisplayName = "CineMotion (Langenhagen)",
             Url = new("https://langenhagen.cinemotion-kino.de/"),
             ShopUrl = new("https://langenhagen.cinemotion-kino.de/programmuebersicht/"),
-            Color = "#c40000",
+            Color = "#f5db31",
+            IconClass = "circle",
             HasShop = true,
         };
 

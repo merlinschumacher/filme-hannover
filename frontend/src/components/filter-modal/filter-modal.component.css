@@ -23,6 +23,7 @@
 }
 
 button {
+  height: fit-content;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -73,6 +74,10 @@ button#apply-filter {
   width: 100%;
 }
 
+button#open-filter:hover {
+  background-color: var(--light-accent);
+}
+
 button#apply-filter:hover {
   background-color: var(--background-lightgreen);
 }
@@ -113,6 +118,5 @@ button#close-filter:hover {
 }
 
 #filter-dialog {
-  width: calc(100% - 2px - 5em);
-  max-width: 640px;
+  width: clamp(320px, calc(100% - 3em - 2px), 660px);
 }

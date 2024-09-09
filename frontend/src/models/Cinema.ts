@@ -7,4 +7,5 @@ export default class Cinema extends Entity<CinemaDb> {
   url!: string;
   shopUrl!: string;
   color!: string;
+  iconClass!: string;
 }

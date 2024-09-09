@@ -15,7 +15,8 @@ namespace backend.Scrapers.AstorScraper
             DisplayName = "Astor Grand Cinema",
             Url = new("https://hannover.premiumkino.de/"),
             ShopUrl = new("https://hannover.premiumkino.de/programmwoche"),
-            Color = "#ceb07a",
+            Color = "#9A6324",
+            IconClass = "rhombus",
             ReliableMetadata = true,
             HasShop = true,
         };
@@ -95,6 +96,7 @@ namespace backend.Scrapers.AstorScraper
             var movie = new Movie()
             {
                 DisplayName = title,
+                Runtime = TimeSpan.FromMinutes(astorMovie.minutes),
             };
 
             movie.SetReleaseDateFromYear(releaseYear);

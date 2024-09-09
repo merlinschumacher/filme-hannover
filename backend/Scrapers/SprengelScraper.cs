@@ -15,7 +15,8 @@ namespace backend.Scrapers
             DisplayName = "Kino im Sprengel",
             Url = new("https://www.kino-im-sprengel.de/"),
             ShopUrl = new("https://www.kino-im-sprengel.de/kontakt.php"),
-            Color = "#ADD8E6",
+            Color = "#42d4f4",
+            IconClass = "plus",
         };
 
         public bool ReliableMetadata => false;

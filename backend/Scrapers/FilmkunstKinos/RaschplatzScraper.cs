@@ -11,7 +11,8 @@ namespace backend.Scrapers.FilmkunstKinos
             DisplayName = "Kino am Raschplatz",
             Url = new("https://www.kinoamraschplatz.de/de/programm.php"),
             ShopUrl = new("https://kinotickets.express/kinoamraschplatz/movies"),
-            Color = "#7e0f23",
+            Color = "#800000",
+            IconClass = "triangle-down",
             HasShop = true,
         };
 

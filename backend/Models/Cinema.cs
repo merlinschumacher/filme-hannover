@@ -14,6 +14,8 @@
 
         required public string Color { get; set; }
 
+        required public string IconClass { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether the showtime entries should link to the shop
         /// </summary>
