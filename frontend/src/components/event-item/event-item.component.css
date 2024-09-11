@@ -3,7 +3,8 @@
   display: flex;
   gap: 0.333em;
   font-size: 1em;
-  margin-bottom: 0.1em;
+  padding-top: 0.2em;
+  padding-bottom: 0.2em;
 }
 
 .link {

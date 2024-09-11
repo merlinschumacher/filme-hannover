@@ -3,9 +3,9 @@ div {
   border-right: none;
   padding: 1em;
   width: 5%;
-  height: calc(100% - 2em - 2px);
+  height: calc(100% - 2em - 1px);
   background: var(--light-accent);
-  background-image: radial-gradient(black 1px, var(--light-accent) 0);
-  background-size: 10px 10px;
-  background-position: -2px 0px;
+  background-image: radial-gradient(#000000 1px, #ffffff 0);
+  background-size: 9px 11px;
+  background-position: -1px 0px;
 }
