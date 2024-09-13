@@ -1,14 +1,12 @@
 ﻿using backend.Helpers;
 using backend.Models;
 using backend.Services;
-using Ical.Net;
 using Ical.Net.CalendarComponents;
-using Microsoft.Extensions.Logging;
 using System.Text;
 
 namespace backend.Scrapers
 {
-    public class SprengelScraper : IScraper
+    public class SprengelScraper : IcalScraper, IScraper
     {
         private readonly Cinema _cinema = new()
         {
@@ -22,16 +20,14 @@ namespace backend.Scrapers
         public bool ReliableMetadata => false;
         private readonly Uri _dataUrl = new("https://www.kino-im-sprengel.de/eventLoader.php");
         private readonly Uri _baseUri = new("https://www.kino-im-sprengel.de/");
-        private readonly ILogger<SprengelScraper> _logger;
         private readonly CinemaService _cinemaService;
         private readonly ShowTimeService _showTimeService;
         private readonly MovieService _movieService;
         private const string _icalLinkSelector = "//a[contains(@href, 'merke')]";
         private const string _postData = "t%5Badvice%5D=daterange&t%5Brange%5D=currentmonth";
 
-        public SprengelScraper(ILogger<SprengelScraper> logger, MovieService movieService, CinemaService cinemaService, ShowTimeService showTimeService)
+        public SprengelScraper(MovieService movieService, CinemaService cinemaService, ShowTimeService showTimeService)
         {
-            _logger = logger;
             _cinemaService = cinemaService;
             _cinema = _cinemaService.Create(_cinema);
             _showTimeService = showTimeService;
@@ -43,56 +39,29 @@ namespace backend.Scrapers
             var icalUris = await GetICalUrisAsync();
             foreach (var icalUri in icalUris)
             {
-                var calendar = await GetCalendarAsync(icalUri);
+                var calendar = await HttpHelper.GetCalendarAsync(icalUri);
                 if (calendar is null) continue;
 
                 foreach (var calendarEvent in calendar.Events)
                 {
-                    var showDateTime = calendarEvent.Start.AsSystemLocal;
                     var movie = await ProcessMovieAsync(calendarEvent);
-
-                    await ProcessShowTimeAsync(showDateTime, movie);
+                    await ProcessShowTimeAsync(calendarEvent, movie);
                 }
             }
         }
 
-        private async Task ProcessShowTimeAsync(DateTime showDateTime, Movie movie)
+        private async Task ProcessShowTimeAsync(CalendarEvent calendarEvent, Movie movie)
         {
-            var showTime = new ShowTime()
-            {
-                Movie = movie,
-                StartTime = showDateTime,
-                Url = movie.Url,
-                Cinema = _cinema,
-            };
-
+            var showTime = GetShowTimeFromCalendarEvent(calendarEvent, movie, _cinema);
             await _showTimeService.CreateAsync(showTime);
         }
 
         private async Task<Movie> ProcessMovieAsync(CalendarEvent calendarEvent)
         {
-            var movie = new Movie()
-            {
-                DisplayName = calendarEvent.Summary,
-                Url = calendarEvent.Url
-            };
+            var movie = GetMovieFromCalendarEvent(calendarEvent);
             movie = await _movieService.CreateAsync(movie);
             await _cinemaService.AddMovieToCinemaAsync(movie, _cinema);
             return movie;
-        }
-
-        private async Task<Calendar?> GetCalendarAsync(Uri icalUri)
-        {
-            try
-            {
-                var icalText = await HttpHelper.GetHttpContentAsync(icalUri);
-                return Calendar.Load(icalText);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "Failed to load iCal from {Uri}", icalUri);
-            }
-            return null;
         }
 
         private async Task<IEnumerable<Uri>> GetICalUrisAsync()

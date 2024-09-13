@@ -1,4 +1,5 @@
 ﻿using HtmlAgilityPack;
+using Ical.Net;
 using Newtonsoft.Json;
 
 namespace backend.Helpers
@@ -38,6 +39,19 @@ namespace backend.Helpers
             }
 
             return JsonConvert.DeserializeObject<T>(jsonString);
+        }
+
+        public static async Task<Calendar?> GetCalendarAsync(Uri icalUri)
+        {
+            try
+            {
+                var icalText = await GetHttpContentAsync(icalUri);
+                return Calendar.Load(icalText);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
     }
 }
