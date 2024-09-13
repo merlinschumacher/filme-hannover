@@ -1,28 +1,34 @@
 ﻿using backend.Models;
 using backend.Services;
 using CsvHelper;
+using CsvHelper.Configuration.Attributes;
 using Microsoft.Extensions.Logging;
 using System.Globalization;
 
 namespace backend.Scrapers
 {
     /// <summary>
+    /// Entry in a CSV file
+    /// </summary>
+    public sealed class CsvEntry
+    {
+        public required DateTime Time { get; init; }
+        public required string Title { get; init; }
+
+        [Optional]
+        public string? Url { get; set; }
+    }
+
+    /// <summary>
     /// A scraper that reads showtimes from a CSV file
     /// </summary>
     public abstract class CsvScraper(
         string fileName,
-        ILogger<CsvScraper> logger,
+        ILogger logger,
         MovieService movieService,
         ShowTimeService showTimeService,
         CinemaService cinemaService)
     {
-        /// <summary>
-        /// Entry in a CSV file
-        /// </summary>
-        /// <param name="Time">The time of the show</param>
-        /// <param name="Title">The title of the show</param>
-        private sealed record CsvEntry(DateTime Time, string Title);
-
         /// <summary>
         /// The cinema this scraper is for
         /// </summary>
@@ -42,7 +48,7 @@ namespace backend.Scrapers
             using StreamReader reader = new(fileName);
             using CsvReader csv = new(reader, CultureInfo.InvariantCulture);
 
-            var records = csv.GetRecords<CsvEntry>();
+            var records = csv.GetRecords<CsvEntry>().ToList();
             if (!records.Any())
             {
                 logger.LogError("Failed to read records from {FileName}", fileName);
@@ -61,11 +67,17 @@ namespace backend.Scrapers
                 movie = await movieService.CreateAsync(movie);
                 await cinemaService.AddMovieToCinemaAsync(movie, _cinema);
 
+                var url = _cinema.Url;
+                if (record.Url is not null)
+                {
+                    url = new Uri(record.Url);
+                }
+
                 var showTime = new ShowTime()
                 {
                     Movie = movie,
                     StartTime = record.Time,
-                    Url = movie.Url,
+                    Url = url,
                     Cinema = _cinema
                 };
 
