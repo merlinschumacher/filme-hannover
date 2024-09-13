@@ -76,10 +76,10 @@ export default class DayListElement extends HTMLElement {
   static BuildElement(date: Date, events: EventData[]) {
     let eventCumulativeDuration = 0;
     const eventElements: EventItem[] = [];
-    events.forEach((element) => {
-      const eventItem = EventItem.BuildElement(element);
+    events.forEach((event) => {
+      const eventItem = EventItem.BuildElement(event);
       eventItem.slot = "body";
-      eventCumulativeDuration += +element.runtime;
+      eventCumulativeDuration += +event.runtime;
       eventElements.push(eventItem);
     });
 

@@ -8,8 +8,7 @@
   --background-lightgreen: #b9ffae;
   --background-lightred: #ffaeae;
   --light-text: #626262;
-  --font-family: "Inter", "Inter Variable", "InterVariable", "Helvetica Neue",
-    "Roboto", "Arial", sans-serif;
+  --font-family: "Inter", "Inter Variable", "InterVariable", "Helvetica Neue", "Roboto", "Arial", sans-serif;
 }
 
 /* Box sizing rules */
@@ -106,10 +105,10 @@ select {
   font-size: inherit;
 }
 
-/* Make sure textareas without a rows attribute are not tiny */
-textarea:not([rows]) {
-  min-height: 10em;
-}
+  /* Make sure textareas without a rows attribute are not tiny */
+  textarea:not([rows]) {
+    min-height: 10em;
+  }
 
 /* Anything that has been anchored to should have extra scroll margin */
 :target {
@@ -147,3 +146,15 @@ h4 {
     --slide-width: 360px;
   }
 }
+
+#tmdb {
+  height: 1em;
+  display: flex;
+  align-items: center;
+}
+
+  #tmdb img {
+    height: .75em;
+    width: auto;
+    margin-right: 0.5em;
+  }
