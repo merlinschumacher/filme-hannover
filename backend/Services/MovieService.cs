@@ -4,11 +4,12 @@ using kinohannover.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Text.RegularExpressions;
 using TMDbLib.Client;
 
 namespace backend.Services
 {
-    public class MovieService(DatabaseContext context, ILogger<MovieService> logger, IOptions<AppOptions> appOptions)
+    public partial class MovieService(DatabaseContext context, ILogger<MovieService> logger, IOptions<AppOptions> appOptions)
     {
         private readonly TMDbClient _tmdbClient = new(appOptions.Value.TmdbApiKey);
         private static readonly Uri _tmdbPosterBaseUrl = new("https://image.tmdb.org/t/p/w500");
@@ -19,6 +20,9 @@ namespace backend.Services
 
         public async Task<Movie> CreateAsync(Movie movie)
         {
+            movie.DisplayName = movie.DisplayName.Trim();
+            movie.DisplayName = ReplaceLineBreakRegex().Replace(movie.DisplayName, " ");
+            movie.DisplayName = DuplicateSpaceRegex().Replace(movie.DisplayName, " ");
             // Check if the movie is already in the database
             var existingMovie = await FindMovieAsync(movie);
             if (existingMovie is not null)
@@ -161,5 +165,11 @@ namespace backend.Services
             }
             return null;
         }
+
+        [GeneratedRegex(@"\s+")]
+        private static partial Regex DuplicateSpaceRegex();
+
+        [GeneratedRegex(@"\r\n?|\n")]
+        private static partial Regex ReplaceLineBreakRegex();
     }
 }

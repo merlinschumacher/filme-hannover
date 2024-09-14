@@ -15,10 +15,10 @@ namespace backend.Scrapers
         }
 
         public bool ReliableMetadata => false;
-        private Uri _dataUrl = new("https://www.hoelderlin-eins.de/veranstaltungen");
-        private StringContent _postData = new StringContent("action=search_events_grouped&category=7");
+        private readonly Uri _dataUrl = new("https://www.hoelderlin-eins.de/veranstaltungen");
+        private readonly StringContent _postData = new("action=search_events_grouped&category=7");
 
-        private Cinema _cinema = new()
+        private readonly Cinema _cinema = new()
         {
             DisplayName = "Hölderlin Eins",
             Url = new("https://www.hoelderlin-eins.de/"),

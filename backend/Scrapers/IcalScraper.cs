@@ -11,7 +11,9 @@ namespace backend.Scrapers
             if (duration.TotalSeconds > 0 || duration.TotalHours < 12) return duration;
 
             if (calendarEvent.End is null) return null;
-            return calendarEvent.End.AsSystemLocal - calendarEvent.Start.AsSystemLocal;
+            duration = calendarEvent.End.AsSystemLocal - calendarEvent.Start.AsSystemLocal;
+            if (duration.TotalSeconds > 0 || duration.TotalHours < 12) return duration;
+            return Constants.AverageMovieRuntime;
         }
 
         protected static Movie GetMovieFromCalendarEvent(CalendarEvent calendarEvent) => new()
