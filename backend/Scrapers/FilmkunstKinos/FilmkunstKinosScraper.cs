@@ -25,12 +25,20 @@ namespace kinohannover.Scrapers.FilmkunstKinos
             var doc = await HttpHelper.GetHtmlDocumentAsync(_cinema.Url);
 
             var contentBox = doc.DocumentNode.SelectSingleNode(_contentBoxSelector);
-            foreach (var movieNode in contentBox.SelectNodes(_movieSelector))
+            if (contentBox is null) return;
+            var movieNodes = contentBox.SelectNodes(_movieSelector);
+            if (movieNodes is null) return;
+            foreach (var movieNode in movieNodes)
             {
                 if (movieNode is null) continue;
-                var (movie, type, language) = await ProcessMovieAsync(movieNode);
+                var title = movieNode.SelectSingleNode(_titleSelector)?.InnerText;
+                if (string.IsNullOrWhiteSpace(title)) continue;
+                var (movie, type, language) = await ProcessMovieAsync(title);
 
-                foreach (var filmTagNode in movieNode.SelectNodes(_filmTagSelector))
+                var filmTagNodes = movieNode.SelectNodes(_filmTagSelector);
+                if (filmTagNodes is null) continue;
+
+                foreach (var filmTagNode in filmTagNodes)
                 {
                     if (filmTagNode is null) continue;
                     await ProcessShowTimesAsync(filmTagNode, movie, type, language);
@@ -38,9 +46,8 @@ namespace kinohannover.Scrapers.FilmkunstKinos
             }
         }
 
-        private async Task<(Movie, ShowTimeDubType, ShowTimeLanguage)> ProcessMovieAsync(HtmlNode movieNode)
+        private async Task<(Movie, ShowTimeDubType, ShowTimeLanguage)> ProcessMovieAsync(string title)
         {
-            var title = movieNode.SelectSingleNode(_titleSelector).InnerText;
             var match = TitleRegex().Match(title);
             var type = ShowTimeDubType.Regular;
             var language = ShowTimeLanguage.German;
@@ -65,9 +72,12 @@ namespace kinohannover.Scrapers.FilmkunstKinos
         private async Task ProcessShowTimesAsync(HtmlNode filmTagNode, Movie movie, ShowTimeDubType type, ShowTimeLanguage language)
         {
             var dateString = filmTagNode.SelectSingleNode(_dateSelector).InnerText;
+            if (string.IsNullOrWhiteSpace(dateString)) return;
             var date = DateOnly.ParseExact(dateString, _dateFormat, CultureInfo.CurrentCulture);
+            var timeNodes = filmTagNode.SelectNodes(_aElemeSelector);
+            if (timeNodes is null) return;
 
-            foreach (var timeNode in filmTagNode.SelectNodes(_aElemeSelector))
+            foreach (var timeNode in timeNodes)
             {
                 var showDateTime = GetShowTimeDateTime(date, timeNode);
                 if (showDateTime is null) continue;

@@ -64,6 +64,7 @@ namespace backend.Scrapers
         {
             var htmlDocument = await HttpHelper.GetHtmlDocumentAsync(new Uri(_baseUrl, eventUrl));
             var icalLink = htmlDocument.DocumentNode.SelectSingleNode("//a[contains(@class,'epg_reminder')]");
+            if (icalLink is null) return null;
             var icalHref = icalLink.GetAttributeValue("href", string.Empty);
             if (icalHref is null)
             {
@@ -78,7 +79,10 @@ namespace backend.Scrapers
         {
             var htmlDocument = await HttpHelper.GetHtmlDocumentAsync(_dataUrl);
             var calendar = htmlDocument.DocumentNode.SelectSingleNode("//div[@class='kk_kalender']");
+            if (calendar is null) return [];
             var events = calendar.SelectNodes("//a[@title='Veranstaltungsdetails']");
+            if (events is null) return [];
+
             var eventUrls = new HashSet<string>();
             foreach (var eventNode in events)
             {

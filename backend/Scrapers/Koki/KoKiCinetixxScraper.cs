@@ -29,10 +29,7 @@ namespace backend.Scrapers.Koki
             var doc = await HttpHelper.GetHtmlDocumentAsync(_dataUrl);
 
             var movieNodes = doc.DocumentNode.SelectNodes(_movieNodeSelector);
-            if (movieNodes is null)
-            {
-                return;
-            }
+            if (movieNodes is null) return;
             foreach (var movieNode in movieNodes)
             {
                 var movie = await ProcessMovieAsync(movieNode);
@@ -85,15 +82,19 @@ namespace backend.Scrapers.Koki
         {
             var showTimes = new List<DateTime>();
             var table = eventDetailElement.SelectSingleNode(_eventTableNodeSelector);
+            if (table is null) return showTimes;
             var dateNodes = table.SelectNodes(_dateHeaderNodeSelector);
+            if (dateNodes is null) return showTimes;
 
             for (int i = 0; i < dateNodes.Count; i++)
             {
                 DateOnly date = GetShowTimeDate(dateNodes[i]);
                 var timeRows = table.SelectNodes(_eventTimeRowNodeSelector);
+                if (timeRows is null) continue;
                 foreach (var timeRow in timeRows)
                 {
                     var timeNode = timeRow.SelectNodes(_eventTimeNodeSelector)[i];
+                    if (timeNode is null) continue;
                     var timeText = timeNode.InnerText;
                     if (!TimeOnly.TryParse(timeText, CultureInfo.CurrentCulture, out var time))
                     {
@@ -115,7 +116,9 @@ namespace backend.Scrapers.Koki
         private static (ShowTimeDubType, ShowTimeLanguage) GetShowTimeDubTypeLanguage(HtmlNode eventDetailElement)
         {
             var eventDetails = eventDetailElement.SelectSingleNode(_eventDetailsNodeSelector);
+            if (eventDetails is null) return (ShowTimeDubType.Regular, ShowTimeLanguage.German);
             var spans = eventDetails.SelectNodes(_spanNodeSelector);
+            if (spans is null) return (ShowTimeDubType.Regular, ShowTimeLanguage.German);
 
             var type = GetType(spans);
 
@@ -131,6 +134,7 @@ namespace backend.Scrapers.Koki
         private static TimeSpan? GetRuntime(HtmlNode eventDetailElement)
         {
             var eventDetails = eventDetailElement.SelectSingleNode(_eventDetailsNodeSelector);
+            if (eventDetails is null) return Constants.AverageMovieRuntime;
             var spans = eventDetails.SelectNodes(_spanNodeSelector);
             var runtimeSpan = spans.FirstOrDefault(s => s.InnerText.Contains("Länge:"));
             var runtimeRegex = RuntimeRegex().Match(runtimeSpan?.InnerText ?? "");

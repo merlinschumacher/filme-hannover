@@ -33,11 +33,10 @@ namespace backend.Scrapers.Koki
         public async Task ScrapeAsync()
         {
             var eventHtml = await GetEventElementsAsync();
-            if (eventHtml is null)
-            {
-                return;
-            }
+            if (eventHtml is null) return;
             var eventElements = eventHtml.DocumentNode.SelectNodes(_eventElementSelector);
+            if (eventElements is null) return;
+
             foreach (var eventElement in eventElements)
             {
                 var eventDetailElement = eventElement?.SelectSingleNode(_eventDetailElementsSelector);
@@ -62,7 +61,9 @@ namespace backend.Scrapers.Koki
         private async Task ProcessShowTime(HtmlNode eventElement, EventDetailJson eventDetailJson, Movie movie)
         {
             var readMoreElement = eventElement.SelectSingleNode(_readMoreSelector);
-            var readMoreHref = readMoreElement?.GetAttributeValue("href", "");
+            if (readMoreElement is null) return;
+            var readMoreHref = readMoreElement.GetAttributeValue("href", "");
+            if (string.IsNullOrWhiteSpace(readMoreHref)) return;
             var showTimeUrl = new Uri(_baseUrl, readMoreHref);
             var (dubType, language) = await GetShowTimeDubTypeLanguage(readMoreHref);
 
@@ -121,10 +122,7 @@ namespace backend.Scrapers.Koki
 
             var eventDetailElement = htmlBody.DocumentNode.SelectSingleNode(_eventPageDetailSelector);
 
-            if (eventDetailElement is null)
-            {
-                return null;
-            }
+            if (eventDetailElement is null) return null;
 
             var detailStrings = eventDetailElement.InnerText.Split(",");
             return detailStrings[^1].Trim();

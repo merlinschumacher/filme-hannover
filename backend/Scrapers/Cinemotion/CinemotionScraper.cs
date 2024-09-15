@@ -37,20 +37,14 @@ namespace backend.Scrapers.Cinemotion
         {
             var htmlDocument = await HttpHelper.GetHtmlDocumentAsync(_cinema.ShopUrl);
             var cdataElement = htmlDocument.DocumentNode.SelectSingleNode(_cdataElementSelector);
-            if (cdataElement is null)
-            {
-                return;
-            }
+            if (cdataElement is null) return;
 
             var cdata = cdataElement.InnerText.Replace("/* <![CDATA[ */", string.Empty);
             cdata = cdata.Replace("/* ]]> */", string.Empty);
             cdata = cdata.Replace("var pmkinoFrontVars = ", string.Empty);
             cdata = cdata.Trim().TrimEnd(';').Trim();
             var json = JsonConvert.DeserializeObject<CinemotionRoot>(cdata);
-            if (json is null)
-            {
-                return;
-            }
+            if (json is null) return;
             var movies = json.ApiData.MovieList.Movies;
             foreach (var (key, cinemotionMovie) in movies)
             {

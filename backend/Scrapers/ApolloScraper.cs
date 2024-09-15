@@ -46,9 +46,10 @@ namespace kinohannover.Scrapers.FilmkunstKinos
             return _specialEventTitles.Find(e => node.InnerText.Contains(e, StringComparison.CurrentCultureIgnoreCase));
         }
 
-        private HtmlNode GetTitleNode(HtmlNode node)
+        private HtmlNode? GetTitleNode(HtmlNode node)
         {
             var titleNode = node.SelectSingleNode(_linkNodeSelector);
+            if (titleNode is null) return null;
 
             if (GetSpecialEventTitle(node) != null)
             {
@@ -78,7 +79,9 @@ namespace kinohannover.Scrapers.FilmkunstKinos
         {
             var doc = await HttpHelper.GetHtmlDocumentAsync(_dataUri);
             var table = doc.DocumentNode.SelectSingleNode(_vorschauTableNodeSelector);
+            if (table is null) return;
             var days = table.SelectNodes(_tableRowNodesSelector);
+            if (days is null) return;
             // Skip the first row, it contains the table headers
             foreach (var day in days.Skip(1))
             {
@@ -94,6 +97,7 @@ namespace kinohannover.Scrapers.FilmkunstKinos
                     if (_showsToIgnore.Exists(movieNode.InnerHtml.Contains)) continue;
 
                     var titleNode = GetTitleNode(movieNode);
+                    if (titleNode is null) continue;
                     var (title, type, language) = GetMovieDetails(titleNode);
                     var movieUrl = new Uri(_cinema.Url, titleNode.GetAttributeValue("href", ""));
                     Movie movie = await ProcessMovieAsync(title);
