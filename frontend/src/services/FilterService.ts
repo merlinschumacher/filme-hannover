@@ -95,33 +95,42 @@ export default class FilterService {
   ): Promise<EventDataResult> {
     const selectedCinemaIds = this.selectedCinemas.map((c) => c.id);
     const selectedMovieIds = this.selectedMovies.map((m) => m.id);
-    // Get the first showtime date, if the start date is before the first showtime date, set the start date to the first showtime date
-    const firstShowTimeDate = await this.db.GetEarliestShowTimeDate(
-      selectedCinemaIds,
-      selectedMovieIds,
-      this.selectedShowTimeDubTypes,
-    );
-    if (!firstShowTimeDate) {
-      return new EventDataResult(new Map<Date, EventData[]>(), null);
-    }
-    if (startDate.getTime() < firstShowTimeDate.getTime()) {
-      startDate = firstShowTimeDate;
-    }
-    // To fill up the requested visible days, we need to get the nth day for that range.
-    const endDate: Date = await this.db.GetEndDate(
-      startDate,
-      selectedCinemaIds,
-      selectedMovieIds,
-      this.selectedShowTimeDubTypes,
-      visibleDays,
-    );
 
-    const events = await this.db.GetEventData(
-      startDate,
-      endDate,
-      selectedCinemaIds,
-      selectedMovieIds,
-      this.selectedShowTimeDubTypes,
+    const events = await this.db.transaction(
+      "r",
+      this.db.showTimes,
+      this.db.cinemas,
+      this.db.movies,
+      async () => {
+        // Get the first showtime date, if the start date is before the first showtime date, set the start date to the first showtime date
+        const firstShowTimeDate = await this.db.GetEarliestShowTimeDate(
+          selectedCinemaIds,
+          selectedMovieIds,
+          this.selectedShowTimeDubTypes,
+        );
+        if (!firstShowTimeDate) {
+          return [];
+        }
+        if (startDate.getTime() < firstShowTimeDate.getTime()) {
+          startDate = firstShowTimeDate;
+        }
+        // To fill up the requested visible days, we need to get the nth day for that range.
+        const endDate: Date = await this.db.GetEndDate(
+          startDate,
+          selectedCinemaIds,
+          selectedMovieIds,
+          this.selectedShowTimeDubTypes,
+          visibleDays,
+        );
+
+        return await this.db.GetEventData(
+          startDate,
+          endDate,
+          selectedCinemaIds,
+          selectedMovieIds,
+          this.selectedShowTimeDubTypes,
+        );
+      },
     );
     if (events.length === 0) {
       return new EventDataResult(new Map<Date, EventData[]>(), null);

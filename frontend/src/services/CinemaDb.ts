@@ -21,9 +21,9 @@ export default class CinemaDb extends Dexie {
 
   private constructor() {
     super("CinemaDb");
-    this.version(3).stores({
+    this.version(4).stores({
       cinemas: "id, displayName, iconClass",
-      movies: "id, displayName, runtime, releaseDate",
+      movies: "id, displayName, runtime, rating, releaseDate",
       showTimes:
         "id, date, startTime, endTime, movie, cinema, language, dubtype",
       configurations: "id",

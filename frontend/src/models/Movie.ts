@@ -6,4 +6,5 @@ export default class Movie extends Entity<CinemaDb> {
   displayName!: string;
   releaseDate!: Date | null;
   runtime!: number;
+  rating!: number;
 }
