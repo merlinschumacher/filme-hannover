@@ -16,7 +16,19 @@ namespace backend.Scrapers
         public required string Title { get; init; }
 
         [Optional]
-        public string? Url { get; set; }
+        public string? Url { get; init; }
+
+        [Optional]
+        public MovieRating? Rating { get; init; } = MovieRating.Unknown;
+
+        [Optional]
+        public ShowTimeLanguage? Language { get; init; } = ShowTimeLanguage.German;
+
+        [Optional]
+        public ShowTimeDubType? DubType { get; init; } = ShowTimeDubType.Regular;
+
+        [Optional]
+        public double? Runtime { get; init; } = 120;
     }
 
     /// <summary>
@@ -49,7 +61,7 @@ namespace backend.Scrapers
             using CsvReader csv = new(reader, CultureInfo.InvariantCulture);
 
             var records = csv.GetRecords<CsvEntry>().ToList();
-            if (!records.Any())
+            if (records.Count == 0)
             {
                 logger.LogError("Failed to read records from {FileName}", fileName);
                 return;
@@ -62,6 +74,8 @@ namespace backend.Scrapers
                 var movie = new Movie()
                 {
                     DisplayName = record.Title,
+                    Rating = record.Rating ?? MovieRating.Unknown,
+                    Runtime = TimeSpan.FromMinutes(record.Runtime ?? Constants.AverageMovieRuntime.TotalMinutes),
                 };
 
                 movie = await movieService.CreateAsync(movie);
@@ -78,7 +92,9 @@ namespace backend.Scrapers
                     Movie = movie,
                     StartTime = record.Time,
                     Url = url,
-                    Cinema = _cinema
+                    Cinema = _cinema,
+                    DubType = record.DubType ?? ShowTimeDubType.Regular,
+                    Language = record.Language ?? ShowTimeLanguage.German,
                 };
 
                 await showTimeService.CreateAsync(showTime);

@@ -2,6 +2,17 @@
 
 namespace backend.Models
 {
+    public enum MovieRating
+    {
+        FSK0 = 0,
+        FSK6 = 6,
+        FSK12 = 12,
+        FSK16 = 16,
+        FSK18 = 18,
+        Unrated = 99,
+        Unknown = -1
+    }
+
     public class Movie
     {
         public int Id { get; set; }
@@ -26,7 +37,7 @@ namespace backend.Models
         public List<ShowTime> ShowTimes { get; set; } = [];
         public List<Cinema> Cinemas { get; set; } = [];
 
-        public TimeSpan? Runtime { get; set; }
+        public TimeSpan Runtime { get; set; }
         public Uri? Url { get; set; }
 
         public Uri? TrailerUrl { get; set; }
@@ -39,6 +50,8 @@ namespace backend.Models
         public string? Description { get; set; }
 
         public int? TmdbId { get; set; }
+
+        public MovieRating Rating { get; set; } = MovieRating.Unknown;
 
         public void SetReleaseDateFromYear(int? year)
         {

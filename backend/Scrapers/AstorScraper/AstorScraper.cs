@@ -96,13 +96,24 @@ namespace backend.Scrapers.AstorScraper
             var movie = new Movie()
             {
                 DisplayName = title,
-                Runtime = TimeSpan.FromMinutes(astorMovie.minutes),
+                Runtime = GetRuntime(astorMovie.minutes),
+                Rating = astorMovie.fsk,
             };
 
             movie.SetReleaseDateFromYear(releaseYear);
             movie = await _movieService.CreateAsync(movie);
             await _cinemaService.AddMovieToCinemaAsync(movie, _cinema);
             return movie;
+        }
+
+        private static TimeSpan GetRuntime(int minutes)
+        {
+            var runtime = TimeSpan.FromMinutes(minutes);
+            if (runtime.TotalMinutes < 5 || runtime.TotalHours > 12)
+            {
+                return Constants.AverageMovieRuntime;
+            }
+            return runtime;
         }
 
         private async Task ProcessShowTimeAsync(Movie movie, Performance performance)
@@ -115,6 +126,7 @@ namespace backend.Scrapers.AstorScraper
             var showTime = new ShowTime()
             {
                 StartTime = performance.begin,
+                EndTime = performance.end,
                 DubType = type,
                 Language = language,
                 Url = performanceUrl,

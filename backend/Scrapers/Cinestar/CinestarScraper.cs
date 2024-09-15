@@ -2,7 +2,6 @@
 using backend.Models;
 using backend.Services;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.Logging;
 using System.Globalization;
 
 namespace backend.Scrapers.Cinestar
@@ -25,20 +24,18 @@ namespace backend.Scrapers.Cinestar
         private readonly ShowTimeService _showTimeService;
 
         private readonly MovieService _movieService;
-        private readonly ILogger<CinestarScraper> _logger;
         private readonly CinemaService _cinemaService;
         private readonly IEnumerable<string> _eventTitles = ["CineSpecial:", "Cinelady Preview", "Kinofest:", "Happy Family Preview", "Mein Erster Kinobesuch", "CineAnime:", "Preview"];
 
-        public CinestarScraper(ILogger<CinestarScraper> logger, MovieService movieService, ShowTimeService showTimeService, CinemaService cinemaService)
+        public CinestarScraper(MovieService movieService, ShowTimeService showTimeService, CinemaService cinemaService)
         {
-            _logger = logger;
             _cinemaService = cinemaService;
             _cinema = _cinemaService.Create(_cinema);
             _showTimeService = showTimeService;
             _movieService = movieService;
         }
 
-        public bool ReliableMetadata => true;
+        public bool ReliableMetadata => false;
 
         public async Task ScrapeAsync()
         {
@@ -62,12 +59,29 @@ namespace backend.Scrapers.Cinestar
             var movie = new Movie()
             {
                 DisplayName = title,
+                Rating = GetRating(cinestarMovie),
+                Runtime = MovieHelper.ValidateRuntime(cinestarMovie.Duration),
             };
 
             movie = await _movieService.CreateAsync(movie);
             await _cinemaService.AddMovieToCinemaAsync(movie, _cinema);
 
             return movie;
+        }
+
+        private static MovieRating GetRating(CinestarMovie movie)
+        {
+            var rating = MovieRating.Unknown;
+            var fskAttribute = movie.Attributes.ToList().Find(e => e.StartsWith("FSK_"));
+            if (fskAttribute != null)
+            {
+                var ratingString = fskAttribute.Replace("FSK_", string.Empty);
+                if (int.TryParse(ratingString, out var ratingInt))
+                {
+                    rating = (MovieRating)ratingInt;
+                }
+            }
+            return rating;
         }
 
         private async Task ProcessShowTimeAsync(Movie movie, CinestarShowtime cinestarShowtime)
@@ -122,29 +136,21 @@ namespace backend.Scrapers.Cinestar
         private async Task<IEnumerable<CinestarMovie>> GetMovieListAsync()
         {
             IList<CinestarMovie> cinestarMovies = [];
-            try
+            var apiEndpointUrl = new Uri(_apiBaseUri, "show");
+            var json = await HttpHelper.GetJsonAsync<IEnumerable<CinestarMovie>>(apiEndpointUrl);
+            if (json == null)
             {
-                var apiEndpointUrl = new Uri(_apiBaseUri, "show");
-                var json = await HttpHelper.GetJsonAsync<IEnumerable<CinestarMovie>>(apiEndpointUrl);
-                if (json == null)
-                {
-                    return cinestarMovies;
-                }
-
-                foreach (var movie in json)
-                {
-                    if (movie?.Showtimes.Count == null)
-                        continue;
-
-                    cinestarMovies.Add(movie);
-                }
                 return cinestarMovies;
             }
-            catch (Exception e)
+
+            foreach (var movie in json)
             {
-                _logger.LogError(e, "Failed to process {Cinema} movie list.", _cinema);
-                return cinestarMovies;
+                if (movie?.Showtimes?.Count == null)
+                    continue;
+
+                cinestarMovies.Add(movie);
             }
+            return cinestarMovies;
         }
     }
 }

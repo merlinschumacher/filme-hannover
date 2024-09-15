@@ -15,9 +15,9 @@
     {
         public List<WhatsOnAlphabeticCinema> WhatsOnAlphabeticCinemas { get; set; }
         public string Title { get; set; }
+        public IEnumerable<FilmParam> FilmParams { get; set; } = [];
         public string FilmUrl { get; set; }
         public DateTime? ReleaseDate { get; set; }
-        public string PegiClass { get; set; }
         public string CertificateAge { get; set; }
     }
 
@@ -26,5 +26,11 @@
         public string Time { get; set; }
         public string BookingLink { get; set; }
         public string VersionTitle { get; set; }
+    }
+
+    public class FilmParam
+    {
+        public string Title { get; set; }
+        public string Link { get; set; } = string.Empty;
     }
 }

@@ -37,33 +37,45 @@ namespace backend.Scrapers.Koki
             var hannoverDeScraper = new KoKiHannoverDeScraper(_movieService, _showTimeService, _cinemaService, _cinema);
             var kircheUndKinoScraper = new KokiKircheundKinoScraper(_logger, _movieService, _showTimeService, _cinemaService, _cinema);
 
+            var exceptions = new List<Exception>();
+
             try
             {
                 await cinetixxScraper.ScrapeAsync();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                _logger.LogError("Failed to scrape KoKi on Cinetixx");
-                throw;
+                exceptions.Add(ex);
             }
+
             try
             {
                 await hannoverDeScraper.ScrapeAsync();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                _logger.LogError("Failed to scrape KoKi on hannover.de");
-                throw;
+                exceptions.Add(ex);
             }
 
             try
             {
                 await kircheUndKinoScraper.ScrapeAsync();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                _logger.LogError("Failed to scrape KoKi CSV for Kirche und Kino");
-                throw;
+                exceptions.Add(ex);
+            }
+
+            if (exceptions.Count == 3)
+            {
+                throw new AggregateException(exceptions);
+            }
+            else
+            {
+                foreach (var ex in exceptions)
+                {
+                    _logger.LogError(ex, "Error scraping Koki");
+                }
             }
         }
     }

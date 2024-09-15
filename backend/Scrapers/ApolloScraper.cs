@@ -1,4 +1,5 @@
-﻿using backend.Helpers;
+﻿using backend;
+using backend.Helpers;
 using backend.Models;
 using backend.Scrapers;
 using backend.Services;
@@ -59,20 +60,32 @@ namespace kinohannover.Scrapers.FilmkunstKinos
             return titleNode;
         }
 
-        private static (string, ShowTimeDubType, ShowTimeLanguage) GetMovieDetails(HtmlNode titleNode)
+        private static (string, ShowTimeDubType?, ShowTimeLanguage?) GetMovieDetailsFromTitle(HtmlNode titleNode)
         {
             var title = titleNode.InnerText;
             var titleRegex = TitleRegex().Match(title);
-            var language = ShowTimeLanguage.German;
-            var type = ShowTimeDubType.Regular;
 
             if (titleRegex.Success)
             {
                 title = titleRegex.Groups[1].Value;
-                language = ShowTimeHelper.GetLanguage(titleRegex.Groups[2].Value);
-                type = ShowTimeHelper.GetDubType(titleRegex.Groups[3].Value);
+                var language = ShowTimeHelper.GetLanguage(titleRegex.Groups[2].Value);
+                var type = ShowTimeHelper.GetDubType(titleRegex.Groups[3].Value);
+                return (title, type, language);
             }
-            return (title, type, language);
+            return (title, null, null);
+        }
+
+        private static (ShowTimeDubType, ShowTimeLanguage) GetMovieDetailsFromDescription(string? description)
+        {
+            var type = ShowTimeDubType.Regular;
+            var language = ShowTimeLanguage.German;
+            if (description is null) return (type, language);
+            type = ShowTimeHelper.GetDubType(description);
+            if (type != ShowTimeDubType.Regular)
+            {
+                language = ShowTimeHelper.GetLanguage(description);
+            }
+            return (type, language);
         }
 
         public async Task ScrapeAsync()
@@ -89,32 +102,55 @@ namespace kinohannover.Scrapers.FilmkunstKinos
                 if (tableData is null || tableData.Count == 0) continue;
 
                 var date = GetDate(tableData);
-                var movieNodes = tableData.Skip(1).Where(e => !string.IsNullOrWhiteSpace(e.InnerText));
+                // Skip the table header and all movies that are in the ignore list
+                var movieNodes = tableData.Skip(1).Where(e => !string.IsNullOrWhiteSpace(e.InnerText) && !_showsToIgnore.Exists(i => e.InnerHtml.Contains(i)));
 
                 foreach (var movieNode in movieNodes)
                 {
-                    // Skip the movie if it's in the ignore list
-                    if (_showsToIgnore.Exists(movieNode.InnerHtml.Contains)) continue;
-
                     var titleNode = GetTitleNode(movieNode);
                     if (titleNode is null) continue;
-                    var (title, type, language) = GetMovieDetails(titleNode);
-                    var movieUrl = new Uri(_cinema.Url, titleNode.GetAttributeValue("href", ""));
-                    Movie movie = await ProcessMovieAsync(title);
+                    var (movieUrl, description) = await GetMovieDescriptionAsync(titleNode);
+
+                    var (title, type, language) = GetMovieDetailsFromTitle(titleNode);
+                    (type, language) = GetMovieDetailsFromDescription(description);
+                    Movie movie = await ProcessMovieAsync(title, description);
                     var showDateTime = GetShowDateTime(date, movieNode);
                     if (showDateTime == null) continue;
 
                     var specialEventTitle = GetSpecialEventTitle(movieNode);
-                    await ProcessShowTimeAsync(movie, specialEventTitle, showDateTime.Value, type, language, movieUrl);
+                    await ProcessShowTimeAsync(movie, specialEventTitle, showDateTime.Value, type.Value, language.Value, movieUrl);
                 }
             }
         }
 
-        private async Task<Movie> ProcessMovieAsync(string title)
+        private async Task<(Uri, string?)> GetMovieDescriptionAsync(HtmlNode? titleNode)
         {
+            if (titleNode is null) return (new Uri(_cinema.Url, ""), "");
+            var movieUrl = new Uri(_cinema.Url, titleNode.GetAttributeValue("href", ""));
+            var document = await HttpHelper.GetHtmlDocumentAsync(movieUrl);
+            var description = document.DocumentNode.SelectSingleNode("//div[@class='filmdaten']")?.InnerText;
+            return (movieUrl, description);
+        }
+
+        private static (TimeSpan runtime, MovieRating rating) GetRuntimeAndRating(string? description)
+        {
+            var result = (Constants.AverageMovieRuntime, MovieRating.Unknown);
+            if (description is null) return result;
+            var runtime = MovieHelper.GetRuntime(description, @"\d{1,3} Min");
+            runtime ??= Constants.AverageMovieRuntime;
+            var rating = MovieHelper.GetRating(description, @"ab\s*(\d{1,2})\s*J\.?");
+            return (runtime.Value, rating);
+        }
+
+        private async Task<Movie> ProcessMovieAsync(string title, string? description)
+        {
+            var (runtime, rating) = GetRuntimeAndRating(description);
+
             var movie = new Movie()
             {
                 DisplayName = title,
+                Runtime = runtime,
+                Rating = rating,
             };
             movie = await _movieService.CreateAsync(movie);
             await _cinemaService.AddMovieToCinemaAsync(movie, _cinema);

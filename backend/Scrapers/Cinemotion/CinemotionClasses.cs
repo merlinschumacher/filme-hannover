@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using backend.Models;
+using Newtonsoft.Json;
 
 namespace backend.Scrapers.Cinemotion
 {
@@ -22,9 +23,11 @@ namespace backend.Scrapers.Cinemotion
     public class CinemotionMovie
     {
         public required string Title { get; set; }
-        public int Length { get; set; }
+        public int? Length { get; set; }
 
         public IEnumerable<Performance> Performances { get; set; } = [];
+
+        public MovieRating? MovieRating { get; set; }
     }
 
     public class Performance

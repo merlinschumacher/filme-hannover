@@ -64,12 +64,12 @@ namespace backend.Scrapers.Koki
             {
                 return null;
             }
-            var runtime = GetRuntime(movieNode);
 
             var movie = new Movie()
             {
                 DisplayName = title,
-                Runtime = runtime,
+                Runtime = GetRuntime(movieNode),
+                Rating = GetRating(movieNode),
             };
 
             movie = await movieService.CreateAsync(movie);
@@ -131,19 +131,26 @@ namespace backend.Scrapers.Koki
             return (type, ShowTimeLanguage.German);
         }
 
-        private static TimeSpan? GetRuntime(HtmlNode eventDetailElement)
+        private static MovieRating GetRating(HtmlNode eventDetailElement)
+        {
+            const MovieRating rating = MovieRating.Unknown;
+            var eventDetails = eventDetailElement.SelectSingleNode(_eventDetailsNodeSelector);
+            if (eventDetails is null) return rating;
+            var fskImage = eventDetails.SelectSingleNode(".//img[contains(@src, 'fsk')]");
+            if (fskImage is null) return rating;
+            var fsk = fskImage.GetAttributeValue("src", "");
+            return MovieHelper.GetRating(fsk, @"fsk/(\d{1,2})\.jpg");
+        }
+
+        private static TimeSpan GetRuntime(HtmlNode eventDetailElement)
         {
             var eventDetails = eventDetailElement.SelectSingleNode(_eventDetailsNodeSelector);
             if (eventDetails is null) return Constants.AverageMovieRuntime;
             var spans = eventDetails.SelectNodes(_spanNodeSelector);
             var runtimeSpan = spans.FirstOrDefault(s => s.InnerText.Contains("Länge:"));
-            var runtimeRegex = RuntimeRegex().Match(runtimeSpan?.InnerText ?? "");
-            if (!runtimeRegex.Success || !int.TryParse(runtimeRegex.Groups[1].Value, out var runtimeInt))
-            {
-                return null;
-            }
 
-            return TimeSpan.FromMinutes(runtimeInt);
+            var runtime = MovieHelper.GetRuntime(runtimeSpan?.InnerText ?? "", @"(\d*)\s*min");
+            return runtime ?? Constants.AverageMovieRuntime;
         }
 
         private static ShowTimeDubType GetType(HtmlNodeCollection spans)
@@ -198,8 +205,5 @@ namespace backend.Scrapers.Koki
 
         [GeneratedRegex(@"\w.\s(\d\d.\d\d)")]
         private static partial Regex DateRegex();
-
-        [GeneratedRegex(@"(\d*)\s*min")]
-        private static partial Regex RuntimeRegex();
     }
 }

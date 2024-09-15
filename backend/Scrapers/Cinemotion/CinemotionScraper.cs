@@ -81,14 +81,14 @@ namespace backend.Scrapers.Cinemotion
 
         private static ShowTimeDubType GetShowTimeDubType(Performance performance)
         {
-            if (performance.Attributes.Any(e => e.Name.Contains("OmU", StringComparison.CurrentCultureIgnoreCase)
+            if (performance.Attributes.Exists(e => e.Name.Contains("OmU", StringComparison.CurrentCultureIgnoreCase)
                                                 || e.Name.Contains("OmdU", StringComparison.CurrentCultureIgnoreCase)
                                                 || e.Name.Contains("OmeU", StringComparison.CurrentCultureIgnoreCase)
                                                 || e.Name.Contains("subtitled", StringComparison.CurrentCultureIgnoreCase)))
             {
                 return ShowTimeDubType.Subtitled;
             }
-            else if (performance.Attributes.Any(e => e.Name.Contains("OV", StringComparison.CurrentCultureIgnoreCase)
+            else if (performance.Attributes.Exists(e => e.Name.Contains("OV", StringComparison.CurrentCultureIgnoreCase)
                                                 || e.Name.Contains("Original", StringComparison.CurrentCultureIgnoreCase)))
             {
                 return ShowTimeDubType.OriginalVersion;
@@ -106,10 +106,19 @@ namespace backend.Scrapers.Cinemotion
             var movie = new Movie()
             {
                 DisplayName = cinemotionMovie.Title,
-                Runtime = TimeSpan.FromMinutes(cinemotionMovie.Length),
+                Runtime = GetRuntime(cinemotionMovie),
+                Rating = cinemotionMovie.MovieRating ?? MovieRating.Unknown,
             };
 
             return await _movieService.CreateAsync(movie);
+        }
+
+        private static TimeSpan GetRuntime(CinemotionMovie movie)
+        {
+            if (movie.Length is null) return Constants.AverageMovieRuntime;
+            var length = TimeSpan.FromMinutes(movie.Length.Value);
+            if (length.TotalMinutes < 5 || length.TotalHours > 12) return Constants.AverageMovieRuntime;
+            return length;
         }
     }
 }

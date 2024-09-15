@@ -38,7 +38,8 @@ namespace backend.Helpers
                 return default;
             }
 
-            return JsonConvert.DeserializeObject<T>(jsonString);
+            var result = JsonConvert.DeserializeObject<T>(jsonString);
+            return result;
         }
 
         public static async Task<Calendar?> GetCalendarAsync(Uri icalUri)

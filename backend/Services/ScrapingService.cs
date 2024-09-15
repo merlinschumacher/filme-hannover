@@ -27,6 +27,7 @@ namespace backend.Services
                 {
                     break;
                 }
+                logger.LogInformation("Executing scraper {Scraper}", scraper.GetType().Name);
                 await retryPolicy.ExecuteAsync(scraper.ScrapeAsync);
             }
         }

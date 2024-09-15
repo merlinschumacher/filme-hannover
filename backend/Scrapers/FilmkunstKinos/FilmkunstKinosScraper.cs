@@ -1,4 +1,5 @@
-﻿using backend.Helpers;
+﻿using backend;
+using backend.Helpers;
 using backend.Models;
 using backend.Services;
 using HtmlAgilityPack;
@@ -17,7 +18,6 @@ namespace kinohannover.Scrapers.FilmkunstKinos
         private const string _dateSelector = ".//span[contains(concat(' ', normalize-space(@class), ' '), ' filmtagdatum ')]/text()[preceding-sibling::br]";
         private const string _aElemeSelector = ".//a";
         private const string _dateFormat = "dd.MM.";
-        private const string _titleRegex = @"(.*)(?>.*\s+[-–]\s+)(.*\.?)?\s(OmU|OV)";
         protected readonly CinemaService _cinemaService = cinemaService;
 
         public async Task ScrapeAsync()
@@ -31,9 +31,7 @@ namespace kinohannover.Scrapers.FilmkunstKinos
             foreach (var movieNode in movieNodes)
             {
                 if (movieNode is null) continue;
-                var title = movieNode.SelectSingleNode(_titleSelector)?.InnerText;
-                if (string.IsNullOrWhiteSpace(title)) continue;
-                var (movie, type, language) = await ProcessMovieAsync(title);
+                var (movie, type, language) = await ProcessMovieAsync(movieNode);
 
                 var filmTagNodes = movieNode.SelectNodes(_filmTagSelector);
                 if (filmTagNodes is null) continue;
@@ -46,7 +44,37 @@ namespace kinohannover.Scrapers.FilmkunstKinos
             }
         }
 
-        private async Task<(Movie, ShowTimeDubType, ShowTimeLanguage)> ProcessMovieAsync(string title)
+        private async Task<(Movie, ShowTimeDubType, ShowTimeLanguage)> ProcessMovieAsync(HtmlNode movieNode)
+        {
+            var title = movieNode.SelectSingleNode(_titleSelector)?.InnerText;
+            var description = movieNode.SelectSingleNode(".//tbody/tr[1]/td[2]")?.InnerText ?? "";
+
+            if (string.IsNullOrWhiteSpace(title))
+            {
+                throw new InvalidDataException("Title is empty");
+            }
+
+            var details = GetMovieDetails(title);
+            title = details.title;
+            var type = details.type;
+            var language = details.language;
+            var runtime = MovieHelper.GetRuntime(description) ?? Constants.AverageMovieRuntime;
+            var rating = MovieHelper.GetRatingMatch(description);
+
+            var movie = new Movie()
+            {
+                DisplayName = title,
+                Rating = rating,
+                Runtime = runtime,
+            };
+
+            movie = await movieService.CreateAsync(movie);
+            await _cinemaService.AddMovieToCinemaAsync(movie, _cinema);
+
+            return (movie, type, language);
+        }
+
+        private static (string title, ShowTimeLanguage language, ShowTimeDubType type) GetMovieDetails(string title)
         {
             var match = TitleRegex().Match(title);
             var type = ShowTimeDubType.Regular;
@@ -57,16 +85,7 @@ namespace kinohannover.Scrapers.FilmkunstKinos
                 language = ShowTimeHelper.GetLanguage(match.Groups[2].Value);
                 type = ShowTimeHelper.GetDubType(match.Groups[3].Value);
             }
-
-            var movie = new Movie()
-            {
-                DisplayName = title,
-            };
-
-            movie = await movieService.CreateAsync(movie);
-            await _cinemaService.AddMovieToCinemaAsync(movie, _cinema);
-
-            return (movie, type, language);
+            return (title, language, type);
         }
 
         private async Task ProcessShowTimesAsync(HtmlNode filmTagNode, Movie movie, ShowTimeDubType type, ShowTimeLanguage language)
@@ -103,7 +122,7 @@ namespace kinohannover.Scrapers.FilmkunstKinos
             return new(date.Year, date.Month, date.Day, timeOnly.Hour, timeOnly.Minute, 0, DateTimeKind.Local);
         }
 
-        [GeneratedRegex(_titleRegex)]
+        [GeneratedRegex(@"(.*)(?>.*\s+[-–]\s+)(.*\.?)?\s(OmU|OV)")]
         private static partial Regex TitleRegex();
     }
 }

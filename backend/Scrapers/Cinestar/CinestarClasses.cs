@@ -1,9 +1,16 @@
-﻿namespace backend.Scrapers.Cinestar
+﻿using Newtonsoft.Json;
+
+namespace backend.Scrapers.Cinestar
 {
     public class CinestarMovie
     {
         public required string Title { get; set; }
         public List<CinestarShowtime> Showtimes { get; set; } = [];
+
+        [JsonConverter(typeof(PolymorphicJsonConverter))]
+        public List<string> Attributes { get; set; } = [];
+
+        public int? Duration { get; set; }
     }
 
     public class CinestarShowtime

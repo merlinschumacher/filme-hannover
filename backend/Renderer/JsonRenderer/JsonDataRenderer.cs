@@ -27,6 +27,8 @@ namespace backend.Renderer.JsonRenderer
         public IEnumerable<int> Cinemas { get; init; } = [];
 
         public double Runtime { get; init; } = 120;
+
+        public MovieRating Rating { get; init; } = MovieRating.Unknown;
     }
 
     public record ShowTimeDto
@@ -72,14 +74,15 @@ namespace backend.Renderer.JsonRenderer
                     DisplayName = m.DisplayName,
                     ReleaseDate = m.ReleaseDate,
                     Cinemas = m.Cinemas.Select(c => c.Id),
-                    Runtime = m.Runtime.GetValueOrDefault(Constants.AverageMovieRuntime).TotalMinutes,
+                    Runtime = m.Runtime.TotalMinutes,
+                    Rating = m.Rating,
                 }),
                 ShowTimes = context.ShowTime.OrderBy(e => e.StartTime).Select(s => new ShowTimeDto
                 {
                     Id = s.Id,
                     Date = s.StartTime.ToUniversalTime().Date,
                     StartTime = s.StartTime.ToUniversalTime(),
-                    EndTime = s.StartTime.Add(s.Movie.Runtime ?? Constants.AverageMovieRuntime).ToUniversalTime(),
+                    EndTime = s.EndTime ?? s.StartTime.Add(Constants.AverageMovieRuntime).ToUniversalTime(),
                     Movie = s.Movie.Id,
                     Cinema = s.Cinema.Id,
                     Language = s.Language,

@@ -1,9 +1,12 @@
-﻿namespace backend.Models
+﻿using backend.Helpers;
+
+namespace backend.Models
 {
     public class ShowTime
     {
         public int Id { get; set; }
         public required DateTime StartTime { get; set; }
+        public DateTime? EndTime { get; set; }
         public required Movie Movie { get; set; }
         public required Cinema Cinema { get; set; }
         public ShowTimeDubType DubType { get; set; } = ShowTimeDubType.Regular;

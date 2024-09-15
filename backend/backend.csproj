@@ -54,4 +54,13 @@
 		</PackageReference>
 		<PackageReference Include="TMDbLib" Version="2.2.0" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="csv\kircheundkino.csv">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="csv\sehfest.csv">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
 </Project>

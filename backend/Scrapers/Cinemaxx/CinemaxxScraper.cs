@@ -84,6 +84,7 @@ namespace backend.Scrapers.Cinemaxx
             {
                 Cinema = _cinema,
                 StartTime = time,
+                EndTime = time.Add(movie.Runtime),
                 DubType = type,
                 Language = language,
                 Url = performanceUri,
@@ -123,11 +124,25 @@ namespace backend.Scrapers.Cinemaxx
             {
                 DisplayName = title,
                 Url = new Uri(_baseUri, film.FilmUrl),
+                Rating = MovieHelper.GetRatingMatch(film.CertificateAge),
+                Runtime = GetRuntime(film),
             };
             movie = await _movieService.CreateAsync(movie);
             await _cinemaService.AddMovieToCinemaAsync(movie, _cinema);
 
             return (movie, eventTitle);
+        }
+
+        private static TimeSpan GetRuntime(WhatsOnAlphabeticFilm film)
+        {
+            var runtimeParam = film.FilmParams.FirstOrDefault(p => p.Title.Contains("Minuten", StringComparison.OrdinalIgnoreCase));
+            if (runtimeParam == null) return Constants.AverageMovieRuntime;
+            var runtimeString = runtimeParam.Title.Split(" ")[0];
+            if (int.TryParse(runtimeString, out var runtime))
+            {
+                return TimeSpan.FromMinutes(runtime);
+            }
+            return Constants.AverageMovieRuntime;
         }
 
         private (string title, string? eventTitle) SanitizeTitle(string title)
