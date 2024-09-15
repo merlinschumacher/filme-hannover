@@ -1,10 +1,8 @@
 import html from "./day-list.component.html?raw";
-import css from "./day-list.component.css?inline";
+import css from "./day-list.component.css" with { type: "css" };
 import { EventData } from "../../models/EventData";
 import EventItem from "../event-item/event-item.component";
 
-const style = new CSSStyleSheet();
-style.replaceSync(css);
 const template = document.createElement("template");
 template.innerHTML = html;
 
@@ -20,7 +18,7 @@ export default class DayListElement extends HTMLElement {
     super();
     this.shadow = this.attachShadow({ mode: "open" });
     this.shadow.appendChild(template.content.cloneNode(true));
-    this.shadow.adoptedStyleSheets = [style];
+    this.shadow.adoptedStyleSheets = [css];
   }
 
   attributeChangedCallback(name: string, oldValue: string, newValue: string) {

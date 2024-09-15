@@ -1,12 +1,7 @@
-import html from "./selection-list.component.html?raw";
-import css from "./selection-list.component.css?inline";
+import html from "./selection-list.component.html" with { type: "htmlTemplate" };
+import css from "./selection-list.component.css" with { type: "css" };
 import Movie from "../../models/Movie";
 import SelectionListItemElement from "../selection-list-item/selection-list-item.component";
-
-const style = new CSSStyleSheet();
-style.replaceSync(css);
-const template = document.createElement("template");
-template.innerHTML = html;
 
 export default class SelectionListElement extends HTMLElement {
   public Movies: Movie[] = [];
@@ -18,8 +13,8 @@ export default class SelectionListElement extends HTMLElement {
   constructor() {
     super();
     this.shadow = this.attachShadow({ mode: "open" });
-    this.shadow.appendChild(template.content.cloneNode(true));
-    this.shadow.adoptedStyleSheets = [style];
+    this.shadow.appendChild(html.content.cloneNode(true));
+    this.shadow.adoptedStyleSheets = [css];
   }
   private buildMovieButtons(movies: Movie[]): SelectionListItemElement[] {
     const options: SelectionListItemElement[] = [];

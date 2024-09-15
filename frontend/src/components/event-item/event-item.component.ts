@@ -1,14 +1,10 @@
 import html from "./event-item.component.html?raw";
-import css from "./event-item.component.css?inline";
-import cssicons from "./event-item.component.icons.css?inline";
+import css from "./event-item.component.css" with { type: "css" };
+import cssicons from "./event-item.component.icons.css" with { type: "css" };
 import { EventData } from "../../models/EventData";
 import { getShowTimeDubTypeAttributeString as getShowTimeDubTypeAttributeString } from "../../models/ShowTimeDubType";
 import { getShowTimeLanguageString } from "../../models/ShowTimeLanguage";
 
-const style = new CSSStyleSheet();
-style.replaceSync(css);
-const iconStyle = new CSSStyleSheet();
-iconStyle.replaceSync(cssicons);
 const template = document.createElement("template");
 template.innerHTML = html;
 
@@ -27,7 +23,7 @@ export default class EventItem extends HTMLElement {
   constructor() {
     super();
     this.shadow = this.attachShadow({ mode: "open" });
-    this.shadow.adoptedStyleSheets = [style, iconStyle];
+    this.shadow.adoptedStyleSheets = [css, cssicons];
     this.shadow.appendChild(template.content.cloneNode(true));
   }
 

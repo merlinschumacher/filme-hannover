@@ -21,6 +21,9 @@ export default class SwiperService {
       }
     });
   }
+  public showLoading(): void {
+    this.swiper.showLoading();
+  }
 
   public ClearSlider(): void {
     this.onReachendEnabled = false;

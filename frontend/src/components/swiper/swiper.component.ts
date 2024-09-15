@@ -1,13 +1,11 @@
 import html from "./swiper.component.html?raw";
-import css from "./swiper.component.css?inline";
+import css from "./swiper.component.css" with { type: "css" };
 import noContentHtml from "../no-content/no-content.component.html?raw";
 import { ScrollSnapDraggable, ScrollSnapSlider } from "scroll-snap-slider";
 import "../../extensions/ShadowRootExtensions";
 import ChevronBackward from "@material-symbols/svg-400/outlined/chevron_backward.svg?raw";
 import ChevronForward from "@material-symbols/svg-400/outlined/chevron_forward.svg?raw";
 
-const style = new CSSStyleSheet();
-style.replaceSync(css);
 const template = document.createElement("template");
 template.innerHTML = html;
 const noResultsElement = document.createElement("div");
@@ -25,7 +23,7 @@ export default class Swiper extends HTMLElement {
     super();
     this.shadow = this.attachShadow({ mode: "open" });
     this.shadow.appendChild(template.content.cloneNode(true));
-    this.shadow.adoptedStyleSheets = [style];
+    this.shadow.adoptedStyleSheets = [css];
     this.scrollSnapSliderEl = this.shadow.safeQuerySelector(
       ".scroll-snap-slider",
     );
@@ -121,13 +119,24 @@ export default class Swiper extends HTMLElement {
   removeAllSlides(): void {
     this.scrollSnapSliderEl.replaceChildren();
     this.slideCount = 0;
+    this.toggleLoading();
     this.triggeredScrollThreshold = false;
   }
 
   displayNoResults(): void {
     this.scrollSnapSliderEl.replaceChildren(noResultsElement);
     this.slideCount = 0;
+    this.toggleLoading();
     this.triggeredScrollThreshold = false;
+  }
+
+  private toggleLoading(): void {
+    this.shadow.safeQuerySelector(".loading").classList.toggle("hidden");
+    this.scrollSnapSliderEl.classList.toggle("disabled");
+  }
+
+  showLoading(): void {
+    this.toggleLoading();
   }
 
   replaceSlides(slides: HTMLElement[]): void {
@@ -137,6 +146,7 @@ export default class Swiper extends HTMLElement {
     });
     this.scrollSnapSliderEl.replaceChildren(...slides);
     this.scrollSnapSlider.slideTo(0);
+    this.toggleLoading();
     this.slideCount = slides.length;
     this.triggeredScrollThreshold = false;
   }

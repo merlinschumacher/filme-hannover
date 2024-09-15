@@ -1,5 +1,5 @@
 import html from "./filter-modal.component.html?raw";
-import css from "./filter-modal.component.css?inline";
+import css from "./filter-modal.component.css" with { type: "css" };
 import CheckableButtonElement from "../checkable-button/checkable-button.component";
 import SelectionListElement from "../selection-list/selection-list.component";
 import Cinema from "../../models/Cinema";
@@ -15,8 +15,6 @@ import Check from "@material-symbols/svg-400/outlined/check.svg?raw";
 import Close from "@material-symbols/svg-400/outlined/close.svg?raw";
 import EventItem from "../event-item/event-item.component";
 
-const style = new CSSStyleSheet();
-style.replaceSync(css);
 const template = document.createElement("template");
 template.innerHTML = html;
 
@@ -40,7 +38,7 @@ export default class FilterModal extends HTMLElement {
     super();
     this.shadow = this.attachShadow({ mode: "open" });
     this.shadow.appendChild(template.content.cloneNode(true));
-    this.shadow.adoptedStyleSheets = [style];
+    this.shadow.adoptedStyleSheets = [css];
     this.shadow.safeQuerySelector("#filter-edit-icon").innerHTML = FilterIcon;
     this.shadow.safeQuerySelector("#filter-apply-icon").innerHTML = Check;
     this.shadow.safeQuerySelector("#filter-close-icon").innerHTML = Close;
