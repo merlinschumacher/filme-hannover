@@ -7,7 +7,8 @@ import { getShowTimeLanguageString } from '../../models/ShowTimeLanguage';
 
 const styleSheet = new CSSStyleSheet();
 styleSheet.replaceSync(css);
-styleSheet.insertRule(cssicons);
+const iconStyleSheet = new CSSStyleSheet();
+iconStyleSheet.replaceSync(cssicons);
 
 export default class EventItem extends HTMLElement {
   static observedAttributes = [
@@ -24,7 +25,7 @@ export default class EventItem extends HTMLElement {
   constructor() {
     super();
     this.shadow = this.attachShadow({ mode: 'open' });
-    this.shadow.adoptedStyleSheets = [styleSheet];
+    this.shadow.adoptedStyleSheets = [styleSheet, iconStyleSheet];
     this.shadow.appendChild(html.content.cloneNode(true));
   }
 
