@@ -1,15 +1,13 @@
-import html from "./swiper.component.html?raw";
-import css from "./swiper.component.css" with { type: "css" };
-import noContentHtml from "../no-content/no-content.component.html?raw";
-import { ScrollSnapDraggable, ScrollSnapSlider } from "scroll-snap-slider";
-import "../../extensions/ShadowRootExtensions";
-import ChevronBackward from "@material-symbols/svg-400/outlined/chevron_backward.svg?raw";
-import ChevronForward from "@material-symbols/svg-400/outlined/chevron_forward.svg?raw";
+import html from './swiper.component.tpl';
+import css from './swiper.component.css?inline';
+import noContentHtml from '../no-content/no-content.component.tpl';
+import { ScrollSnapDraggable, ScrollSnapSlider } from 'scroll-snap-slider';
+import '../../extensions/ShadowRootExtensions';
+import ChevronBackward from '@material-symbols/svg-400/outlined/chevron_backward.svg?raw';
+import ChevronForward from '@material-symbols/svg-400/outlined/chevron_forward.svg?raw';
 
-const template = document.createElement("template");
-template.innerHTML = html;
-const noResultsElement = document.createElement("div");
-noResultsElement.innerHTML = noContentHtml;
+const styleSheet = new CSSStyleSheet();
+styleSheet.replaceSync(css);
 
 export default class Swiper extends HTMLElement {
   private scrollSnapSlider: ScrollSnapSlider;
@@ -21,11 +19,11 @@ export default class Swiper extends HTMLElement {
 
   constructor() {
     super();
-    this.shadow = this.attachShadow({ mode: "open" });
-    this.shadow.appendChild(template.content.cloneNode(true));
-    this.shadow.adoptedStyleSheets = [css];
+    this.shadow = this.attachShadow({ mode: 'open' });
+    this.shadow.appendChild(html.content.cloneNode(true));
+    this.shadow.adoptedStyleSheets = [styleSheet];
     this.scrollSnapSliderEl = this.shadow.safeQuerySelector(
-      ".scroll-snap-slider",
+      '.scroll-snap-slider',
     );
     this.scrollSnapSlider = new ScrollSnapSlider({
       element: this.scrollSnapSliderEl,
@@ -78,39 +76,39 @@ export default class Swiper extends HTMLElement {
     ) {
       this.triggeredScrollThreshold = true;
       this.dispatchEvent(
-        new CustomEvent("scroll-threshold-reached", { bubbles: true }),
+        new CustomEvent('scroll-threshold-reached', { bubbles: true }),
       );
     }
   };
 
   connectedCallback() {
     this.removeAllSlides();
-    this.shadow.safeQuerySelector("#swipe-left").innerHTML = ChevronBackward;
-    this.shadow.safeQuerySelector("#swipe-right").innerHTML = ChevronForward;
+    this.shadow.safeQuerySelector('#swipe-left').innerHTML = ChevronBackward;
+    this.shadow.safeQuerySelector('#swipe-right').innerHTML = ChevronForward;
 
-    this.scrollSnapSlider.addEventListener("mousedown", this.handleMouseDown);
-    this.scrollSnapSlider.addEventListener("click", this.handleClick);
+    this.scrollSnapSlider.addEventListener('mousedown', this.handleMouseDown);
+    this.scrollSnapSlider.addEventListener('click', this.handleClick);
     // Detect if the user has swiped to the last page and load more data
-    this.scrollSnapSliderEl.addEventListener("scroll", () => {
+    this.scrollSnapSliderEl.addEventListener('scroll', () => {
       this.handleScrollThresholdReached();
     });
     this.shadowRoot
-      ?.safeQuerySelector("#swipe-left")
-      .addEventListener("click", this.handleSwipeLeft);
+      ?.safeQuerySelector('#swipe-left')
+      .addEventListener('click', this.handleSwipeLeft);
     this.shadowRoot
-      ?.safeQuerySelector("#swipe-right")
-      .addEventListener("click", this.handleSwipeRight);
+      ?.safeQuerySelector('#swipe-right')
+      .addEventListener('click', this.handleSwipeRight);
   }
 
   disconnectedCallback() {
-    const link = this.shadow.safeQuerySelector(".link");
-    link.removeEventListener("mousedown", this.handleMouseDown);
-    link.removeEventListener("click", this.handleClick);
+    const link = this.shadow.safeQuerySelector('.link');
+    link.removeEventListener('mousedown', this.handleMouseDown);
+    link.removeEventListener('click', this.handleClick);
   }
 
   appendSlide(slide: HTMLElement): void {
-    slide.slot = "slides";
-    slide.classList.add("scroll-snap-slide");
+    slide.slot = 'slides';
+    slide.classList.add('scroll-snap-slide');
     this.scrollSnapSliderEl.appendChild(slide);
     this.slideCount++;
     this.triggeredScrollThreshold = false;
@@ -124,15 +122,17 @@ export default class Swiper extends HTMLElement {
   }
 
   displayNoResults(): void {
-    this.scrollSnapSliderEl.replaceChildren(noResultsElement);
+    this.scrollSnapSliderEl.replaceChildren(
+      noContentHtml.content.cloneNode(true),
+    );
     this.slideCount = 0;
     this.toggleLoading();
     this.triggeredScrollThreshold = false;
   }
 
   private toggleLoading(): void {
-    this.shadow.safeQuerySelector(".loading").classList.toggle("hidden");
-    this.scrollSnapSliderEl.classList.toggle("disabled");
+    this.shadow.safeQuerySelector('.loading').classList.toggle('hidden');
+    this.scrollSnapSliderEl.classList.toggle('disabled');
   }
 
   showLoading(): void {
@@ -141,8 +141,8 @@ export default class Swiper extends HTMLElement {
 
   replaceSlides(slides: HTMLElement[]): void {
     slides.forEach((slide) => {
-      slide.slot = "slides";
-      slide.classList.add("scroll-snap-slide");
+      slide.slot = 'slides';
+      slide.classList.add('scroll-snap-slide');
     });
     this.scrollSnapSliderEl.replaceChildren(...slides);
     this.scrollSnapSlider.slideTo(0);
@@ -157,4 +157,4 @@ export default class Swiper extends HTMLElement {
   }
 }
 
-customElements.define("swiper-element", Swiper);
+customElements.define('swiper-element', Swiper);

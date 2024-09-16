@@ -1,15 +1,15 @@
-import html from "./empty-day.component.html?raw";
-import css from "./empty-day.component.css" with { type: "css" };
+import html from './empty-day.component.tpl';
+import css from './empty-day.component.css?inline';
 
-const template = document.createElement("template");
-template.innerHTML = html;
+const styleSheet = new CSSStyleSheet();
+styleSheet.replaceSync(css);
 
 export default class EmptyDayElement extends HTMLElement {
   connectedCallback() {
-    const shadow = this.attachShadow({ mode: "open" });
-    shadow.appendChild(template.content.cloneNode(true));
-    shadow.adoptedStyleSheets = [css];
+    const shadow = this.attachShadow({ mode: 'open' });
+    shadow.appendChild(html.content.cloneNode(true));
+    shadow.adoptedStyleSheets = [styleSheet];
   }
 }
 
-customElements.define("empty-day", EmptyDayElement);
+customElements.define('empty-day', EmptyDayElement);
