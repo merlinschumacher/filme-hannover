@@ -24,3 +24,5 @@ dist-ssr
 *.sw?
 
 .vite/
+# Exclude the generated files from the backend
+public/data/
