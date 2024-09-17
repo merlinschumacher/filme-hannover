@@ -20,3 +20,6 @@ compose.*.yml
 **/data
 **/logs
 **/dist
+dist
+*.log
+*.md

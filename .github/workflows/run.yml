@@ -1,12 +1,19 @@
+name: Generate pages and deploy
+on:
+  schedule:
+    - cron: "0 4 * * *"
+  workflow_dispatch:
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 permissions:
   contents: read
   pages: write
   id-token: write
-name: Generate pages and deploy
-on:
-  schedule:
-    - cron: '0 4 * * *'
-  workflow_dispatch:
 
 env:
   # Use docker.io for Docker Hub if empty
@@ -18,23 +25,28 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout 
-      uses: actions/checkout@v4 # Required to mount the Github Workspace to a volume 
-    - name: Login to Registry
-      uses: docker/login-action@v3
-      with:
-        registry: ${{ env.REGISTRY }}
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-    - name: Pull image
-      run: docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-    - name: Run image
-      run: docker run -v ${{ github.workspace }}/public:/output -e APPOPTIONS__TMDBAPIKEY=${{ secrets.APPOPTIONS__TMDBAPIKEY}} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-    - name: Upload artifact
-      uses: actions/upload-pages-artifact@v3
-      with:
-        # Upload the output
-        path: 'public'
-    - name: Deploy to GitHub Pages
-      id: deployment
-      uses: actions/deploy-pages@v4
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Login to Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pull image
+        run: docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: Run image
+        run: docker run --rm -v ${{ github.workspace }}/public:/output -e APPOPTIONS__TMDBAPIKEY=${{ secrets.APPOPTIONS__TMDBAPIKEY}} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Upload the output
+          path: "public"
+          if-no-files-found: error
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
