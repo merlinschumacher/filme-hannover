@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "KinoHannover": {
+    "filmehannover": {
       "commandName": "Project",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development",
