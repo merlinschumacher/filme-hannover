@@ -100,8 +100,3 @@ jobs:
           package-name: "filme-hannover"
           package-type: "container"
           min-versions-to-keep: 2
-
-      - name: Merge Artifacts
-        uses: actions/upload-artifact/merge@v4
-        with:
-          delete-merged: true
