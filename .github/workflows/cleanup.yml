@@ -1,4 +1,4 @@
-name: cleanup
+name: Cleanup old caches and container images
 on:
   pull_request:
     types:
@@ -37,14 +37,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  delete-package-versions:
-    name: Delete untagged package versions
-    runs-on: ubuntu-latest
-    steps:
-      - name: Delete untagged package versions
-        uses: actions/delete-package-versions@v5
+      - name: Delete old container images
+        uses: dataaxiom/ghcr-cleanup-action@v1
         with:
+          dry-run: true
           token: ${{ secrets.GITHUB_TOKEN }}
-          package-name: "filme-hannover"
-          package-type: "container"
-          min-versions-to-keep: 2
