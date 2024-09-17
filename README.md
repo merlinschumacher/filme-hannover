@@ -1,6 +1,7 @@
 # filme-hannover.de
 
 [![Generate page](https://github.com/merlinschumacher/kinohannover/actions/workflows/run.yml/badge.svg)](https://github.com/merlinschumacher/kinohannover/actions/workflows/run.yml)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fmerlinschumacher%2Ffilme-hannover.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fmerlinschumacher%2Ffilme-hannover?ref=badge_shield)
 
 This is the application code that generates the content for [filme-hannover.de](https://filme-hannover.de/). The project is non-commercial, free, and open-source. There is no monetary intent behind it. The only goal is to produce an easily accessible version of all cinema programs in Hanover for everybody, especially as the smaller cinemas' programs aren't listed on places like Google or other commercial pages.
 
@@ -30,3 +31,7 @@ Used APIs, software, graphics, and fonts:
 The data is generally extracted from the websites of the cinemas themselves.
 
 ![TMDB](https://raw.githubusercontent.com/merlinschumacher/filme-hannover/master/frontend/src/assets/tmdb-logo.svg|width=15) This product uses the TMDB API but is not endorsed or certified by TMDB.
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fmerlinschumacher%2Ffilme-hannover.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fmerlinschumacher%2Ffilme-hannover?ref=badge_large)
