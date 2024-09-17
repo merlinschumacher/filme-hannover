@@ -1,7 +1,7 @@
 import Dexie, { EntityTable, IndexableTypePart } from "dexie";
 import { JsonData } from "../models/JsonData";
 import { EventData } from "../models/EventData";
-import HttpClient from "./HttpClient";
+import { getData } from "./HttpClient";
 import Configuration from "../models/Configuration";
 import Cinema from "../models/Cinema";
 import Movie from "../models/Movie";
@@ -94,8 +94,7 @@ export default class CinemaDb extends Dexie {
 
   private async DataReloadRequired(currentDataVersion: Date): Promise<boolean> {
     const remoteVersionText =
-      (await (await HttpClient.getData(this.remoteVersionDateUrl))?.text()) ??
-      "0";
+      (await (await getData(this.remoteVersionDateUrl))?.text()) ?? "0";
     const remoteVersionDate = new Date(remoteVersionText);
     if (currentDataVersion.getTime() !== remoteVersionDate.getTime()) {
       try {

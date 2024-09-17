@@ -1,7 +1,7 @@
-import DayListElement from "../components/day-list/day-list.component";
-import EmptyDayElement from "../components/empty-day/empty-day.component";
-import Swiper from "../components/swiper/swiper.component";
-import { EventData } from "../models/EventData";
+import DayListElement from '../components/day-list/day-list.component';
+import EmptyDayElement from '../components/empty-day/empty-day.component';
+import Swiper from '../components/swiper/swiper.component';
+import { EventData } from '../models/EventData';
 
 export default class SwiperService {
   public onReachEnd?: () => void;
@@ -15,11 +15,15 @@ export default class SwiperService {
   }
 
   constructor() {
-    this.swiper.addEventListener("scroll-threshold-reached", () => {
+    this.swiper.addEventListener('scroll-threshold-reached', () => {
       if (this.onReachEnd && this.onReachendEnabled) {
         this.onReachEnd();
       }
     });
+  }
+  public showLoading(): void {
+     
+    this.swiper.showLoading();
   }
 
   public ClearSlider(): void {
@@ -32,7 +36,11 @@ export default class SwiperService {
   }
 
   public AddEvents(eventDays: Map<Date, EventData[]>) {
-    let lastDate: Date = eventDays.keys().next().value as Date;
+    const firstKey = eventDays.keys().next();
+    if (firstKey.done) {
+      throw new Error('eventDays is empty');
+    }
+    let lastDate: Date = firstKey.value;
     eventDays.forEach((dayEvents, dateString) => {
       const date = new Date(dateString);
       if (!this.isConsecutiveDate(date, lastDate)) {
@@ -50,7 +58,11 @@ export default class SwiperService {
       this.swiper.displayNoResults();
     }
 
-    let lastDate: Date = eventDays.keys().next().value as Date;
+    const firstKey = eventDays.keys().next();
+    if (firstKey.done) {
+      throw new Error('eventDays is empty');
+    }
+    let lastDate: Date = firstKey.value;
     const dateElements: HTMLElement[] = [];
     eventDays.forEach((dayEvents, dateString) => {
       const date = new Date(dateString);

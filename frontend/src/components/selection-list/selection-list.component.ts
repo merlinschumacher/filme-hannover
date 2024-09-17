@@ -1,12 +1,10 @@
-import html from "./selection-list.component.html?raw";
-import css from "./selection-list.component.css?inline";
-import Movie from "../../models/Movie";
-import SelectionListItemElement from "../selection-list-item/selection-list-item.component";
+import html from './selection-list.component.tpl';
+import css from './selection-list.component.css?inline';
+import Movie from '../../models/Movie';
+import SelectionListItemElement from '../selection-list-item/selection-list-item.component';
 
-const style = new CSSStyleSheet();
-style.replaceSync(css);
-const template = document.createElement("template");
-template.innerHTML = html;
+const styleSheet = new CSSStyleSheet();
+styleSheet.replaceSync(css);
 
 export default class SelectionListElement extends HTMLElement {
   public Movies: Movie[] = [];
@@ -17,20 +15,20 @@ export default class SelectionListElement extends HTMLElement {
 
   constructor() {
     super();
-    this.shadow = this.attachShadow({ mode: "open" });
-    this.shadow.appendChild(template.content.cloneNode(true));
-    this.shadow.adoptedStyleSheets = [style];
+    this.shadow = this.attachShadow({ mode: 'open' });
+    this.shadow.appendChild(html.content.cloneNode(true));
+    this.shadow.adoptedStyleSheets = [styleSheet];
   }
   private buildMovieButtons(movies: Movie[]): SelectionListItemElement[] {
     const options: SelectionListItemElement[] = [];
     movies.forEach((movie) => {
       const movieButton = new SelectionListItemElement();
-      movieButton.slot = "selection-list";
-      movieButton.setAttribute("label", movie.displayName);
-      movieButton.setAttribute("value", movie.id.toString());
-      movieButton.addEventListener("click", (ev: MouseEvent) => {
+      movieButton.slot = 'selection-list';
+      movieButton.setAttribute('label', movie.displayName);
+      movieButton.setAttribute('value', movie.id.toString());
+      movieButton.addEventListener('click', (ev: MouseEvent) => {
         const eventTarget = ev.target as SelectionListItemElement;
-        const movieId = parseInt(eventTarget.getAttribute("value") ?? "0");
+        const movieId = parseInt(eventTarget.getAttribute('value') ?? '0');
 
         if (this.SelectedMovies.some((m) => m.id === movieId)) {
           this.SelectedMovies = this.SelectedMovies.filter(
@@ -55,22 +53,22 @@ export default class SelectionListElement extends HTMLElement {
     this.append(...options);
 
     const searchInput = this.shadow.safeQuerySelector(
-      "input",
+      'input',
     ) as HTMLInputElement;
-    searchInput.addEventListener("input", () => {
+    searchInput.addEventListener('input', () => {
       this.searchMovies(searchInput.value);
     });
   }
 
   private searchMovies(searchTerm: string) {
-    const options = this.querySelectorAll("selection-list-item");
+    const options = this.querySelectorAll('selection-list-item');
     options.forEach((option: Element) => {
       const optionElement = option as SelectionListItemElement;
-      const label = optionElement.getAttribute("label") ?? "";
+      const label = optionElement.getAttribute('label') ?? '';
       if (label.toLowerCase().includes(searchTerm.toLowerCase())) {
-        optionElement.style.display = "block";
+        optionElement.style.display = 'block';
       } else {
-        optionElement.style.display = "none";
+        optionElement.style.display = 'none';
       }
     });
   }
@@ -82,4 +80,4 @@ export default class SelectionListElement extends HTMLElement {
   }
 }
 
-customElements.define("selection-list", SelectionListElement);
+customElements.define('selection-list', SelectionListElement);

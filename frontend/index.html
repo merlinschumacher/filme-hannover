@@ -1,14 +1,17 @@
 <!doctype html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="icon" href="favicon.ico" />
   <title>Das aktuelle Kinoprogramm in Hannover</title>
   <meta name="description" content="Das aktuelle Kinoprogramm in Hannover" />
-  <meta name="keywords"
-        content="Kino, Hannover, Kinoprogramm, Filme, Filmvorführungen, Filmfest" />
-  <script type="module" src="/src/main.ts"></script>
+  <meta name="keywords" content="Kino, Hannover, Kinoprogramm, Filme, Filmvorführungen, Filmfest" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="assets/favicon.ico" />
+  <link rel="preload" href="src/assets/loading.gif" as="image" />
+  <link rel="preload" href="src/assets/inter-regular.woff2" as="font" />
+  <link rel="preload" href="src/assets/inter-bold.woff2" as="font" />
+  <link rel="stylesheet" href="src/style.css" />
+  <script type="module" src="src/main.ts"></script>
 </head>
 
 <body>
@@ -43,13 +46,13 @@
       <a href="https://github.com/dexie/Dexie.js/blob/master/LICENSE">Dexie.js von David Fahlander/Awarica AB (Apache 2 Lizenz)</a><br />
       <a href="https://github.com/barthy-koeln/scroll-snap-slider/blob/main/LICENSE">Scroll Snap Slider von Barthélémy Bonhomme/barthy-koeln (MIT Lizenz)</a><br />
       <a href="https://github.com/adobe-fonts/noto-emoji-svg#license">Noto Emoji Font von Google (SIL Open Font License, version 1.1)</a><br />
-      <br />
+      <a href="https://www.flickr.com/photos/r8r/3444024147/in/photostream/">galloping horse gif von r8r (CC BY-NC 2.0)</a><br />
       <a href="https://github.com/JoshClose/CsvHelper/blob/master/LICENSE.txt">CsvHelper von Josh Close (Apache 2 / MS-PL Lizenz)</a><br />
       <a href="https://github.com/DanHarltey/Fastenshtein/blob/master/LICENSE">Fastenshtein von DanHarltey (MIT Lizenz)</a><br />
       <a href="https://github.com/zzzprojects/html-agility-pack/blob/master/LICENSE">Html Agility Pack von ZZZ Projects (MIT Lizenz)</a><br />
       <a href="https://github.com/rianjs/ical.net/blob/master/license.md">iCal.NET von Rian Stockbower/rianjs (MIT Lizenz)</a><br />
       Grundsätzlich werden die Daten von den Webseiten der Kinos selbst extrahiert.<br />
-      <div id="tmdb"><a href="https://themoviedb.org"><img src="src/assets/tmdb-logo.svg" alt="TMDB" /></a>This product uses the TMDB API but is not endorsed or certified by TMDB.</div>
+      <div id="tmdb"><a href="https://themoviedb.org"><img src="src/assets/tmdb-logo.svg" alt="TMDB" height="5" /></a>This product uses the TMDB API but is not endorsed or certified by TMDB.</div>
     </p>
     <p>
       Mit 🍿 gebaut.

@@ -1,62 +1,25 @@
 // vite.config.js
-import { defineConfig } from "vite";
-import htmlMinifier from "vite-plugin-html-minifier";
+import { defineConfig } from 'vite';
+import htmlMinifier from 'vite-plugin-html-minifier';
+import { ViteImageOptimizer } from 'vite-plugin-image-optimizer';
+import htmlTemplatePlugin from './plugins/vite-plugin-html-template';
+import eslint from 'vite-plugin-eslint';
+import { optimizeCssModules } from 'vite-plugin-optimize-css-modules';
 
 export default defineConfig({
   plugins: [
+    ViteImageOptimizer({}),
+    optimizeCssModules(),
+    htmlTemplatePlugin(),
     htmlMinifier({
       minify: true,
     }),
+    eslint({ cache: false, fix: true }),
   ],
   build: {
-    target: "esnext",
-    minify: "esbuild",
+    target: 'esnext',
   },
   esbuild: {
-    treeShaking: true,
-    pure: [
-      "console.log",
-      "console.debug",
-      "console.info",
-      "console.warn",
-      "console.error",
-    ],
-    minifyIdentifiers: true,
+    pure: ['console.log', 'console.debug', 'console.info', 'console.warn'],
   },
-  assetsInclude: [".src/**/*.html"],
 });
-
-const htmlComponentFile = /\.component\.html\?inline$/;
-
-const minifyHTMLConfig = {
-  collapseInlineTagWhitespace: true,
-  collapseWhitespace: true,
-  minifyCSS: true,
-  minifyJS: true,
-  removeAttributeQuotes: true,
-  removeComments: true,
-  removeEmptyAttributes: true,
-  removeOptionalTags: true,
-  removeRedundantAttributes: true,
-  removeScriptTypeAttributes: true,
-  removeStyleLinkTypeAttributes: true,
-  sortAttributes: true,
-  sortClassName: true,
-};
-
-// function htmlMinify() {
-//   return {
-//     name: 'html-minify',
-
-//     transform(src: string, id: string) {
-//       if (htmlComponentFile.test(id)) {
-//         return {
-//           code: `export default \`${minify(src, minifyHTMLConfig)}\``,
-//           map: null,
-//         };
-//       } else {
-//         return;
-//       }
-//     },
-//   };
-// }

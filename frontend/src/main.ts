@@ -1,5 +1,3 @@
-import "inter-ui/inter-variable-latin.css";
-import "./style.css";
 import FilterModal from "./components/filter-modal/filter-modal.component";
 import FilterService from "./services/FilterService";
 import ViewPortService from "./services/ViewPortService";
@@ -82,6 +80,7 @@ export class Application {
   private updateSwiper = (replaceSlides = false): void => {
     if (replaceSlides) {
       this.nextVisibleDate = new Date();
+      this.swiper.showLoading();
     }
     this.filterService
       .GetEvents(this.nextVisibleDate, this.visibleDays)

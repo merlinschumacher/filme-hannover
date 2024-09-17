@@ -1,83 +1,81 @@
-import html from "./event-item.component.html?raw";
-import css from "./event-item.component.css?inline";
-import cssicons from "./event-item.component.icons.css?inline";
-import { EventData } from "../../models/EventData";
-import { getShowTimeDubTypeAttributeString as getShowTimeDubTypeAttributeString } from "../../models/ShowTimeDubType";
-import { getShowTimeLanguageString } from "../../models/ShowTimeLanguage";
+import html from './event-item.component.tpl';
+import css from './event-item.component.css?inline';
+import cssicons from './event-item.component.icons.css?inline';
+import { EventData } from '../../models/EventData';
+import { getShowTimeDubTypeAttributeString as getShowTimeDubTypeAttributeString } from '../../models/ShowTimeDubType';
+import { getShowTimeLanguageString } from '../../models/ShowTimeLanguage';
 
-const style = new CSSStyleSheet();
-style.replaceSync(css);
-const iconStyle = new CSSStyleSheet();
-iconStyle.replaceSync(cssicons);
-const template = document.createElement("template");
-template.innerHTML = html;
+const styleSheet = new CSSStyleSheet();
+styleSheet.replaceSync(css);
+const iconStyleSheet = new CSSStyleSheet();
+iconStyleSheet.replaceSync(cssicons);
 
 export default class EventItem extends HTMLElement {
   static observedAttributes = [
-    "href",
-    "color",
-    "icon",
-    "time",
-    "title",
-    "suffix",
+    'href',
+    'color',
+    'icon',
+    'time',
+    'title',
+    'suffix',
   ];
 
   private shadow: ShadowRoot;
 
   constructor() {
     super();
-    this.shadow = this.attachShadow({ mode: "open" });
-    this.shadow.adoptedStyleSheets = [style, iconStyle];
-    this.shadow.appendChild(template.content.cloneNode(true));
+    this.shadow = this.attachShadow({ mode: 'open' });
+    this.shadow.adoptedStyleSheets = [styleSheet, iconStyleSheet];
+    this.shadow.appendChild(html.content.cloneNode(true));
   }
 
   attributeChangedCallback(name: string, oldValue: string, newValue: string) {
     if (oldValue === newValue) return;
 
     switch (name) {
-      case "title":
+      case 'title':
         this.shadow.updateElement(
-          ".title",
+          '.title',
           (el) => (el.textContent = newValue),
         );
         break;
-      case "href":
-        if (!newValue || newValue === "") {
-          this.shadow.updateElement(".link", (el) => {
-            el.classList.add("disabled");
-            el.removeAttribute("href");
+      case 'href':
+        if (!newValue || newValue === '') {
+          this.shadow.updateElement('.link', (el) => {
+            el.classList.add('disabled');
+            el.removeAttribute('href');
           });
         } else {
-          this.shadow.updateElement(".link", (el) => {
-            el.classList.remove("disabled");
-            el.setAttribute("href", newValue);
+          this.shadow.updateElement('.link', (el) => {
+            el.classList.remove('disabled');
+            el.setAttribute('href', newValue);
           });
         }
         break;
-      case "color":
+      case 'color':
         this.shadow.updateElement(
-          ".icon",
+          '.icon',
           (el) => (el.style.backgroundColor = newValue),
         );
         break;
-      case "icon": {
-        this.shadow.updateElement(".icon", (el) => {
-          el.classList.add("cinema-icon-" + newValue);
+      case 'icon': {
+        this.shadow.updateElement('.icon', (el) => {
+          el.classList.add('cinema-icon-' + newValue);
         });
         break;
       }
-      case "time": {
+      case 'time': {
         const date = new Date(newValue);
-        const dateString = date.toLocaleTimeString([], { timeStyle: "short" });
+        const dateString = date.toLocaleTimeString([], { timeStyle: 'short' });
         this.shadow.updateElement(
-          ".time",
+          '.time',
           (el) => (el.textContent = dateString),
         );
         break;
       }
-      case "suffix":
+      case 'suffix':
         this.shadow.updateElement(
-          ".suffix",
+          '.suffix',
           (el) => (el.textContent = newValue),
         );
         break;
@@ -86,34 +84,34 @@ export default class EventItem extends HTMLElement {
 
   private static BuildSuffixString(dubType: string, language: string) {
     if (!dubType && !language) {
-      return "";
+      return '';
     }
     let suffix = dubType;
     if (suffix && language) {
-      suffix += ",\xa0";
+      suffix += ',\xa0';
     }
     if (language) {
       suffix += language;
     }
-    return "(" + suffix + ")";
+    return '(' + suffix + ')';
   }
 
   static BuildElement(event: EventData) {
     const item = new EventItem();
-    item.setAttribute("href", event.url.toString());
-    item.setAttribute("color", event.color);
-    item.setAttribute("icon", event.iconClass);
-    item.setAttribute("time", event.startTime.toISOString());
-    item.setAttribute("title", event.title);
+    item.setAttribute('href', event.url.toString());
+    item.setAttribute('color', event.color);
+    item.setAttribute('icon', event.iconClass);
+    item.setAttribute('time', event.startTime.toISOString());
+    item.setAttribute('title', event.title);
     const typeString = getShowTimeDubTypeAttributeString(event.dubType);
     const languageString = getShowTimeLanguageString(event.language);
     const suffixString = EventItem.BuildSuffixString(
       typeString,
       languageString,
     );
-    item.setAttribute("suffix", suffixString);
+    item.setAttribute('suffix', suffixString);
     return item;
   }
 }
 
-customElements.define("event-item", EventItem);
+customElements.define('event-item', EventItem);

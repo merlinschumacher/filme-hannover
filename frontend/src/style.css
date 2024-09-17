@@ -8,7 +8,24 @@
   --background-lightgreen: #b9ffae;
   --background-lightred: #ffaeae;
   --light-text: #626262;
-  --font-family: "Inter", "Inter Variable", "InterVariable", "Helvetica Neue", "Roboto", "Arial", sans-serif;
+  --font-family: "Inter", "Helvetica Neue", "Roboto", "Helvetica", "Arial",
+    sans-serif;
+}
+
+/* inter-regular - latin_latin-ext */
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 400;
+  src: url("assets/inter-regular.woff2") format("woff2"); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+
+/* inter-700 - latin_latin-ext */
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 700;
+  src: url("assets/inter-bold.woff2") format("woff2"); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
 }
 
 /* Box sizing rules */
@@ -105,10 +122,10 @@ select {
   font-size: inherit;
 }
 
-  /* Make sure textareas without a rows attribute are not tiny */
-  textarea:not([rows]) {
-    min-height: 10em;
-  }
+/* Make sure textareas without a rows attribute are not tiny */
+textarea:not([rows]) {
+  min-height: 10em;
+}
 
 /* Anything that has been anchored to should have extra scroll margin */
 :target {
@@ -153,8 +170,8 @@ h4 {
   align-items: center;
 }
 
-  #tmdb img {
-    height: .75em;
-    width: auto;
-    margin-right: 0.5em;
-  }
+#tmdb img {
+  height: 0.75em;
+  width: auto;
+  margin-right: 0.5em;
+}
