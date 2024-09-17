@@ -18,6 +18,15 @@ namespace backend.Helpers
 
         public static async Task<string?> GetHttpContentAsync(Uri uri, StringContent? content = null)
         {
+            // If not in debug mode, add a delay to prevent spamming the server
+            if (!System.Diagnostics.Debugger.IsAttached)
+            {
+                // Delay to prevent spamming the server
+                var randomDelay = new Random().Next(100, 2000);
+                Task.Delay(randomDelay).Wait();
+            }
+
+            // If content is null, send a GET request, otherwise send a POST request
             if (content is null)
             {
                 return await _httpClient.GetStringAsync(uri);
