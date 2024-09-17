@@ -6,21 +6,18 @@ namespace backend.Services
 {
     public class CinemaService(DatabaseContext context, ILogger<CinemaService> logger)
     {
-        public async Task AddMovieToCinemaAsync(Movie movie, Cinema cinema)
+        public async Task<bool> AddMovieToCinemaAsync(Movie movie, Cinema cinema)
         {
-            await context.Entry(movie).Collection(m => m.Cinemas).LoadAsync();
+            await context.Entry(cinema).Collection(c => c.Movies).LoadAsync();
 
-            if (!movie.Cinemas.Contains(cinema))
-            {
-                logger.LogInformation("Adding cinema {Cinema} to movie {Movie}", cinema, movie);
-                movie.Cinemas.Add(cinema);
-            }
             if (!cinema.Movies.Contains(movie))
             {
-                logger.LogInformation("Adding movie {Movie} to cinema {Cinema}", movie, cinema);
+                logger.LogDebug("Adding movie {Movie} to cinema {Cinema}", movie, cinema);
                 cinema.Movies.Add(movie);
+                await context.SaveChangesAsync();
+                return true;
             }
-            await context.SaveChangesAsync();
+            return false;
         }
 
         public Cinema Create(Cinema cinema)

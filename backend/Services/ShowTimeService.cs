@@ -24,7 +24,7 @@ namespace backend.Services
 
             if (existingShowTime is null)
             {
-                logger.LogDebug("Adding Showtime for {Movie} at {Time} at {Cinema}", showTime.Movie.DisplayName, showTime.StartTime, showTime.Cinema);
+                logger.LogDebug("Adding ShowTime for {Movie} at {Time} at {Cinema}", showTime.Movie.DisplayName, showTime.StartTime, showTime.Cinema);
                 await context.ShowTime.AddAsync(showTime);
                 await context.SaveChangesAsync();
             }
