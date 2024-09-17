@@ -41,10 +41,6 @@ jobs:
           package-type: "container"
           min-versions-to-keep: 2
 
-      - uses: stefanluptak/delete-old-pr-artifacts@v1
-        with:
-          workflow_filename: workflows/build.yaml
-
       - name: Merge Artifacts
         uses: actions/upload-artifact/merge@v4
         with:
