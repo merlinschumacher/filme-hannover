@@ -64,7 +64,7 @@ button#open-filter {
   flex: 1 1 100%;
   margin-bottom: 1em;
 }
-@media screen and (min-width: 550px) {
+@media screen and (min-width: 600px) {
   button#open-filter {
     flex: unset;
   }
@@ -99,10 +99,10 @@ button#close-filter:hover {
 
 #filter-controls {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
+  align-items: center;
   flex-wrap: wrap;
   flex-direction: row;
+  gap: 1em;
 }
 
 #cinema-legend {
