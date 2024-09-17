@@ -5,6 +5,8 @@ import { ScrollSnapDraggable, ScrollSnapSlider } from 'scroll-snap-slider';
 import '../../extensions/ShadowRootExtensions';
 import ChevronBackward from '@material-symbols/svg-400/outlined/chevron_backward.svg?raw';
 import ChevronForward from '@material-symbols/svg-400/outlined/chevron_forward.svg?raw';
+import loaderAnimation from '../../assets/loading.gif';
+html.content.querySelector('#animation')?.setAttribute('src', loaderAnimation);
 
 const styleSheet = new CSSStyleSheet();
 styleSheet.replaceSync(css);

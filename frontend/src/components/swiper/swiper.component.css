@@ -1,4 +1,14 @@
-@import "scroll-snap-slider";
+@import 'scroll-snap-slider';
+
+:host {
+  --loader-size: 8px;
+  --loader-color: #000;
+}
+
+#swiper-wrapper {
+  position: relative;
+  min-height: 320px;
+}
 
 .scroll-snap-slider {
   overscroll-behavior-x: none;
@@ -76,11 +86,6 @@ button > svg {
 
 #swipe-right {
   right: 0;
-}
-:host {
-  --loader-size: 8px;
-  --loader-color: #000;
-  position: relative;
 }
 .film-strip {
   width: calc(20 * var(--loader-size));
