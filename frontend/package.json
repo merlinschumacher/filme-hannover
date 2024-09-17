@@ -9,6 +9,9 @@
     "build": "vite build",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts,.html,.css --fix --ignore-path .gitignore"
   },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "4.21.3"
+  },
   "devDependencies": {
     "@eslint/js": "^9.10.0",
     "@types/eslint__js": "^8.42.3",
