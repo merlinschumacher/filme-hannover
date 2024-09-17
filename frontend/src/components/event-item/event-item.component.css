@@ -19,7 +19,6 @@
 
 .title {
   flex-grow: 1;
-  font-weight: bold;
   text-wrap: balance;
   text-wrap: pretty;
 }
