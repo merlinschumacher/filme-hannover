@@ -19,7 +19,7 @@ namespace backend.Helpers
         {
             foreach (var (key, values) in _movieRatingMap)
             {
-                if (values.Any(v => ratingString.Contains(v, StringComparison.CurrentCultureIgnoreCase)))
+                if (Array.Exists(values, v => ratingString.Contains(v, StringComparison.CurrentCultureIgnoreCase)))
                 {
                     return key;
                 }

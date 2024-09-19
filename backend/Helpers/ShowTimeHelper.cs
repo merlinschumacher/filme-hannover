@@ -93,7 +93,7 @@ namespace backend.Helpers
         {
             foreach (var (key, value) in dictionary)
             {
-                if (value.Any(v => !string.IsNullOrWhiteSpace(v) && needle.Contains(v, StringComparison.OrdinalIgnoreCase)))
+                if (Array.Exists(value, v => !string.IsNullOrWhiteSpace(v) && needle.Contains(v, StringComparison.OrdinalIgnoreCase)))
                 {
                     return key;
                 }
