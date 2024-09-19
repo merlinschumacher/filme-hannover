@@ -8,24 +8,24 @@
   --background-lightgreen: #b9ffae;
   --background-lightred: #ffaeae;
   --light-text: #626262;
-  --font-family: "Inter", "Helvetica Neue", "Roboto", "Helvetica", "Arial",
+  --font-family: 'Inter', 'Helvetica Neue', 'Roboto', 'Helvetica', 'Arial',
     sans-serif;
 }
 
 /* inter-regular - latin_latin-ext */
 @font-face {
-  font-family: "Inter";
+  font-family: 'Inter';
   font-style: normal;
   font-weight: 400;
-  src: url("assets/inter-regular.woff2") format("woff2"); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+  src: url('assets/inter-regular.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
 }
 
 /* inter-700 - latin_latin-ext */
 @font-face {
-  font-family: "Inter";
+  font-family: 'Inter';
   font-style: normal;
   font-weight: 700;
-  src: url("assets/inter-bold.woff2") format("woff2"); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+  src: url('assets/inter-bold.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
 }
 
 /* Box sizing rules */
@@ -59,8 +59,8 @@ dd {
 }
 
 /* Remove list styles on ul, ol elements with a list role, which suggests default styling will be removed */
-ul[role="list"],
-ol[role="list"] {
+ul[role='list'],
+ol[role='list'] {
   list-style: none;
 }
 
@@ -174,4 +174,8 @@ h4 {
   height: 0.75em;
   width: auto;
   margin-right: 0.5em;
+}
+
+#app-root:empty {
+  min-height: max(100vmin);
 }

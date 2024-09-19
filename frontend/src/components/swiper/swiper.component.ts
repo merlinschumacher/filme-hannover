@@ -5,8 +5,7 @@ import { ScrollSnapDraggable, ScrollSnapSlider } from 'scroll-snap-slider';
 import '../../extensions/ShadowRootExtensions';
 import ChevronBackward from '@material-symbols/svg-400/outlined/chevron_backward.svg?raw';
 import ChevronForward from '@material-symbols/svg-400/outlined/chevron_forward.svg?raw';
-import loaderAnimation from '../../assets/loading.gif';
-html.content.querySelector('#animation')?.setAttribute('src', loaderAnimation);
+import Loader from '../loader/loader.component';
 
 const styleSheet = new CSSStyleSheet();
 styleSheet.replaceSync(css);
@@ -18,6 +17,7 @@ export default class Swiper extends HTMLElement {
   private shadow: ShadowRoot;
   private slideCount = 1;
   private clickPosition = { x: 0, y: 0 };
+  private loader: Loader = new Loader();
 
   constructor() {
     super();
@@ -84,6 +84,8 @@ export default class Swiper extends HTMLElement {
   };
 
   connectedCallback() {
+    this.loader.setAttribute('visible', 'true');
+    this.shadow.prepend(this.loader);
     this.removeAllSlides();
     this.shadow.safeQuerySelector('#swipe-left').innerHTML = ChevronBackward;
     this.shadow.safeQuerySelector('#swipe-right').innerHTML = ChevronForward;
@@ -133,7 +135,7 @@ export default class Swiper extends HTMLElement {
   }
 
   private toggleLoading(): void {
-    this.shadow.safeQuerySelector('.loading').classList.toggle('hidden');
+    this.loader.toggleAttribute('visible');
     this.scrollSnapSliderEl.classList.toggle('disabled');
   }
 
