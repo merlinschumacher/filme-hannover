@@ -35,5 +35,29 @@ namespace backend.Services
 
             return showTime;
         }
+
+        public async Task<ShowTime?> FindSimilarShowTime(Cinema cinema, DateTime startTime, string movieTitle, TimeSpan tolerance)
+        {
+            var query = context.ShowTime.Include(s => s.Movie).Include(s => s.Cinema).AsQueryable();
+
+            var lowerBound = startTime - tolerance;
+            var upperBound = startTime + tolerance;
+
+            ShowTime? result = await query.FirstOrDefaultAsync(s => s.Cinema == cinema
+                && s.StartTime >= lowerBound
+                && s.StartTime <= upperBound
+                && (s.Movie.DisplayName.Equals(movieTitle, StringComparison.CurrentCultureIgnoreCase)
+                    || s.Movie.Aliases.Any(a => a.Value.Equals(movieTitle, StringComparison.CurrentCultureIgnoreCase))
+                    || s.Movie.DisplayName.Contains(movieTitle, StringComparison.CurrentCultureIgnoreCase)
+                    || s.Movie.Aliases.Any(a => movieTitle.Contains(a.Value, StringComparison.CurrentCultureIgnoreCase))
+                    ));
+
+            if (result is not null)
+            {
+                logger.LogDebug("Found similar ShowTime for {Movie} at {Time} at {Cinema}", result.Movie, result.StartTime, result.Cinema);
+            }
+
+            return result;
+        }
     }
 }

@@ -8,7 +8,7 @@ namespace backend.Helpers
         {
             { ShowTimeDubType.Regular, [""] },
             { ShowTimeDubType.OriginalVersion, ["OV", "OF", "Original Version", "Originalversion", "Originalfassung", "Original Fassung"] },
-            { ShowTimeDubType.Subtitled, ["OmU", "OmeU", "OmdU", "Untertitel"] },
+            { ShowTimeDubType.Subtitled, ["OmU", "OmeU", "OmdU", "Untertitel", "OmenglU"] },
         };
 
         private static readonly Dictionary<ShowTimeLanguage, string[]> _showTimeLanguageMap = new()
@@ -26,7 +26,7 @@ namespace backend.Helpers
             { ShowTimeLanguage.Hindi, ["Hindi", "hind", "hin" ] },
             { ShowTimeLanguage.Polish, ["Polnisch", "pol", "PL"] },
             { ShowTimeLanguage.Other, ["Andere", "Verschiedene", "versch.", "div.", "Malayalam", "Filipino", "Georgisch", "georg." ]},
-            { ShowTimeLanguage.Unknown, ["Unbekannt"] }
+            { ShowTimeLanguage.Unknown, ["Unbekannt"] },
         };
 
         public static string GetLanguageName(ShowTimeLanguage language)
@@ -43,7 +43,7 @@ namespace backend.Helpers
 
         public static ShowTimeLanguage? TryGetLanguage(string language, ShowTimeLanguage? def)
         {
-            var result = GetMatchingDictionaryKey(language, _showTimeLanguageMap, ShowTimeLanguage.Unknown);
+            var result = FindMatchingDictionaryKey(language, _showTimeLanguageMap, ShowTimeLanguage.Unknown);
             if (result == ShowTimeLanguage.Unknown)
             {
                 return def;
@@ -53,17 +53,43 @@ namespace backend.Helpers
 
         public static ShowTimeLanguage GetLanguage(string language)
         {
-            return GetMatchingDictionaryKey(language, _showTimeLanguageMap, ShowTimeLanguage.German);
+            return FindMatchingDictionaryKey(language, _showTimeLanguageMap, ShowTimeLanguage.German);
         }
 
         public static ShowTimeDubType GetDubType(string type)
         {
             type = type.Trim().Replace(".", null).Replace("(", null).Replace(")", null);
 
-            return GetMatchingDictionaryKey(type, _showTimeDubTypeMap, ShowTimeDubType.Regular);
+            var results = FindMatchingDictionaryKeys(type, _showTimeDubTypeMap);
+            if (results.Count == 0)
+            {
+                return ShowTimeDubType.Regular;
+            }
+            // If both OV and OmU are found, return OmU, as it is more specific
+            if (results.Contains(ShowTimeDubType.Subtitled) && results.Contains(ShowTimeDubType.OriginalVersion))
+            {
+                return ShowTimeDubType.Subtitled;
+            }
+            // Otherwise return the first resultq
+            return results[0];
         }
 
-        private static T GetMatchingDictionaryKey<T>(string needle, Dictionary<T, string[]> dictionary, T defaultValue) where T : notnull
+        private static List<T> FindMatchingDictionaryKeys<T>(string haystack, Dictionary<T, string[]> dictionary) where T : notnull
+        {
+
+            var matches = new List<T>();
+
+            foreach (var (key, needle) in dictionary)
+            {
+                if (Array.Exists(needle, n => !string.IsNullOrWhiteSpace(n) && haystack.Contains(n, StringComparison.OrdinalIgnoreCase)))
+                {
+                    matches.Add(key);
+                }
+            }
+
+            return matches;
+        }
+        private static T FindMatchingDictionaryKey<T>(string needle, Dictionary<T, string[]> dictionary, T defaultValue) where T : notnull
         {
             foreach (var (key, value) in dictionary)
             {

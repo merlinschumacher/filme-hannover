@@ -53,6 +53,17 @@ namespace backend.Scrapers.Koki
                     continue;
                 }
 
+                // We first try to process the movie and the showtime without creating them in the database.
+                // This is necessary to check if the movie and showtime already exist in the database,
+                // because we have multiple scrapers for the same cinema and their data varies.
+                var movieTitle = GetMovieTitle(eventJson);
+
+                var existingShowTime = await showTimeService.FindSimilarShowTime(cinema, eventJson.StartDate, movieTitle, TimeSpan.FromMinutes(5));
+                if (existingShowTime is not null)
+                {
+                    continue;
+                }
+
                 var movie = await ProcessMovie(eventJson);
                 await ProcessShowTime(eventElement, eventJson, movie);
             }
@@ -86,7 +97,7 @@ namespace backend.Scrapers.Koki
 
         private async Task<Movie> ProcessMovie(EventDetailJson eventJson)
         {
-            var movieTitle = _titleRegex.Match(eventJson.Name).Groups[1].Value;
+            var movieTitle = GetMovieTitle(eventJson);
             var movie = new Movie()
             {
                 DisplayName = movieTitle,
@@ -95,6 +106,11 @@ namespace backend.Scrapers.Koki
             movie = await movieService.CreateAsync(movie);
             await cinemaService.AddMovieToCinemaAsync(movie, cinema);
             return movie;
+        }
+
+        private string GetMovieTitle(EventDetailJson eventJson)
+        {
+            return _titleRegex.Match(eventJson.Name).Groups[1].Value;
         }
 
         private async Task<(ShowTimeDubType, ShowTimeLanguage)> GetShowTimeDubTypeLanguage(string? readMoreUrlString)
