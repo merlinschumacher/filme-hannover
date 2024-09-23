@@ -107,5 +107,5 @@ This project is licensed under the **[GNU Affero General Public License v3.0 (AG
 - [Html Agility Pack by ZZZ Projects](https://github.com/zzzprojects/html-agility-pack/blob/master/LICENSE) (MIT License)
 - [iCal.NET by Rian Stockbower/rianjs](https://github.com/rianjs/ical.net/blob/master/license.md) (MIT License)
 
-- <img src="https://raw.githubusercontent.com/merlinschumacher/filme-hannover/master/frontend/src/assets/tmdb-logo.svg" style="height: 12px;" /> Uses the TMDB API, though this project is not endorsed or certified by TMDB.
+- <img src="https://raw.githubusercontent.com/merlinschumacher/filme-hannover/master/frontend/src/assets/tmdb-logo.svg" style="height: 12px;" />This product uses the TMDB API but is not endorsed or certified by TMDB.
 - **All Contributors:** Thanks to everyone who has contributed to this project! You can find the full list of contributors [here](https://github.com/merlinschumacher/kinohannover/graphs/contributors).
