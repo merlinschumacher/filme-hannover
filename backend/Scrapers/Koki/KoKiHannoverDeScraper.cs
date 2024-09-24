@@ -21,11 +21,11 @@ namespace backend.Scrapers.Koki
         private readonly Uri _baseUrl = new("https://www.hannover.de/");
 
 #pragma warning disable S1075 // URIs should not be hardcoded
-        private readonly string _dataUrlString = "https://www.hannover.de/Kommunales-Kino/api/v2/view/{0}/0/100/line?identifiers=event&sortField=2&sortOrder=1";
+        private readonly string _dataUrlString = "https://www.hannover.de/Kommunales-Kino/api/v1/view/{0}/0/100/line?identifiers=event";
         private readonly string _jsonApiUrlString = "https://www.hannover.de/api/v1/jsonld/{0}";
 #pragma warning restore S1075 // URIs should not be hardcoded
 
-        private readonly string _shopLink = "https://www.hannover.de/Kommunales-Kino/";
+        private readonly string _shopLink = "https://www.hannover.de/Kommunales-Kino/Programm";
 
         private readonly Regex _titleRegex = TitleRegex();
         private readonly Regex _viewIdRegex = ViewIdRegex();
