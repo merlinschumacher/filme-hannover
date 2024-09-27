@@ -9,6 +9,7 @@
         "github.vscode-github-actions",
         "ms-dotnettools.csdevkit",
         "redhat.vscode-yaml",
-        "xabikos.javascriptsnippets"
+        "xabikos.javascriptsnippets",
+        "mechatroner.rainbow-csv"
     ]
 }
