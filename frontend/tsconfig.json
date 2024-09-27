@@ -3,7 +3,7 @@
     "src/**/*",
     "env.d.ts",
     "vite.config.ts",
-    "eslint.config.mjs",
+    "eslint.config.js",
     "types/**/*",
     "plugins/**/*"
   ],

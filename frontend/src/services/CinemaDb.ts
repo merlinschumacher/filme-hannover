@@ -6,6 +6,7 @@ import Configuration from '../models/Configuration';
 import Cinema from '../models/Cinema';
 import Movie from '../models/Movie';
 import ShowTime from '../models/ShowTime';
+import { allMovieRatings, MovieRating } from '../models/MovieRating';
 Dexie.debug = true;
 
 export default class CinemaDb extends Dexie {
@@ -21,7 +22,7 @@ export default class CinemaDb extends Dexie {
 
   private constructor() {
     super('CinemaDb');
-    this.version(4).stores({
+    this.version(5).stores({
       cinemas: 'id, displayName, iconClass',
       movies: 'id, displayName, runtime, rating, releaseDate',
       showTimes:
@@ -174,10 +175,16 @@ export default class CinemaDb extends Dexie {
       .toArray();
   }
 
-  public async GetAllMovies(): Promise<Movie[]> {
+  public async GetAllMovies(ratings: MovieRating[] = []): Promise<Movie[]> {
+    if (ratings.length === 0) {
+      ratings = allMovieRatings;
+    }
     const movieIds = await this.showTimes.orderBy('movie').uniqueKeys();
     const movieArray = await this.movies
-      .filter((movie) => movieIds.includes(movie.id))
+      .filter(
+        (movie) =>
+          movieIds.includes(movie.id) && ratings.includes(movie.rating),
+      )
       .toArray();
 
     const collator = new Intl.Collator(undefined, {
@@ -190,9 +197,9 @@ export default class CinemaDb extends Dexie {
   }
 
   public async GetEarliestShowTimeDate(
-    selectedCinemaIds: number[],
-    selectedMovieIds: number[],
-    selectedShowTimeDubTypes: number[],
+    cinemaIds: number[],
+    movieIds: number[],
+    dubTypes: number[],
   ): Promise<Date | null> {
     // get the first showtime date for the selected cinemas and movies
     const earliestShowTime = await this.showTimes
@@ -200,9 +207,9 @@ export default class CinemaDb extends Dexie {
       .and(
         (showTime) =>
           showTime.startTime.getTime() >= new Date().getTime() &&
-          selectedCinemaIds.includes(showTime.cinema) &&
-          selectedMovieIds.includes(showTime.movie) &&
-          selectedShowTimeDubTypes.includes(showTime.dubType),
+          cinemaIds.includes(showTime.cinema) &&
+          movieIds.includes(showTime.movie) &&
+          dubTypes.includes(showTime.dubType),
       )
       .first();
 

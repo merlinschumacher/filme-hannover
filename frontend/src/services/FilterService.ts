@@ -2,20 +2,20 @@ import Cinema from '../models/Cinema';
 import { EventData } from '../models/EventData';
 import EventDataResult from '../models/EventDataResult';
 import Movie from '../models/Movie';
+import { allMovieRatings, MovieRating } from '../models/MovieRating';
 import {
-  getAllShowTimeDubTypes,
+  allShowTimeDubTypes,
   ShowTimeDubType,
 } from '../models/ShowTimeDubType';
 import CinemaDb from './CinemaDb';
 
 export default class FilterService {
   private db: CinemaDb;
-  private availableMovies: Movie[] = [];
   private availableCinemas: Cinema[] = [];
   private selectedMovies: Movie[] = [];
   private selectedCinemas: Cinema[] = [];
-  private selectedShowTimeDubTypes: ShowTimeDubType[] =
-    getAllShowTimeDubTypes();
+  private selectedShowTimeDubTypes: ShowTimeDubType[] = allShowTimeDubTypes;
+  private selectedRatings: MovieRating[] = allMovieRatings;
   public resultListChanged?: () => void;
 
   private constructor(CinemaDb: CinemaDb) {
@@ -30,17 +30,13 @@ export default class FilterService {
   }
 
   private async initialize(): Promise<void> {
-    this.availableMovies = await this.db.GetAllMovies();
     this.availableCinemas = await this.db.GetAllCinemas();
     this.selectedCinemas = this.availableCinemas;
-    this.selectedMovies = this.availableMovies;
+    this.selectedMovies = await this.db.GetAllMovies(this.selectedRatings);
   }
 
-  public GetAllMovies(): Movie[] {
-    if (this.selectedMovies.length === 0) {
-      return this.availableMovies;
-    }
-    return this.availableMovies;
+  public async GetAllMovies(): Promise<Movie[]> {
+    return await this.db.GetAllMovies(this.selectedRatings);
   }
 
   public GetAllCinemas(): Cinema[] {
@@ -51,7 +47,9 @@ export default class FilterService {
     cinemas: Cinema[],
     movies: Movie[],
     showTimeDubType: ShowTimeDubType[],
+    ratings: MovieRating[],
   ): Promise<void> {
+    this.setSelectedMovieRatings(ratings);
     await this.setSelectedCinemas(cinemas);
     await this.setSelectedMovies(movies);
     this.setSelectedShowTimeDubTypes(showTimeDubType);
@@ -61,13 +59,12 @@ export default class FilterService {
   }
 
   private async setSelectedMovies(movies: Movie[]): Promise<void> {
-    if (movies.length === 0 && this.selectedCinemas.length === 0) {
-      this.selectedMovies = await this.db.GetAllMovies();
-    } else if (movies.length === 0) {
-      this.selectedMovies = this.availableMovies;
+    if (movies.length === 0) {
+      this.selectedMovies = await this.db.GetAllMovies(this.selectedRatings);
     } else {
       this.selectedMovies = movies;
     }
+    console.log('Selected movies:', this.selectedMovies);
   }
 
   private async setSelectedCinemas(cinemas: Cinema[]): Promise<void> {
@@ -84,9 +81,18 @@ export default class FilterService {
     showTimeDubTypes: ShowTimeDubType[],
   ): void {
     if (showTimeDubTypes.length === 0) {
-      this.selectedShowTimeDubTypes = getAllShowTimeDubTypes();
+      this.selectedShowTimeDubTypes = allShowTimeDubTypes;
     }
     this.selectedShowTimeDubTypes = showTimeDubTypes;
+    console.log('Selected show time dub types:', showTimeDubTypes);
+  }
+
+  private setSelectedMovieRatings(ratings: MovieRating[]): void {
+    if (ratings.length === 0) {
+      this.selectedRatings = allMovieRatings;
+    }
+    this.selectedRatings = ratings;
+    console.log('Selected ratings:', ratings);
   }
 
   public async GetEvents(
@@ -137,8 +143,6 @@ export default class FilterService {
     }
     const lastEventTime = events[events.length - 1].startTime;
     const splitEvents = this.splitEventsIntoDays(events);
-
-    console.log('Events', splitEvents);
 
     return new EventDataResult(splitEvents, lastEventTime);
   }

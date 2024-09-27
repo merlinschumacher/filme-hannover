@@ -10,9 +10,16 @@
   gap: 1em;
 }
 
+.rating-selection {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 1em;
+}
+
 .cinema-selection,
 .movie-selection,
-.type-selection {
+.type-selection,
+.rating-selection {
   margin-bottom: 1em;
 }
 

@@ -16,6 +16,10 @@
   <div class="type-selection">
     <slot name="type-selection"></slot>
   </div>
+  <h4>Altersfreigaben</h4>
+  <div class="rating-selection">
+    <slot name="rating-selection"></slot>
+  </div>
   <button id="apply-filter">
     <span id="filter-apply-icon" class="icon"></span>Filter anwenden
   </button>

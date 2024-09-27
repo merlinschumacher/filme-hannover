@@ -1,8 +1,9 @@
-import FilterModal from "./components/filter-modal/filter-modal.component";
-import FilterService from "./services/FilterService";
-import ViewPortService from "./services/ViewPortService";
-import SwiperService from "./services/SwiperService";
-import Cinema from "./models/Cinema";
+import FilterModal from './components/filter-modal/filter-modal.component';
+import FilterService from './services/FilterService';
+import ViewPortService from './services/ViewPortService';
+import SwiperService from './services/SwiperService';
+import Cinema from './models/Cinema';
+import Movie from './models/Movie';
 
 export class Application {
   private filterService!: FilterService;
@@ -13,11 +14,11 @@ export class Application {
   private appRootEl: HTMLElement = this.getAppRootEl();
 
   private getAppRootEl(): HTMLElement {
-    const appRootEl = document.querySelector("#app-root");
+    const appRootEl = document.querySelector('#app-root');
     if (appRootEl) {
       return appRootEl as HTMLElement;
     }
-    throw new Error("Failed to find app root element.");
+    throw new Error('Failed to find app root element.');
   }
 
   private constructor() {
@@ -31,18 +32,18 @@ export class Application {
         this.updateSwiper(true);
       })
       .catch((error: unknown) => {
-        console.error("Failed to create filter service.", error);
+        console.error('Failed to create filter service.', error);
       });
   }
 
   private init() {
-    console.log("Initializing application...");
+    console.log('Initializing application...');
     const cinemas = this.filterService.GetAllCinemas();
     document.adoptedStyleSheets = [this.buildCinemaStyleSheet(cinemas)];
     const filterModal = this.initFilter();
     this.appRootEl.appendChild(filterModal);
 
-    const lastUpdateEl = document.querySelector("#lastUpdate");
+    const lastUpdateEl = document.querySelector('#lastUpdate');
     if (lastUpdateEl) {
       lastUpdateEl.textContent = this.filterService.getDataVersion();
     }
@@ -54,21 +55,37 @@ export class Application {
   }
 
   private initFilter(): FilterModal {
-    const movies = this.filterService.GetAllMovies();
+    const movies: Movie[] = [];
+    this.filterService
+      .GetAllMovies()
+      .then((m) => {
+        movies.push(...m);
+      })
+      .catch((error: unknown) => {
+        console.error('Failed to get all movies.', error);
+      });
+
     const cinemas = this.filterService.GetAllCinemas();
+    console.log('Cinemas:', cinemas);
+    console.log('Movies:', movies);
     const filterModal = FilterModal.BuildElement(cinemas, movies);
-    filterModal.onFilterChanged = (cinemas, movies, showTimeDubTypes) => {
+    filterModal.onFilterChanged = (
+      cinemas,
+      movies,
+      showTimeDubTypes,
+      ratings,
+    ) => {
       this.nextVisibleDate = new Date();
       this.filterService
-        .SetSelection(cinemas, movies, showTimeDubTypes)
+        .SetSelection(cinemas, movies, showTimeDubTypes, ratings)
         .then(() => {
-          console.log("Filter changed.");
-          console.debug("Cinemas:", cinemas);
-          console.debug("Movies:", movies);
-          console.debug("ShowTimeDubTypes:", showTimeDubTypes);
+          console.log('Filter changed.');
+          console.debug('Cinemas:', cinemas);
+          console.debug('Movies:', movies);
+          console.debug('ShowTimeDubTypes:', showTimeDubTypes);
         })
         .catch((error: unknown) => {
-          console.error("Failed to set selection.", error);
+          console.error('Failed to set selection.', error);
         });
     };
     this.filterService.resultListChanged = () => {
@@ -104,7 +121,7 @@ export class Application {
         }
       })
       .catch((error: unknown) => {
-        console.error("Failed to get events.", error);
+        console.error('Failed to get events.', error);
       });
   };
 
@@ -119,6 +136,6 @@ export class Application {
   }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener('DOMContentLoaded', () => {
   Application.Init();
 });

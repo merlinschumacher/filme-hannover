@@ -19,8 +19,7 @@ export default class Loader extends HTMLElement {
     this.loaderEl = this.shadow.safeQuerySelector('#loader');
     this.setAttribute('visible', 'true');
   }
-  attributeChangedCallback(name: string, oldValue: string, newValue: string) {
-    console.log('attributeChangedCallback', name, oldValue, newValue);
+  attributeChangedCallback(name: string, _: string, newValue: string) {
     switch (name) {
       case 'visible': {
         if (newValue) {
