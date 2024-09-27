@@ -18,7 +18,7 @@ namespace backend.Models
         {
             if (DubType == ShowTimeDubType.Regular && Language == ShowTimeLanguage.German)
             {
-                return "";
+                return string.Empty;
             }
 
             var typeString = ShowTimeHelper.GetTypeName(DubType);

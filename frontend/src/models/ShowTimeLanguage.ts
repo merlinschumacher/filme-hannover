@@ -1,17 +1,18 @@
 export enum ShowTimeLanguage {
-  German,
-  English,
-  Danish,
-  French,
-  Spanish,
-  Italian,
-  Russian,
-  Turkish,
-  Japanese,
-  Korean,
-  Hindi,
-  Other,
-  Unknown,
+  German = 0,
+  English = 1,
+  Danish = 2,
+  French = 3,
+  Spanish = 4,
+  Italian = 5,
+  Russian = 6,
+  Turkish = 7,
+  Japanese = 8,
+  Korean = 9,
+  Hindi = 10,
+  Polish = 11,
+  Other = 254,
+  Unknown = -1,
 }
 
 export function getShowTimeLanguageString(
@@ -19,27 +20,29 @@ export function getShowTimeLanguageString(
 ): string {
   switch (showTimeLanguage) {
     case ShowTimeLanguage.English:
-      return "Englisch";
+      return 'Englisch';
     case ShowTimeLanguage.Danish:
-      return "Dänisch";
+      return 'Dänisch';
     case ShowTimeLanguage.French:
-      return "Französisch";
+      return 'Französisch';
     case ShowTimeLanguage.Spanish:
-      return "Spanisch";
+      return 'Spanisch';
     case ShowTimeLanguage.Italian:
-      return "Italienisch";
+      return 'Italienisch';
     case ShowTimeLanguage.Russian:
-      return "Russisch";
+      return 'Russisch';
     case ShowTimeLanguage.Turkish:
-      return "Türkisch";
+      return 'Türkisch';
     case ShowTimeLanguage.Japanese:
-      return "Japanisch";
+      return 'Japanisch';
     case ShowTimeLanguage.Korean:
-      return "Koreanisch";
+      return 'Koreanisch';
     case ShowTimeLanguage.Hindi:
-      return "Hindi";
+      return 'Hindi';
+    case ShowTimeLanguage.Polish:
+      return 'Polnisch';
     case ShowTimeLanguage.Other:
-      return "Andere";
+      return 'Andere';
   }
-  return "";
+  return '';
 }

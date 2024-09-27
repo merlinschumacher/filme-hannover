@@ -84,10 +84,10 @@ namespace kinohannover.Helpers
             title = title.Replace(" OV ", "", StringComparison.CurrentCultureIgnoreCase).Trim();
 
             // Avoid adding movies with only uppercase letters, as this is usually a sign of a bad title. Make them title case instead.
-            var upperCasePercentage = title.Count(c => char.IsLetter(c) && char.IsUpper(c)) / (double)title.Length;
+            var upperCaseRatio = title.Count(c => char.IsLetter(c) && char.IsUpper(c)) / (double)title.Length;
             var words = title.Split(' ');
             var upperCaseWords = words.Count(e => !LatinNumeralRegex().IsMatch(e) && e.Where(e => char.IsLetter(e)).All(char.IsUpper));
-            if (upperCasePercentage > 0.7)
+            if (upperCaseRatio > 0.7)
             {
                 return ToTitleCase(title);
             }

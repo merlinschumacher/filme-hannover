@@ -1,12 +1,12 @@
-import Cinema from "../models/Cinema";
-import { EventData } from "../models/EventData";
-import EventDataResult from "../models/EventDataResult";
-import Movie from "../models/Movie";
+import Cinema from '../models/Cinema';
+import { EventData } from '../models/EventData';
+import EventDataResult from '../models/EventDataResult';
+import Movie from '../models/Movie';
 import {
   getAllShowTimeDubTypes,
   ShowTimeDubType,
-} from "../models/ShowTimeDubType";
-import CinemaDb from "./CinemaDb";
+} from '../models/ShowTimeDubType';
+import CinemaDb from './CinemaDb';
 
 export default class FilterService {
   private db: CinemaDb;
@@ -97,7 +97,7 @@ export default class FilterService {
     const selectedMovieIds = this.selectedMovies.map((m) => m.id);
 
     const events = await this.db.transaction(
-      "r",
+      'r',
       this.db.showTimes,
       this.db.cinemas,
       this.db.movies,
@@ -137,6 +137,8 @@ export default class FilterService {
     }
     const lastEventTime = events[events.length - 1].startTime;
     const splitEvents = this.splitEventsIntoDays(events);
+
+    console.log('Events', splitEvents);
 
     return new EventDataResult(splitEvents, lastEventTime);
   }

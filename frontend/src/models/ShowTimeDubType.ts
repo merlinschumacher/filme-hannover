@@ -2,6 +2,7 @@ export enum ShowTimeDubType {
   Regular = 0,
   OriginalVersion = 1,
   Subtitled = 2,
+  SubtitledEnglish = 3,
 }
 
 export function getShowTimeDubTypeAttributeString(
@@ -9,11 +10,13 @@ export function getShowTimeDubTypeAttributeString(
 ): string {
   switch (showTimeDubType) {
     case ShowTimeDubType.OriginalVersion:
-      return "OV";
+      return 'OV';
     case ShowTimeDubType.Subtitled:
-      return "OmU";
+      return 'OmU';
+    case ShowTimeDubType.SubtitledEnglish:
+      return 'OmeU';
     default:
-      return "";
+      return '';
   }
 }
 
@@ -21,12 +24,14 @@ export function getShowTimeDubTypeLabelString(
   showTimeDubType: ShowTimeDubType,
 ): string {
   switch (showTimeDubType) {
-    case ShowTimeDubType.Regular:
-      return "Normal";
     case ShowTimeDubType.OriginalVersion:
-      return "OV";
+      return 'OV';
     case ShowTimeDubType.Subtitled:
-      return "OmU";
+      return 'OmU';
+    case ShowTimeDubType.SubtitledEnglish:
+      return 'OmeU';
+    default:
+      return 'Normal';
   }
 }
 
@@ -35,6 +40,7 @@ export function getAllShowTimeDubTypes() {
     ShowTimeDubType.Regular,
     ShowTimeDubType.OriginalVersion,
     ShowTimeDubType.Subtitled,
+    ShowTimeDubType.SubtitledEnglish,
   ];
 }
 

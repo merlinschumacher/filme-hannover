@@ -95,7 +95,8 @@ namespace backend.Scrapers.Koki
                 {
                     var timeNode = timeRow.SelectNodes(_eventTimeNodeSelector)[i];
                     if (timeNode is null) continue;
-                    var timeText = timeNode.InnerText;
+                    var timeText = timeNode.InnerText.Trim();
+                    if (string.IsNullOrEmpty(timeText) || timeText == "-") continue;
                     if (!TimeOnly.TryParse(timeText, CultureInfo.CurrentCulture, out var time))
                     {
                         continue;

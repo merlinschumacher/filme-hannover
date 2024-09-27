@@ -194,8 +194,9 @@ export default class FilterModal extends HTMLElement {
     const showTimeDubTypeButtons: CheckableButtonElement[] = [];
     const showTimeDubTypes: ShowTimeDubType[] = [
       ShowTimeDubType.Regular,
-      ShowTimeDubType.Subtitled,
       ShowTimeDubType.OriginalVersion,
+      ShowTimeDubType.Subtitled,
+      ShowTimeDubType.SubtitledEnglish,
     ];
 
     showTimeDubTypes.forEach((showTimeDubType) => {
