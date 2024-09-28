@@ -11,7 +11,7 @@ const iconStyleSheet = new CSSStyleSheet();
 iconStyleSheet.replaceSync(cssicons);
 
 export default class EventItem extends HTMLElement {
-  static observedAttributes = [
+  public static observedAttributes = [
     'href',
     'color',
     'icon',

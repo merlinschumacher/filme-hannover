@@ -1,9 +1,9 @@
-import FilterModal from './components/filter-modal/filter-modal.component';
 import FilterService from './services/FilterService';
 import ViewPortService from './services/ViewPortService';
 import SwiperService from './services/SwiperService';
 import Cinema from './models/Cinema';
 import Movie from './models/Movie';
+import FilterBar from './components/filter-bar/filter-bar.component';
 
 export class Application {
   private filterService!: FilterService;
@@ -54,10 +54,10 @@ export class Application {
     return app;
   }
 
-  private initFilter(): FilterModal {
+  private initFilter(): FilterBar{
     const movies: Movie[] = [];
     this.filterService
-      .GetAllMovies()
+      .GetMovies()
       .then((m) => {
         movies.push(...m);
       })
@@ -68,8 +68,10 @@ export class Application {
     const cinemas = this.filterService.GetAllCinemas();
     console.log('Cinemas:', cinemas);
     console.log('Movies:', movies);
-    const filterModal = FilterModal.BuildElement(cinemas, movies);
-    filterModal.onFilterChanged = (
+    const filterBar = new FilterBar();
+    filterBar.= cinemas.length;
+    filterBar.movies = movies;
+    filterBar.onFilterChanged = (
       cinemas,
       movies,
       showTimeDubTypes,
@@ -91,7 +93,7 @@ export class Application {
     this.filterService.resultListChanged = () => {
       this.updateSwiper(true);
     };
-    return filterModal;
+    return filterBar;
   }
 
   private updateSwiper = (replaceSlides = false): void => {

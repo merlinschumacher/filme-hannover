@@ -11,6 +11,18 @@ export default class SelectionListItemElement extends HTMLElement {
     return ['label', 'value', 'color', 'checked'];
   }
 
+  getValue(): number {
+    return parseInt(this.getAttribute('value') ?? '-1');
+  }
+
+  setChecked(checked: boolean) {
+    if (checked) {
+      this.setAttribute('checked', '');
+    } else {
+      this.removeAttribute('checked');
+    }
+  }
+
   private shadow: ShadowRoot;
 
   private handleClick = (ev: MouseEvent) => {

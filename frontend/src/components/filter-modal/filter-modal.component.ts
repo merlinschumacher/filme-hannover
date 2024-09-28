@@ -15,214 +15,254 @@ import {
   getShowTimeDubTypeLabelString,
   ShowTimeDubType,
 } from '../../models/ShowTimeDubType';
-import FilterIcon from '@material-symbols/svg-400/rounded/filter_alt.svg?raw';
 import Check from '@material-symbols/svg-400/outlined/check.svg?raw';
 import Close from '@material-symbols/svg-400/outlined/close.svg?raw';
-import EventItem from '../event-item/event-item.component';
 
 const styleSheet = new CSSStyleSheet();
 styleSheet.replaceSync(css);
 
 export default class FilterModal extends HTMLElement {
-  public Cinemas: Cinema[] = [];
-  public Movies: Movie[] = [];
+  public cinemas: Cinema[] = [];
+  public movies: Movie[] = [];
 
-  private SelectedCinemas: Cinema[] = [];
-  private SelectedMovies: Movie[] = [];
-  private SelectedShowDubTimeTypes: ShowTimeDubType[] = allShowTimeDubTypes;
-  private SelectedMovieRatings: MovieRating[] = allMovieRatings;
+  private selectedCinemaIds: number[] = [];
+  private selectedMovieIds: number[] = [];
+  private selectedDubTypes: ShowTimeDubType[] = allShowTimeDubTypes;
+  private selectedRatings: MovieRating[] = allMovieRatings;
   private shadow: ShadowRoot;
   private dialogEl: HTMLDialogElement;
 
+  public showModal() {
+    this.dialogEl.showModal();
+  }
+
   public onFilterChanged?: (
-    cinemas: Cinema[],
-    movies: Movie[],
-    showTimeDubTypes: ShowTimeDubType[],
-    movieRatings: MovieRating[],
+    selectedCinemaIds: number[],
+    selectedMovieIds: number[],
+    selectedDubTypes: ShowTimeDubType[],
+    selectedRatings: MovieRating[],
   ) => void;
+
+  public setData(
+    selectedCinemaIds: number[],
+    selectedMovieIds: number[],
+    selectedDubTypes: ShowTimeDubType[],
+    selecteRatings: MovieRating[],
+  ) {
+    this.selectedCinemaIds = selectedCinemaIds;
+    this.selectedMovieIds = selectedMovieIds;
+    this.selectedDubTypes = selectedDubTypes;
+    this.selectedRatings = selecteRatings;
+  }
+
+  private UpdateDialog() {
+    const cinemaSelectionSlot = this.shadow.safeQuerySelector(
+      'slot[name="cinema-selection"]',
+    ) as HTMLSlotElement;
+    cinemaSelectionSlot.childNodes.forEach((node) => {
+      if (node instanceof CheckableButtonElement) {
+        node.setChecked(this.selectedCinemaIds.includes(node.getValue()));
+      }
+    });
+
+    const DubTypeSlot = this.shadow.safeQuerySelector(
+      'slot[name="type-selection"]',
+    ) as HTMLSlotElement;
+    DubTypeSlot.childNodes.forEach((node) => {
+      if (node instanceof CheckableButtonElement) {
+        node.setChecked(this.selectedDubTypes.includes(node.getValue()));
+      }
+    });
+
+    const movieRatingSlot = this.shadow.safeQuerySelector(
+      'slot[name="rating-selection"]',
+    ) as HTMLSlotElement;
+    movieRatingSlot.childNodes.forEach((node) => {
+      if (node instanceof CheckableButtonElement) {
+        node.setChecked(this.selectedRatings.includes(node.getValue()));
+      }
+    });
+
+    const movieSelectionSlot = this.shadow.safeQuerySelector(
+      'slot[name="movie-selection"]',
+    ) as HTMLSlotElement;
+
+    movieSelectionSlot.childNodes.forEach((node) => {
+      if (node instanceof SelectionListElement) {
+        node.setData(this.selectedMovieIds);
+      }
+    });
+  }
 
   constructor() {
     super();
     this.shadow = this.attachShadow({ mode: 'open' });
     this.shadow.appendChild(html.content.cloneNode(true));
     this.shadow.adoptedStyleSheets = [styleSheet];
-    this.shadow.safeQuerySelector('#filter-edit-icon').innerHTML = FilterIcon;
-    this.shadow.safeQuerySelector('#filter-apply-icon').innerHTML = Check;
-    this.shadow.safeQuerySelector('#filter-close-icon').innerHTML = Close;
+
     this.dialogEl = this.shadow.safeQuerySelector(
       '#filter-dialog',
     ) as HTMLDialogElement;
+
+    this.shadow.safeQuerySelector('#filter-apply-icon').innerHTML = Check;
+    this.shadow.safeQuerySelector('#filter-close-icon').innerHTML = Close;
+
+    const movieList = SelectionListElement.BuildElement(this.movies);
+    movieList.onSelectionChanged = (movieIds: number[]) => {
+      this.selectedMovieIds = movieIds;
+    };
+    movieList.slot = 'movie-selection';
+    this.append(movieList);
+
+    const cinemaButtons: CheckableButtonElement[] =
+      this.generateCinemaButtons();
+    this.append(...cinemaButtons);
+
+    this.buildButtonEvents();
+    const showTimeDubTypeButtons: CheckableButtonElement[] =
+      this.generateShowTimeDubTypeButtons();
+    this.append(...showTimeDubTypeButtons);
+
+    const movieRatingButtons: CheckableButtonElement[] =
+      this.generateMovieRatingButtons();
+    this.append(...movieRatingButtons);
   }
 
   handleCinemaSelectionChanged(e: Event) {
     if (e.target instanceof CheckableButtonElement) {
-      const value = e.target.getAttribute('value') ?? '';
-      const cinemaId = parseInt(value);
-      if (!this.SelectedCinemas.find((c) => c.id === cinemaId)) {
-        const cinema = this.Cinemas.find((c) => c.id === cinemaId);
-        if (cinema) {
-          this.SelectedCinemas.push(cinema);
-        }
-      } else {
-        this.SelectedCinemas = this.SelectedCinemas.filter(
-          (c) => c.id !== cinemaId,
-        );
-      }
+      const value = e.target.getValue();
+      this.selectedMovieIds.toggleElement(value);
     }
   }
 
   handleShowTimeDubTypeSelected(e: Event) {
     if (e.target instanceof CheckableButtonElement) {
-      const value = Number(e.target.getAttribute('value') ?? 0);
-      const showTimeDubType: ShowTimeDubType = value as ShowTimeDubType;
-      if (!this.SelectedShowDubTimeTypes.includes(showTimeDubType)) {
-        this.SelectedShowDubTimeTypes.push(showTimeDubType);
-      } else {
-        this.SelectedShowDubTimeTypes = this.SelectedShowDubTimeTypes.filter(
-          (t) => t !== showTimeDubType,
-        );
-      }
+      const value = e.target.getValue();
+      this.selectedDubTypes.toggleElement(value);
     }
   }
 
   handleMovieRatingSelected(e: Event) {
     if (e.target instanceof CheckableButtonElement) {
-      const value = Number(e.target.getAttribute('value') ?? 0);
-      const movieRating: MovieRating = value as MovieRating;
-      if (!this.SelectedMovieRatings.includes(movieRating)) {
-        this.SelectedMovieRatings.push(movieRating);
-      } else {
-        this.SelectedMovieRatings = this.SelectedMovieRatings.filter(
-          (t) => t !== movieRating,
-        );
-      }
-      console.log(this.SelectedMovieRatings);
-      if (this.SelectedMovieRatings.length === 0) {
-        this.SelectedMovieRatings = allMovieRatings;
-        const ratingSlot = this.shadow.querySelector(
-          'slot[name="rating-selection"]',
-        );
-        if (ratingSlot) {
-          (ratingSlot as HTMLSlotElement).assignedElements().forEach((e) => {
-            if (e instanceof CheckableButtonElement) {
-              e.setAttribute('checked', 'true');
-            }
-          });
-        }
-        e.preventDefault();
-      }
+      const value = e.target.getValue();
+      this.selectedDubTypes.toggleElement(value);
     }
   }
 
   connectedCallback() {
-    this.buildButtonEvents();
-    this.SelectedCinemas = this.Cinemas;
-    const cinemaButtons: CheckableButtonElement[] =
-      this.generateCinemaButtons();
+    this.UpdateDialog();
+  }
 
-    this.SelectedShowDubTimeTypes = allShowTimeDubTypes;
-    const showTimeDubTypeButtons: CheckableButtonElement[] =
-      this.generateShowTimeDubTypeButtons();
-    const movieRatingButtons: CheckableButtonElement[] =
-      this.generateMovieRatingButtons();
-
-    const cinemaLegend: EventItem[] = this.generateCinemaLegend();
-    this.append(...cinemaLegend);
-
-    const movieList = SelectionListElement.BuildElement(this.Movies);
-    movieList.onSelectionChanged = (movies: Movie[]) => {
-      this.SelectedMovies = movies;
-    };
-    movieList.slot = 'movie-selection';
-
-    this.append(...showTimeDubTypeButtons);
-    this.append(...movieRatingButtons);
-    this.append(...cinemaButtons);
-    this.append(movieList);
-
-    this.updateFilterInfo();
+  disconnectedCallback() {
+    this.closeDialog();
   }
 
   private updateFilterInfo() {
     const cinemaCount =
-      this.SelectedCinemas.length === 0 ||
-      this.SelectedCinemas.length === this.Cinemas.length
+      this.selectedCinemaIds.length === 0 ||
+      this.selectedCinemaIds.length === this.cinemas.length
         ? 'Alle'
-        : this.SelectedCinemas.length;
+        : this.selectedCinemaIds.length;
     const movieCount =
-      this.SelectedMovies.length === 0 ||
-      this.SelectedMovies.length === this.Movies.length
+      this.selectedMovieIds.length === 0 ||
+      this.selectedMovieIds.length === this.movies.length
         ? 'alle'
-        : this.SelectedMovies.length;
+        : this.selectedMovieIds.length;
     const filterInfo = this.shadow.safeQuerySelector('#filter-info');
-    let showTimeDubTypeStringList = this.SelectedShowDubTimeTypes.map((t) =>
-      getShowTimeDubTypeLabelString(t),
-    ).join(', ');
+    let showTimeDubTypeStringList = this.selectedDubTypes
+      .map((t) => getShowTimeDubTypeLabelString(t))
+      .join(', ');
     showTimeDubTypeStringList =
-      this.SelectedShowDubTimeTypes.length === 0 ||
-      this.SelectedShowDubTimeTypes.length == allShowTimeDubTypes.length
+      this.selectedDubTypes.length === 0 ||
+      this.selectedDubTypes.length == allShowTimeDubTypes.length
         ? 'alle Vorführungen'
         : showTimeDubTypeStringList;
 
-    let movieRatingStringList = this.SelectedMovieRatings.map((m) =>
-      getMovieRatingLabelString(m),
-    )
+    let movieRatingStringList = this.selectedRatings
+      .map((m) => getMovieRatingLabelString(m))
       .sort((a, b) => a.localeCompare(b))
       .join(', ');
     movieRatingStringList =
-      this.SelectedMovieRatings.length === allMovieRatings.length
+      this.selectedRatings.length === allMovieRatings.length
         ? 'alle Altersfreigaben'
         : movieRatingStringList;
 
-    const moviePluralSuffix = this.SelectedMovies.length === 1 ? '' : 'e';
-    const cinemaPluralSuffix = this.SelectedCinemas.length === 1 ? '' : 's';
+    const moviePluralSuffix = this.selectedMovieIds.length === 1 ? '' : 'e';
+    const cinemaPluralSuffix = this.selectedCinemaIds.length === 1 ? '' : 's';
     filterInfo.textContent = `Aktueller Filter: ${cinemaCount.toString()} Kino${cinemaPluralSuffix}, ${movieCount.toString()} Film${moviePluralSuffix}, ${showTimeDubTypeStringList}, ${movieRatingStringList}`;
   }
 
   private buildButtonEvents() {
+    const applyFilterDialogButtonEl =
+      this.shadow.safeQuerySelector('#apply-filter');
+    const closeFilterDialogButtonEl =
+      this.shadow.safeQuerySelector('#close-filter');
+
+    closeFilterDialogButtonEl.addEventListener('click', this.closeDialog);
+    applyFilterDialogButtonEl.addEventListener(
+      'click',
+      this.applyFilterSelection,
+    );
+    this.dialogEl.addEventListener('click', this.clickOutsideDialog);
+  }
+  private applyFilterSelection = () => {
+    if (this.onFilterChanged) {
+      this.onFilterChanged(
+        this.selectedCinemaIds,
+        this.selectedMovieIds,
+        this.selectedDubTypes,
+        this.selectedRatings,
+      );
+      this.updateFilterInfo();
+    }
+    this.closeDialog();
+  };
+
+  private showDialog = () => {
+    this.dialogEl.showModal();
+  };
+  private closeDialog = () => {
+    this.dialogEl.close();
+
+    const movieSelectionSlot = this.shadow.safeQuerySelector(
+      "slot[name='movie-selection']",
+    ) as HTMLSlotElement;
+    movieSelectionSlot.innerHTML = '';
+
     const openFilterDialogButtonEl =
       this.shadow.safeQuerySelector('#open-filter');
     const applyFilterDialogButtonEl =
       this.shadow.safeQuerySelector('#apply-filter');
     const closeFilterDialogButtonEl =
       this.shadow.safeQuerySelector('#close-filter');
-    openFilterDialogButtonEl.addEventListener('click', () => {
-      this.dialogEl.showModal();
-    });
-    closeFilterDialogButtonEl.addEventListener('click', () => {
-      this.dialogEl.close();
-    });
 
-    applyFilterDialogButtonEl.addEventListener('click', () => {
-      if (this.onFilterChanged) {
-        this.onFilterChanged(
-          this.SelectedCinemas,
-          this.SelectedMovies,
-          this.SelectedShowDubTimeTypes,
-          this.SelectedMovieRatings,
-        );
-        this.updateFilterInfo();
-      }
-      this.dialogEl.close();
-    });
+    openFilterDialogButtonEl.removeEventListener('click', this.showDialog);
+    closeFilterDialogButtonEl.removeEventListener('click', this.closeDialog);
+    applyFilterDialogButtonEl.removeEventListener(
+      'click',
+      this.applyFilterSelection,
+    );
+    this.dialogEl.removeEventListener('click', this.clickOutsideDialog);
+  };
 
-    this.dialogEl.addEventListener('click', (event: Event) => {
+  private clickOutsideDialog = (event: Event) => {
+    if (event.target instanceof HTMLDialogElement) {
       const mouseEvent = event as MouseEvent;
-      const rect = this.dialogEl.getBoundingClientRect();
+      const rect = event.target.getBoundingClientRect();
       const isInDialog =
         rect.top <= mouseEvent.clientY &&
         mouseEvent.clientY <= rect.top + rect.height &&
         rect.left <= mouseEvent.clientX &&
         mouseEvent.clientX <= rect.left + rect.width;
       if (!isInDialog) {
-        this.dialogEl.close();
+        this.closeDialog();
       }
-    });
-  }
+    }
+  };
 
   private generateCinemaButtons() {
     const cinemaButtons: CheckableButtonElement[] = [];
-    this.Cinemas.forEach((cinema) => {
+    this.cinemas.forEach((cinema) => {
       const cinemaButton = CheckableButtonElement.BuildElement(
         cinema.displayName,
         cinema.id.toString(),
@@ -275,27 +315,6 @@ export default class FilterModal extends HTMLElement {
       movieRatingButtons.push(movieRatingButton);
     });
     return movieRatingButtons;
-  }
-
-  private generateCinemaLegend() {
-    const elements: EventItem[] = [];
-    this.SelectedCinemas.forEach((cinema) => {
-      const cinemaLegendItem = new EventItem();
-      cinemaLegendItem.setAttribute('color', cinema.color);
-      cinemaLegendItem.setAttribute('icon', cinema.iconClass);
-      cinemaLegendItem.setAttribute('title', cinema.displayName);
-      cinemaLegendItem.setAttribute('href', cinema.url);
-      cinemaLegendItem.slot = 'cinema-legend';
-      elements.push(cinemaLegendItem);
-    });
-    return elements;
-  }
-
-  public static BuildElement(Cinemas: Cinema[], Movies: Movie[]): FilterModal {
-    const item = new FilterModal();
-    item.Cinemas = Cinemas;
-    item.Movies = Movies;
-    return item;
   }
 }
 

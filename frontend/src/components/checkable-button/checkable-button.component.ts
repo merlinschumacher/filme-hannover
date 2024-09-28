@@ -7,6 +7,13 @@ const styleSheet = new CSSStyleSheet();
 styleSheet.replaceSync(css);
 
 export default class CheckableButtonElement extends HTMLElement {
+  setChecked(checked: boolean) {
+    if (checked) {
+      this.setAttribute('checked', '');
+    } else {
+      this.removeAttribute('checked');
+    }
+  }
   static get observedAttributes(): string[] {
     return ['label', 'value', 'color', 'checked'];
   }
@@ -18,6 +25,10 @@ export default class CheckableButtonElement extends HTMLElement {
     this.shadow = this.attachShadow({ mode: 'open' });
     this.shadow.appendChild(html.content.cloneNode(true));
     this.shadow.adoptedStyleSheets = [styleSheet];
+  }
+
+  getValue(): number {
+    return parseInt(this.getAttribute('value') ?? '-1');
   }
 
   connectedCallback() {

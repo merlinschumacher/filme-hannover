@@ -32,15 +32,23 @@ export default class FilterService {
   private async initialize(): Promise<void> {
     this.availableCinemas = await this.db.GetAllCinemas();
     this.selectedCinemas = this.availableCinemas;
-    this.selectedMovies = await this.db.GetAllMovies(this.selectedRatings);
+    this.selectedMovies = await this.db.GetMovies(this.selectedRatings);
   }
 
-  public async GetAllMovies(): Promise<Movie[]> {
-    return await this.db.GetAllMovies(this.selectedRatings);
+  public async GetMovies(): Promise<Movie[]> {
+    return await this.db.GetMovies(this.selectedRatings);
+  }
+
+  public async GetMovieCount(): Promise<number> {
+    return await this.db.GetTotalMovieCount();
   }
 
   public GetAllCinemas(): Cinema[] {
     return this.availableCinemas;
+  }
+
+  public async GetCinemaCount(): Promise<number> {
+    return await this.db.GetTotalCinemaCount();
   }
 
   public async SetSelection(
@@ -60,7 +68,7 @@ export default class FilterService {
 
   private async setSelectedMovies(movies: Movie[]): Promise<void> {
     if (movies.length === 0) {
-      this.selectedMovies = await this.db.GetAllMovies(this.selectedRatings);
+      this.selectedMovies = await this.db.GetMovies(this.selectedRatings);
     } else {
       this.selectedMovies = movies;
     }

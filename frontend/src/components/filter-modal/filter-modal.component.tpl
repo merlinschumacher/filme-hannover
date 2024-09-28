@@ -24,12 +24,3 @@
     <span id="filter-apply-icon" class="icon"></span>Filter anwenden
   </button>
 </dialog>
-<div id="filter-controls">
-  <button id="open-filter">
-    <span id="filter-edit-icon" class="icon"></span>Filter bearbeiten
-  </button>
-  <div id="filter-info"></div>
-</div>
-<div id="cinema-legend">
-  <slot name="cinema-legend"></slot>
-</div>

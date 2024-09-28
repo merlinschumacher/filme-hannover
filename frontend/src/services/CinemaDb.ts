@@ -175,7 +175,7 @@ export default class CinemaDb extends Dexie {
       .toArray();
   }
 
-  public async GetAllMovies(ratings: MovieRating[] = []): Promise<Movie[]> {
+  public async GetMovies(ratings: MovieRating[] = []): Promise<Movie[]> {
     if (ratings.length === 0) {
       ratings = allMovieRatings;
     }
@@ -194,6 +194,13 @@ export default class CinemaDb extends Dexie {
     return movieArray.sort((a, b) =>
       collator.compare(a.displayName, b.displayName),
     );
+  }
+
+  public async GetTotalMovieCount(): Promise<number> {
+    return this.movies.count();
+  }
+  public async GetTotalCinemaCount(): Promise<number> {
+    return this.cinemas.count();
   }
 
   public async GetEarliestShowTimeDate(
