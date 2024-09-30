@@ -12,8 +12,6 @@ import {
 } from '../../models/ShowTimeDubType';
 import FilterIcon from '@material-symbols/svg-400/rounded/filter_alt.svg?raw';
 import EventItem from '../event-item/event-item.component';
-import FilterModal from '../filter-modal/filter-modal.component';
-import Cinema from '../../models/Cinema';
 
 const styleSheet = new CSSStyleSheet();
 styleSheet.replaceSync(css);
@@ -35,12 +33,23 @@ export default class FilterBar extends HTMLElement {
     }
   }
 
-  private SelectedCinemas: number[] = [];
-  private SelectedMovies: number[] = [];
-  private SelectedShowDubTimeTypes: ShowTimeDubType[] = allShowTimeDubTypes;
-  private SelectedMovieRatings: MovieRating[] = allMovieRatings;
+  private selectedCinemaIds: number[] = [];
+  private selectedMovieIds: number[] = [];
+  private selectedDubTypes: ShowTimeDubType[] = allShowTimeDubTypes;
+  private selectedRatings: MovieRating[] = allMovieRatings;
   private shadow: ShadowRoot;
-  private filterModal: FilterModal | null = null;
+
+  public setData(
+    selectedCinemaIds: number[],
+    selectedMovieIds: number[],
+    selectedDubTypes: ShowTimeDubType[],
+    selecteRatings: MovieRating[],
+  ) {
+    this.selectedCinemaIds = selectedCinemaIds;
+    this.selectedMovieIds = selectedMovieIds;
+    this.selectedDubTypes = selectedDubTypes;
+    this.selectedRatings = selecteRatings;
+  }
 
   constructor() {
     super();
@@ -48,32 +57,6 @@ export default class FilterBar extends HTMLElement {
     this.shadow.appendChild(html.content.cloneNode(true));
     this.shadow.adoptedStyleSheets = [styleSheet];
     this.shadow.safeQuerySelector('#filter-edit-icon').innerHTML = FilterIcon;
-    const openFilterDialogButtonEl =
-      this.shadow.safeQuerySelector('#open-filter');
-    openFilterDialogButtonEl.addEventListener('click', () => {
-      if (this.filterModal) {
-        this.filterModal.setData(
-          this.SelectedCinemas,
-          this.SelectedMovies,
-          this.SelectedShowDubTimeTypes,
-          this.SelectedMovieRatings,
-        );
-        this.filterModal.showModal();
-      }
-    });
-    this.filterModal = new FilterModal();
-    this.filterModal.onFilterChanged = (
-      selectedCinemaIds,
-      selectedMovieIds,
-      selectedDubTypes,
-      selectedRatings,
-    ) => {
-      this.SelectedCinemas = selectedCinemaIds;
-      this.SelectedMovies = selectedMovieIds;
-      this.SelectedShowDubTimeTypes = selectedDubTypes;
-      this.SelectedMovieRatings = selectedRatings;
-    };
-    this.shadow.appendChild(this.filterModal);
   }
 
   connectedCallback() {
@@ -84,37 +67,36 @@ export default class FilterBar extends HTMLElement {
 
   private updateFilterInfo() {
     const cinemaCount =
-      this.SelectedCinemas.length === 0 ||
-      this.SelectedCinemas.length === this.TotalCinemaCount
+      this.selectedCinemaIds.length === 0 ||
+      this.selectedCinemaIds.length === this.TotalCinemaCount
         ? 'Alle'
-        : this.SelectedCinemas.length;
+        : this.selectedCinemaIds.length;
     const movieCount =
-      this.SelectedMovies.length === 0 ||
-      this.SelectedMovies.length === this.TotalMovieCount
+      this.selectedMovieIds.length === 0 ||
+      this.selectedMovieIds.length === this.TotalMovieCount
         ? 'alle'
-        : this.SelectedMovies.length;
+        : this.selectedMovieIds.length;
     const filterInfo = this.shadow.safeQuerySelector('#filter-info');
-    let showTimeDubTypeStringList = this.SelectedShowDubTimeTypes.map((t) =>
-      getShowTimeDubTypeLabelString(t),
-    ).join(', ');
+    let showTimeDubTypeStringList = this.selectedDubTypes
+      .map((t) => getShowTimeDubTypeLabelString(t))
+      .join(', ');
     showTimeDubTypeStringList =
-      this.SelectedShowDubTimeTypes.length === 0 ||
-      this.SelectedShowDubTimeTypes.length == allShowTimeDubTypes.length
+      this.selectedDubTypes.length === 0 ||
+      this.selectedDubTypes.length == allShowTimeDubTypes.length
         ? 'alle Vorführungen'
         : showTimeDubTypeStringList;
 
-    let movieRatingStringList = this.SelectedMovieRatings.map((m) =>
-      getMovieRatingLabelString(m),
-    )
+    let movieRatingStringList = this.selectedRatings
+      .map((m) => getMovieRatingLabelString(m))
       .sort((a, b) => a.localeCompare(b))
       .join(', ');
     movieRatingStringList =
-      this.SelectedMovieRatings.length === allMovieRatings.length
+      this.selectedRatings.length === allMovieRatings.length
         ? 'alle Altersfreigaben'
         : movieRatingStringList;
 
-    const moviePluralSuffix = this.SelectedMovies.length === 1 ? '' : 'e';
-    const cinemaPluralSuffix = this.SelectedCinemas.length === 1 ? '' : 's';
+    const moviePluralSuffix = this.selectedMovieIds.length === 1 ? '' : 'e';
+    const cinemaPluralSuffix = this.selectedCinemaIds.length === 1 ? '' : 's';
     filterInfo.textContent = `Aktueller Filter: ${cinemaCount.toString()} Kino${cinemaPluralSuffix}, ${movieCount.toString()} Film${moviePluralSuffix}, ${showTimeDubTypeStringList}, ${movieRatingStringList}`;
   }
 

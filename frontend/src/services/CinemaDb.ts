@@ -20,7 +20,7 @@ export default class CinemaDb extends Dexie {
 
   public dataVersionDate: Date = new Date();
 
-  private constructor() {
+  public constructor() {
     super('CinemaDb');
     this.version(5).stores({
       cinemas: 'id, displayName, iconClass',
@@ -34,6 +34,13 @@ export default class CinemaDb extends Dexie {
     this.movies.mapToClass(Movie);
     this.showTimes.mapToClass(ShowTime);
     this.configurations.mapToClass(Configuration);
+    this.init()
+      .then(() => {
+        console.log('Database initialized.');
+      })
+      .catch((error: unknown) => {
+        console.error('Failed to initialize database.', error);
+      });
   }
 
   private async init() {
@@ -54,12 +61,6 @@ export default class CinemaDb extends Dexie {
       'Showtimes loaded: ' + (await this.showTimes.count()).toString(),
     );
     return this;
-  }
-
-  public static async Create() {
-    const db = new CinemaDb();
-    await db.init();
-    return db;
   }
 
   private async checkData() {
@@ -173,6 +174,17 @@ export default class CinemaDb extends Dexie {
       .orderBy('displayName')
       .and((cinema) => cinemasWithShowTimes.includes(cinema.id))
       .toArray();
+  }
+
+  public async GetCinemaIds(): Promise<number[]> {
+    return await this.cinemas.toCollection().primaryKeys();
+  }
+
+  public async GetMovieIds(ratings: MovieRating[] = []): Promise<number[]> {
+    if (ratings.length === 0) {
+      ratings = allMovieRatings;
+    }
+    return this.movies.where('rating').anyOf(ratings).primaryKeys();
   }
 
   public async GetMovies(ratings: MovieRating[] = []): Promise<Movie[]> {

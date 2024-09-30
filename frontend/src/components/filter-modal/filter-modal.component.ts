@@ -31,17 +31,18 @@ export default class FilterModal extends HTMLElement {
   private selectedRatings: MovieRating[] = allMovieRatings;
   private shadow: ShadowRoot;
   private dialogEl: HTMLDialogElement;
+  filterChangedEvent = new CustomEvent('filterChanged', {
+    detail: {
+      selectedCinemaIds: this.selectedCinemaIds,
+      selectedMovieIds: this.selectedMovieIds,
+      selectedDubTypes: this.selectedDubTypes,
+      selectedRatings: this.selectedRatings,
+    },
+  });
 
   public showModal() {
     this.dialogEl.showModal();
   }
-
-  public onFilterChanged?: (
-    selectedCinemaIds: number[],
-    selectedMovieIds: number[],
-    selectedDubTypes: ShowTimeDubType[],
-    selectedRatings: MovieRating[],
-  ) => void;
 
   public setData(
     selectedCinemaIds: number[],
@@ -126,6 +127,8 @@ export default class FilterModal extends HTMLElement {
     const movieRatingButtons: CheckableButtonElement[] =
       this.generateMovieRatingButtons();
     this.append(...movieRatingButtons);
+
+    this.dispatchEvent(this.filterChangedEvent);
   }
 
   handleCinemaSelectionChanged(e: Event) {
@@ -157,41 +160,6 @@ export default class FilterModal extends HTMLElement {
     this.closeDialog();
   }
 
-  private updateFilterInfo() {
-    const cinemaCount =
-      this.selectedCinemaIds.length === 0 ||
-      this.selectedCinemaIds.length === this.cinemas.length
-        ? 'Alle'
-        : this.selectedCinemaIds.length;
-    const movieCount =
-      this.selectedMovieIds.length === 0 ||
-      this.selectedMovieIds.length === this.movies.length
-        ? 'alle'
-        : this.selectedMovieIds.length;
-    const filterInfo = this.shadow.safeQuerySelector('#filter-info');
-    let showTimeDubTypeStringList = this.selectedDubTypes
-      .map((t) => getShowTimeDubTypeLabelString(t))
-      .join(', ');
-    showTimeDubTypeStringList =
-      this.selectedDubTypes.length === 0 ||
-      this.selectedDubTypes.length == allShowTimeDubTypes.length
-        ? 'alle Vorführungen'
-        : showTimeDubTypeStringList;
-
-    let movieRatingStringList = this.selectedRatings
-      .map((m) => getMovieRatingLabelString(m))
-      .sort((a, b) => a.localeCompare(b))
-      .join(', ');
-    movieRatingStringList =
-      this.selectedRatings.length === allMovieRatings.length
-        ? 'alle Altersfreigaben'
-        : movieRatingStringList;
-
-    const moviePluralSuffix = this.selectedMovieIds.length === 1 ? '' : 'e';
-    const cinemaPluralSuffix = this.selectedCinemaIds.length === 1 ? '' : 's';
-    filterInfo.textContent = `Aktueller Filter: ${cinemaCount.toString()} Kino${cinemaPluralSuffix}, ${movieCount.toString()} Film${moviePluralSuffix}, ${showTimeDubTypeStringList}, ${movieRatingStringList}`;
-  }
-
   private buildButtonEvents() {
     const applyFilterDialogButtonEl =
       this.shadow.safeQuerySelector('#apply-filter');
@@ -206,21 +174,10 @@ export default class FilterModal extends HTMLElement {
     this.dialogEl.addEventListener('click', this.clickOutsideDialog);
   }
   private applyFilterSelection = () => {
-    if (this.onFilterChanged) {
-      this.onFilterChanged(
-        this.selectedCinemaIds,
-        this.selectedMovieIds,
-        this.selectedDubTypes,
-        this.selectedRatings,
-      );
-      this.updateFilterInfo();
-    }
+    this.dispatchEvent(this.filterChangedEvent);
     this.closeDialog();
   };
 
-  private showDialog = () => {
-    this.dialogEl.showModal();
-  };
   private closeDialog = () => {
     this.dialogEl.close();
 
@@ -229,14 +186,11 @@ export default class FilterModal extends HTMLElement {
     ) as HTMLSlotElement;
     movieSelectionSlot.innerHTML = '';
 
-    const openFilterDialogButtonEl =
-      this.shadow.safeQuerySelector('#open-filter');
     const applyFilterDialogButtonEl =
       this.shadow.safeQuerySelector('#apply-filter');
     const closeFilterDialogButtonEl =
       this.shadow.safeQuerySelector('#close-filter');
 
-    openFilterDialogButtonEl.removeEventListener('click', this.showDialog);
     closeFilterDialogButtonEl.removeEventListener('click', this.closeDialog);
     applyFilterDialogButtonEl.removeEventListener(
       'click',
