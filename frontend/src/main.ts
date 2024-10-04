@@ -1,22 +1,24 @@
 import FilterService from './services/FilterService';
 import ViewPortService from './services/ViewPortService';
-import SwiperService from './services/SwiperService';
 import Cinema from './models/Cinema';
-import FilterBar from './components/filter-bar/filter-bar.component';
-import FilterModal from './components/filter-modal/filter-modal.component';
+import FilterBarElement from './components/filter-bar/filter-bar.component';
+import FilterModalElement from './components/filter-modal/filter-modal.component';
 import { ShowTimeDubType } from './models/ShowTimeDubType';
 import { MovieRating } from './models/MovieRating';
 import EventDataResult from './models/EventDataResult';
+import SwiperElement from './components/swiper/swiper.component';
+import CinemaLegendElement from './components/cinema-legend/cinema-legend.component';
 
 export class Application {
   private filterService: FilterService;
   private viewPortService: ViewPortService = new ViewPortService();
-  private swiper: SwiperService;
-  private nextVisibleDate: Date = new Date();
+  private swiper: SwiperElement;
+  private nextVisibleDate: Date;
   private visibleDays: number = this.viewPortService.getVisibleDays() * 2;
   private appRootEl: HTMLElement = this.getAppRootEl();
-  private filterBar: FilterBar;
-  private filterModal: FilterModal;
+  private filterBar: FilterBarElement;
+  private filterModal: FilterModalElement;
+  private cinemaLegend: CinemaLegendElement;
 
   private getAppRootEl(): HTMLElement {
     const appRootEl = document.querySelector('#app-root');
@@ -27,30 +29,48 @@ export class Application {
   }
 
   public constructor() {
-    this.swiper = new SwiperService();
+    this.nextVisibleDate = new Date();
     this.filterService = new FilterService();
-    this.filterBar = new FilterBar();
-    this.filterModal = new FilterModal();
-    this.appRootEl.appendChild(this.swiper.GetSwiperElement());
-    // this.swiper.onReachEnd = this.updateSwiper;
+    this.filterBar = new FilterBarElement();
+    this.filterModal = new FilterModalElement();
+    this.cinemaLegend = new CinemaLegendElement();
+    this.swiper = new SwiperElement();
     console.log('Initializing application...');
     const cinemas = this.filterService.GetCinemas();
     document.adoptedStyleSheets = [this.buildCinemaStyleSheet(cinemas)];
     this.appRootEl.appendChild(this.filterBar);
     this.appRootEl.appendChild(this.filterModal);
+    this.appRootEl.appendChild(this.swiper);
 
-    this.filterService.emitter.on('cinemaDataReady', (cinemas: Cinema[]) => {
-      document.adoptedStyleSheets = [this.buildCinemaStyleSheet(cinemas)];
+    this.filterService.on('databaseReady', (dataVersion: Date) => {
       const lastUpdateEl = document.querySelector('#lastUpdate');
       if (lastUpdateEl) {
-        lastUpdateEl.textContent = this.filterService.getDataVersion();
+        lastUpdateEl.textContent = dataVersion.toLocaleString();
       }
     });
-    this.filterService.on('eventDataRady', (data) => {
+    this.filterService.on('eventDataReady', (data) => {
       this.updateSwiper(data, true);
     });
+    this.filterService.on('cinemaDataReady', (data) => {
+      this.cinemaLegend.setCinemaData(data);
+      this.cinemaLegend.slot = 'cinema-legend';
+      this.filterBar.appendChild(this.cinemaLegend);
+    });
+    this.swiper.addEventListener('scrollThresholdReached', this.loadNextEvents);
+    this.filterService.loadData();
     this.initFilter();
   }
+
+  private loadNextEvents = () => {
+    this.filterService
+      .getEventData(this.nextVisibleDate, this.visibleDays)
+      .then((data) => {
+        this.updateSwiper(data);
+      })
+      .catch((error: unknown) => {
+        console.error('Failed to get event data.', error);
+      });
+  };
 
   private initFilter(): void {
     this.filterModal.addEventListener('filterChanged', (event: Event) => {
@@ -95,18 +115,18 @@ export class Application {
   ): void => {
     if (replaceSlides) {
       this.nextVisibleDate = new Date();
-      this.swiper.showLoading();
+      this.swiper.toggleLoading();
     }
     if (eventDataResult.EventData.size === 0) {
       if (replaceSlides) {
-        this.swiper.NoResults();
+        this.swiper.showNoResults();
       }
       return;
     }
     if (replaceSlides) {
-      this.swiper.ReplaceEvents(eventDataResult.EventData);
+      this.swiper.replaceEvents(eventDataResult.EventData);
     } else {
-      this.swiper.AddEvents(eventDataResult.EventData);
+      this.swiper.addEvents(eventDataResult.EventData);
     }
     // Set the last visible date to the last date in the event list
     const lastKey = [...eventDataResult.EventData.keys()].pop();

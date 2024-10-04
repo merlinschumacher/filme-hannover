@@ -4,7 +4,7 @@ import css from './loader.component.css?inline';
 const styleSheet = new CSSStyleSheet();
 styleSheet.replaceSync(css);
 
-export default class Loader extends HTMLElement {
+export default class LoaderElement extends HTMLElement {
   private shadow: ShadowRoot;
   static get observedAttributes() {
     return ['visible'];
@@ -33,4 +33,4 @@ export default class Loader extends HTMLElement {
   }
 }
 
-customElements.define('loading-spinner', Loader);
+customElements.define('loading-spinner', LoaderElement);

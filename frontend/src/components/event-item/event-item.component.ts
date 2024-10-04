@@ -4,13 +4,12 @@ import cssicons from './event-item.component.icons.css?inline';
 import { EventData } from '../../models/EventData';
 import { getShowTimeDubTypeAttributeString as getShowTimeDubTypeAttributeString } from '../../models/ShowTimeDubType';
 import { getShowTimeLanguageString } from '../../models/ShowTimeLanguage';
-
 const styleSheet = new CSSStyleSheet();
 styleSheet.replaceSync(css);
 const iconStyleSheet = new CSSStyleSheet();
 iconStyleSheet.replaceSync(cssicons);
 
-export default class EventItem extends HTMLElement {
+export default class EventItemElement extends HTMLElement {
   public static observedAttributes = [
     'href',
     'color',
@@ -97,7 +96,7 @@ export default class EventItem extends HTMLElement {
   }
 
   static BuildElement(event: EventData) {
-    const item = new EventItem();
+    const item = new EventItemElement();
     item.setAttribute('href', event.url.toString());
     item.setAttribute('color', event.color);
     item.setAttribute('icon', event.iconClass);
@@ -105,7 +104,7 @@ export default class EventItem extends HTMLElement {
     item.setAttribute('title', event.title);
     const typeString = getShowTimeDubTypeAttributeString(event.dubType);
     const languageString = getShowTimeLanguageString(event.language);
-    const suffixString = EventItem.BuildSuffixString(
+    const suffixString = EventItemElement.BuildSuffixString(
       typeString,
       languageString,
     );
@@ -114,4 +113,4 @@ export default class EventItem extends HTMLElement {
   }
 }
 
-customElements.define('event-item', EventItem);
+customElements.define('event-item', EventItemElement);

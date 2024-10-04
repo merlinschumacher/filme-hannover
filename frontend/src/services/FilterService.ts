@@ -23,6 +23,19 @@ export default class FilterService {
   public constructor() {
     this.emitter = createNanoEvents<FilterServiceEvents>();
     this.db = new CinemaDb();
+  }
+
+  loadData(): void {
+    this.db
+      .init()
+      .then(() => {
+        console.log('Database initialized.');
+        this.emitter.emit('databaseReady', this.db.dataVersionDate);
+      })
+      .catch((error: unknown) => {
+        console.error('Failed to initialize database.', error);
+      });
+
     void this.db.cinemas.toArray().then((cinemas) => {
       this.availableCinemas = cinemas;
       this.emitter.emit('cinemaDataReady', cinemas);
@@ -36,12 +49,12 @@ export default class FilterService {
     return this.emitter.on(event, callback);
   }
 
-  public async GetMovies(): Promise<Movie[]> {
-    return await this.db.GetMovies(this.selectedRatings);
+  public async getMovies(): Promise<Movie[]> {
+    return await this.db.getMovies(this.selectedRatings);
   }
 
-  public async GetMovieCount(): Promise<number> {
-    return await this.db.GetTotalMovieCount();
+  public async getMovieCount(): Promise<number> {
+    return await this.db.getTotalMovieCount();
   }
 
   public GetCinemas(): Cinema[] {
@@ -49,7 +62,7 @@ export default class FilterService {
   }
 
   public async GetCinemaCount(): Promise<number> {
-    return await this.db.GetTotalCinemaCount();
+    return await this.db.getTotalCinemaCount();
   }
 
   public async SetSelection(
@@ -96,7 +109,7 @@ export default class FilterService {
     this.selectedRatings = ratings;
   }
 
-  public async GetEvents(
+  public async getEventData(
     startDate: Date,
     visibleDays: number,
   ): Promise<EventDataResult> {

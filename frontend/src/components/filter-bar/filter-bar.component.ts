@@ -1,5 +1,6 @@
 import html from './filter-bar.component.tpl';
 import css from './filter-bar.component.css?inline';
+import buttonCss from '../common/action-button.css?inline';
 import {
   allMovieRatings,
   getMovieRatingLabelString,
@@ -11,12 +12,13 @@ import {
   ShowTimeDubType,
 } from '../../models/ShowTimeDubType';
 import FilterIcon from '@material-symbols/svg-400/rounded/filter_alt.svg?raw';
-import EventItem from '../event-item/event-item.component';
 
 const styleSheet = new CSSStyleSheet();
 styleSheet.replaceSync(css);
+const buttonStyleSheet = new CSSStyleSheet();
+buttonStyleSheet.replaceSync(buttonCss);
 
-export default class FilterBar extends HTMLElement {
+export default class FilterBarElement extends HTMLElement {
   public static observedAttributes = ['totalMovieCount', 'totalCinemaCount'];
   private TotalCinemaCount = 0;
   private TotalMovieCount = 0;
@@ -55,13 +57,11 @@ export default class FilterBar extends HTMLElement {
     super();
     this.shadow = this.attachShadow({ mode: 'open' });
     this.shadow.appendChild(html.content.cloneNode(true));
-    this.shadow.adoptedStyleSheets = [styleSheet];
+    this.shadow.adoptedStyleSheets = [styleSheet, buttonStyleSheet];
     this.shadow.safeQuerySelector('#filter-edit-icon').innerHTML = FilterIcon;
   }
 
   connectedCallback() {
-    const cinemaLegend: EventItem[] = this.generateCinemaLegend();
-    this.append(...cinemaLegend);
     this.updateFilterInfo();
   }
 
@@ -99,20 +99,6 @@ export default class FilterBar extends HTMLElement {
     const cinemaPluralSuffix = this.selectedCinemaIds.length === 1 ? '' : 's';
     filterInfo.textContent = `Aktueller Filter: ${cinemaCount.toString()} Kino${cinemaPluralSuffix}, ${movieCount.toString()} Film${moviePluralSuffix}, ${showTimeDubTypeStringList}, ${movieRatingStringList}`;
   }
-
-  private generateCinemaLegend() {
-    const elements: EventItem[] = [];
-    // this.Cinema.forEach((cinema) => {
-    //   const cinemaLegendItem = new EventItem();
-    //   cinemaLegendItem.setAttribute('color', cinema.color);
-    //   cinemaLegendItem.setAttribute('icon', cinema.iconClass);
-    //   cinemaLegendItem.setAttribute('title', cinema.displayName);
-    //   cinemaLegendItem.setAttribute('href', cinema.url);
-    //   cinemaLegendItem.slot = 'cinema-legend';
-    //   elements.push(cinemaLegendItem);
-    // });
-    return elements;
-  }
 }
 
-customElements.define('filter-bar', FilterBar);
+customElements.define('filter-bar', FilterBarElement);

@@ -20,7 +20,7 @@
   <div class="rating-selection">
     <slot name="rating-selection"></slot>
   </div>
-  <button id="apply-filter">
+  <button id="apply-filter" class="action-button">
     <span id="filter-apply-icon" class="icon"></span>Filter anwenden
   </button>
 </dialog>

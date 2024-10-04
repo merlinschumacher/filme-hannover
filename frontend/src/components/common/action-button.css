@@ -1,0 +1,33 @@
+.action-button {
+  height: fit-content;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid black;
+  border-radius: 8px;
+  cursor: pointer;
+  transition:
+    background 0.1s,
+    border 0.1s;
+  font-weight: 700;
+  padding: 0.5rem;
+  background-color: #fff;
+  appearance: none;
+  color: #000000;
+  outline: none;
+  background-color: var(--background-mediumblue);
+}
+
+.action-button:hover {
+  background-color: var(--light-accent);
+}
+
+.action-button > .icon {
+  display: flex;
+  flex: 0 0 auto;
+}
+
+.action-button > .icon > svg {
+  height: 2em;
+  width: 2em;
+}

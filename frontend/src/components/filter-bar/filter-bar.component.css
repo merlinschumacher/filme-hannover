@@ -1,0 +1,19 @@
+#filter-info {
+  margin-bottom: 1em;
+  font-size: 1.1em;
+  font-weight: 700;
+}
+
+button#open-filter {
+  flex: 1 1 100%;
+  margin-bottom: 1em;
+}
+@media screen and (min-width: 600px) {
+  button#open-filter {
+    flex: unset;
+  }
+}
+
+button#open-filter:hover {
+  background-color: var(--light-accent);
+}

@@ -34,16 +34,9 @@ export default class CinemaDb extends Dexie {
     this.movies.mapToClass(Movie);
     this.showTimes.mapToClass(ShowTime);
     this.configurations.mapToClass(Configuration);
-    this.init()
-      .then(() => {
-        console.log('Database initialized.');
-      })
-      .catch((error: unknown) => {
-        console.error('Failed to initialize database.', error);
-      });
   }
 
-  private async init() {
+  async init() {
     console.log('Opening database...');
     try {
       await this.open();
@@ -187,7 +180,7 @@ export default class CinemaDb extends Dexie {
     return this.movies.where('rating').anyOf(ratings).primaryKeys();
   }
 
-  public async GetMovies(ratings: MovieRating[] = []): Promise<Movie[]> {
+  public async getMovies(ratings: MovieRating[] = []): Promise<Movie[]> {
     if (ratings.length === 0) {
       ratings = allMovieRatings;
     }
@@ -208,10 +201,10 @@ export default class CinemaDb extends Dexie {
     );
   }
 
-  public async GetTotalMovieCount(): Promise<number> {
+  public async getTotalMovieCount(): Promise<number> {
     return this.movies.count();
   }
-  public async GetTotalCinemaCount(): Promise<number> {
+  public async getTotalCinemaCount(): Promise<number> {
     return this.cinemas.count();
   }
 
