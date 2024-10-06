@@ -110,9 +110,11 @@ export default class SwiperElement extends HTMLElement {
   }
 
   disconnectedCallback() {
-    const link = this.shadow.safeQuerySelector('.link');
-    link.removeEventListener('mousedown', this.handleMouseDown);
-    link.removeEventListener('click', this.handleClick);
+    this.scrollSnapSlider.removeEventListener(
+      'mousedown',
+      this.handleMouseDown,
+    );
+    this.scrollSnapSlider.removeEventListener('click', this.handleClick);
     this.shadow
       .safeQuerySelector('#swipe-left')
       .removeEventListener('click', this.handleSwipeLeft);
@@ -121,10 +123,13 @@ export default class SwiperElement extends HTMLElement {
       .removeEventListener('click', this.handleSwipeRight);
   }
 
-  public addEvents(eventDays: Map<Date, EventData[]>) {
+  addEvents(eventDays: Map<Date, EventData[]>) {
     const firstKey = eventDays.keys().next();
     if (firstKey.done) {
-      throw new Error('eventDays is empty');
+      if (this.scrollSnapSliderEl.children.length === 0) {
+        this.showNoResults();
+      }
+      return;
     }
     let lastDate: Date = firstKey.value;
     eventDays.forEach((dayEvents, dateString) => {
@@ -139,7 +144,7 @@ export default class SwiperElement extends HTMLElement {
     this.onReachendEnabled = true;
   }
 
-  public replaceEvents(eventDays: Map<Date, EventData[]>) {
+  replaceEvents(eventDays: Map<Date, EventData[]>) {
     if (eventDays.size === 0) {
       this.showNoResults();
     }
@@ -148,6 +153,18 @@ export default class SwiperElement extends HTMLElement {
     if (firstKey.done) {
       throw new Error('eventDays is empty');
     }
+    const dateElements: HTMLElement[] = this.generateDateElements(
+      firstKey,
+      eventDays,
+    );
+    this.replaceSlides(dateElements);
+    this.onReachendEnabled = true;
+  }
+
+  private generateDateElements(
+    firstKey: IteratorYieldResult<Date>,
+    eventDays: Map<Date, EventData[]>,
+  ) {
     let lastDate: Date = firstKey.value;
     const dateElements: HTMLElement[] = [];
     eventDays.forEach((dayEvents, dateString) => {
@@ -159,11 +176,10 @@ export default class SwiperElement extends HTMLElement {
       dateElements.push(dayList);
       lastDate = date;
     });
-    this.replaceSlides(dateElements);
-    this.onReachendEnabled = true;
+    return dateElements;
   }
 
-  appendSlide(slide: HTMLElement): void {
+  private appendSlide(slide: HTMLElement): void {
     slide.slot = 'slides';
     slide.classList.add('scroll-snap-slide');
     this.scrollSnapSliderEl.appendChild(slide);
@@ -171,7 +187,7 @@ export default class SwiperElement extends HTMLElement {
     this.triggeredScrollThreshold = false;
   }
 
-  clearSlides(): void {
+  public clearSlides(): void {
     this.onReachendEnabled = false;
     this.scrollSnapSliderEl.replaceChildren();
     this.slideCount = 0;
@@ -193,7 +209,7 @@ export default class SwiperElement extends HTMLElement {
     this.scrollSnapSliderEl.classList.toggle('disabled');
   }
 
-  replaceSlides(slides: HTMLElement[]): void {
+  private replaceSlides(slides: HTMLElement[]): void {
     slides.forEach((slide) => {
       slide.slot = 'slides';
       slide.classList.add('scroll-snap-slide');
@@ -216,12 +232,17 @@ export default class SwiperElement extends HTMLElement {
       second.getMonth(),
       second.getDate(),
     );
-    const diff =
-      (firstDate.getTime() - secondDate.getTime()) / (1000 * 60 * 60 * 24);
-    if (diff === 0) {
+
+    const dstDiff = Math.abs(
+      first.getTimezoneOffset() - second.getTimezoneOffset(),
+    );
+    const DAY_IN_MS = 1000 * 60 * 60 * 24 + dstDiff * 60 * 1000;
+
+    const diff = firstDate.getTime() - secondDate.getTime();
+    if (Math.abs(diff) <= DAY_IN_MS) {
       return true;
     }
-    return Math.abs(diff) === 1;
+    return false;
   }
 }
 

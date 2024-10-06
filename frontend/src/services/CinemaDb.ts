@@ -1,4 +1,4 @@
-import Dexie, { EntityTable, IndexableTypePart } from 'dexie';
+import Dexie, { EntityTable } from 'dexie';
 import { JsonData } from '../models/JsonData';
 import { EventData } from '../models/EventData';
 import { getData } from './HttpClient';
@@ -105,8 +105,12 @@ export default class CinemaDb extends Dexie {
           value: remoteVersionDate,
         });
         this.dataVersionDate = remoteVersionDate;
-      } catch (error) {
-        console.error(error);
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          console.error(error.message);
+        } else {
+          console.error('An unknown error occurred');
+        }
       }
       return true;
     }
@@ -268,38 +272,31 @@ export default class CinemaDb extends Dexie {
     return eventData;
   }
 
-  public async GetEndDate(
+  public async getEndDate(
     startDate: Date,
     selectedCinemaIds: number[],
     selectedMovieIds: number[],
     selectedShowTimeDubTypes: number[],
     visibleDays: number,
   ): Promise<Date> {
-    const showTimes = await this.showTimes
-      .orderBy('date')
-      .filter(
-        (showtime) =>
-          showtime.date.getTime() >= startDate.getTime() &&
-          selectedCinemaIds.includes(showtime.cinema) &&
-          selectedMovieIds.includes(showtime.movie) &&
-          selectedShowTimeDubTypes.includes(showtime.dubType),
-      )
-      .keys();
+    let lastKey = new Date(startDate);
+    let keyCount = 0;
+    await this.showTimes
+      .where('date')
+      .aboveOrEqual(startDate)
+      .and((showtime) => selectedCinemaIds.includes(showtime.cinema))
+      .and((showtime) => selectedMovieIds.includes(showtime.movie))
+      .and((showtime) => selectedShowTimeDubTypes.includes(showtime.dubType))
+      .until(() => keyCount === visibleDays)
+      .eachKey((key) => {
+        if (key instanceof Date) {
+          if (new Date(key).getTime() > lastKey.getTime()) {
+            lastKey = key;
+            keyCount++;
+          }
+        }
+      });
 
-    const uniqueDates = Array.from(
-      new Set(showTimes.map((d: IndexableTypePart) => (d as Date).getTime())),
-    );
-
-    let endDate = new Date(startDate);
-    if (uniqueDates.length === 0) {
-      endDate.setDate(startDate.getDate() + visibleDays);
-    } else if (uniqueDates.length < visibleDays) {
-      endDate = new Date(uniqueDates[uniqueDates.length - 1]);
-    } else {
-      endDate = new Date(uniqueDates[visibleDays - 1]);
-    }
-
-    endDate.setUTCHours(23, 59, 59, 999);
-    return endDate;
+    return lastKey;
   }
 }

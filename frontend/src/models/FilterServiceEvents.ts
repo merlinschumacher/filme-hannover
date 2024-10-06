@@ -1,8 +1,9 @@
 import Cinema from './Cinema';
 import EventDataResult from './EventDataResult';
 
-export interface FilterServiceEvents {
+export default interface FilterServiceEvents {
   databaseReady: (dataVersionDate: Date) => void;
-  eventDataReady: (data: EventDataResult) => void;
   cinemaDataReady: (data: Cinema[]) => void;
+  dataReady: () => void;
+  eventDataReady: (data: EventDataResult) => void;
 }

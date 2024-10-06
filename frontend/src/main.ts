@@ -36,104 +36,76 @@ export class Application {
     this.cinemaLegend = new CinemaLegendElement();
     this.swiper = new SwiperElement();
     console.log('Initializing application...');
-    const cinemas = this.filterService.GetCinemas();
-    document.adoptedStyleSheets = [this.buildCinemaStyleSheet(cinemas)];
     this.appRootEl.appendChild(this.filterBar);
     this.appRootEl.appendChild(this.filterModal);
     this.appRootEl.appendChild(this.swiper);
 
     this.filterService.on('databaseReady', (dataVersion: Date) => {
+      console.log('Database ready.');
       const lastUpdateEl = document.querySelector('#lastUpdate');
       if (lastUpdateEl) {
         lastUpdateEl.textContent = dataVersion.toLocaleString();
       }
     });
-    this.filterService.on('eventDataReady', (data) => {
-      this.updateSwiper(data, true);
-    });
+
     this.filterService.on('cinemaDataReady', (data) => {
       this.cinemaLegend.setCinemaData(data);
       this.cinemaLegend.slot = 'cinema-legend';
       this.filterBar.appendChild(this.cinemaLegend);
+      document.adoptedStyleSheets = [this.buildCinemaStyleSheet(data)];
     });
+
+    this.filterService.on('eventDataReady', (data) => {
+      this.updateSwiper(data);
+    });
+
+    this.filterModal.addEventListener('filterChanged', this.filterChanged);
     this.swiper.addEventListener('scrollThresholdReached', this.loadNextEvents);
+
+    this.filterService.setDateRange(this.nextVisibleDate, this.visibleDays);
     this.filterService.loadData();
-    this.initFilter();
   }
 
   private loadNextEvents = () => {
-    this.filterService
-      .getEventData(this.nextVisibleDate, this.visibleDays)
-      .then((data) => {
-        this.updateSwiper(data);
-      })
-      .catch((error: unknown) => {
-        console.error('Failed to get event data.', error);
-      });
+    void this.filterService.getNextPage();
   };
 
-  private initFilter(): void {
-    this.filterModal.addEventListener('filterChanged', (event: Event) => {
-      const customEvent = event as CustomEvent<{
-        selectedCinemaIds: number[];
-        selectedMovieIds: number[];
-        selectedDubTypes: ShowTimeDubType[];
-        selectedRatings: MovieRating[];
-      }>;
-      this.filterBar.setData(
+  private filterChanged = (event: Event) => {
+    const customEvent = event as CustomEvent<{
+      selectedCinemaIds: number[];
+      selectedMovieIds: number[];
+      selectedDubTypes: ShowTimeDubType[];
+      selectedRatings: MovieRating[];
+    }>;
+    this.filterBar.setData(
+      customEvent.detail.selectedCinemaIds,
+      customEvent.detail.selectedMovieIds,
+      customEvent.detail.selectedDubTypes,
+      customEvent.detail.selectedRatings,
+    );
+    this.swiper.clearSlides();
+    this.filterService
+      .setSelection(
         customEvent.detail.selectedCinemaIds,
         customEvent.detail.selectedMovieIds,
         customEvent.detail.selectedDubTypes,
         customEvent.detail.selectedRatings,
-      );
-      this.filterService
-        .SetSelection(
-          customEvent.detail.selectedCinemaIds,
-          customEvent.detail.selectedMovieIds,
-          customEvent.detail.selectedDubTypes,
-          customEvent.detail.selectedRatings,
-        )
-        .then(() => {
-          console.log('Filter changed.');
-          console.debug('Cinemas:', customEvent.detail.selectedCinemaIds);
-          console.debug('Movies:', customEvent.detail.selectedMovieIds);
-          console.debug(
-            'ShowTimeDubTypes:',
-            customEvent.detail.selectedDubTypes,
-          );
-          console.debug('Ratings:', customEvent.detail.selectedRatings);
-        })
-        .catch((error: unknown) => {
-          console.error('Failed to set filter.', error);
-        });
-    });
-  }
+      )
+      .then(() => {
+        console.log('Filter changed.');
+        console.debug('Cinemas:', customEvent.detail.selectedCinemaIds);
+        console.debug('Movies:', customEvent.detail.selectedMovieIds);
+        console.debug('ShowTimeDubTypes:', customEvent.detail.selectedDubTypes);
+        console.debug('Ratings:', customEvent.detail.selectedRatings);
+      })
+      .catch((error: unknown) => {
+        console.error('Failed to set filter.', error);
+      });
+  };
 
-  private updateSwiper = (
-    eventDataResult: EventDataResult,
-    replaceSlides = false,
-  ): void => {
-    if (replaceSlides) {
-      this.nextVisibleDate = new Date();
-      this.swiper.toggleLoading();
-    }
-    if (eventDataResult.EventData.size === 0) {
-      if (replaceSlides) {
-        this.swiper.showNoResults();
-      }
-      return;
-    }
-    if (replaceSlides) {
-      this.swiper.replaceEvents(eventDataResult.EventData);
-    } else {
-      this.swiper.addEvents(eventDataResult.EventData);
-    }
-    // Set the last visible date to the last date in the event list
-    const lastKey = [...eventDataResult.EventData.keys()].pop();
-    if (lastKey) {
-      lastKey.setDate(lastKey.getDate() + 1);
-      this.nextVisibleDate = lastKey;
-    }
+  private updateSwiper = (eventDataResult: EventDataResult): void => {
+    console.log('Updating swiper.');
+    this.swiper.addEvents(eventDataResult.EventData);
   };
 
   private buildCinemaStyleSheet(cinemas: Cinema[]) {
