@@ -46,10 +46,10 @@ namespace backend.Services
             ShowTime? result = await query.FirstOrDefaultAsync(s => s.Cinema == cinema
                 && s.StartTime >= lowerBound
                 && s.StartTime <= upperBound
-                && (s.Movie.DisplayName.Equals(movieTitle, StringComparison.CurrentCultureIgnoreCase)
-                    || s.Movie.Aliases.Any(a => a.Value.Equals(movieTitle, StringComparison.CurrentCultureIgnoreCase))
-                    || s.Movie.DisplayName.Contains(movieTitle, StringComparison.CurrentCultureIgnoreCase)
-                    || s.Movie.Aliases.Any(a => movieTitle.Contains(a.Value, StringComparison.CurrentCultureIgnoreCase))
+                && (s.Movie.DisplayName.Equals(movieTitle)
+                    || s.Movie.Aliases.Any(a => a.Value.Equals(movieTitle))
+                    || s.Movie.DisplayName.Contains(movieTitle)
+                    || s.Movie.Aliases.Any(a => movieTitle.Contains(a.Value))
                     ));
 
             if (result is not null)

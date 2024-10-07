@@ -23,7 +23,7 @@ namespace backend.Helpers
             { ShowTimeLanguage.Russian, ["Russisch", "russ"] },
             { ShowTimeLanguage.Japanese, ["Japanisch", "jap", "JP", "JA"] },
             { ShowTimeLanguage.Korean, ["Koreanisch", "kor", "KO"] },
-            { ShowTimeLanguage.Hindi, ["Hindi", "hind", "hin" ] },
+            { ShowTimeLanguage.Hindi, ["Hindi", " hind.", " hin." ] },
             { ShowTimeLanguage.Polish, ["Polnisch", "poln.", "PL"] },
             { ShowTimeLanguage.German, ["Deutsch"," de."," deu.", "dt.", "DE"] },
             { ShowTimeLanguage.Other, ["Andere", "Verschiedene", "versch.", "div.", "Malayalam", "Filipino", "Georgisch", "georg." ]},
