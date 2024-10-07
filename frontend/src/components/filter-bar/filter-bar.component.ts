@@ -61,8 +61,22 @@ export default class FilterBarElement extends HTMLElement {
     this.shadow.safeQuerySelector('#filter-edit-icon').innerHTML = FilterIcon;
   }
 
+  private handleFilterEditClick = () => {
+    const event = new CustomEvent('filterEditClick');
+    this.dispatchEvent(event);
+  };
+
   connectedCallback() {
     this.updateFilterInfo();
+    this.shadow
+      .safeQuerySelector('#filter-edit-button')
+      .addEventListener('click', this.handleFilterEditClick);
+  }
+
+  disconnectedCallback() {
+    this.shadow
+      .safeQuerySelector('#filter-edit-button')
+      .removeEventListener('click', this.handleFilterEditClick);
   }
 
   private updateFilterInfo() {

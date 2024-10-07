@@ -43,10 +43,6 @@ export default class FilterModalElement extends HTMLElement {
     },
   });
 
-  public showModal() {
-    this.dialogEl.showModal();
-  }
-
   public setData(
     selectedCinemaIds: number[],
     selectedMovieIds: number[],
@@ -59,7 +55,7 @@ export default class FilterModalElement extends HTMLElement {
     this.selectedRatings = selecteRatings;
   }
 
-  private UpdateDialog() {
+  private updateDialog() {
     const cinemaSelectionSlot = this.shadow.safeQuerySelector(
       'slot[name="cinema-selection"]',
     ) as HTMLSlotElement;
@@ -110,7 +106,9 @@ export default class FilterModalElement extends HTMLElement {
 
     this.shadow.safeQuerySelector('#filter-apply-icon').innerHTML = Check;
     this.shadow.safeQuerySelector('#filter-close-icon').innerHTML = Close;
+  }
 
+  private buildButtons() {
     const movieList = SelectionListElement.BuildElement(this.movies);
     movieList.onSelectionChanged = (movieIds: number[]) => {
       this.selectedMovieIds = movieIds;
@@ -122,7 +120,6 @@ export default class FilterModalElement extends HTMLElement {
       this.generateCinemaButtons();
     this.append(...cinemaButtons);
 
-    this.buildButtonEvents();
     const showTimeDubTypeButtons: CheckableButtonElement[] =
       this.generateShowTimeDubTypeButtons();
     this.append(...showTimeDubTypeButtons);
@@ -130,8 +127,6 @@ export default class FilterModalElement extends HTMLElement {
     const movieRatingButtons: CheckableButtonElement[] =
       this.generateMovieRatingButtons();
     this.append(...movieRatingButtons);
-
-    this.dispatchEvent(this.filterChangedEvent);
   }
 
   handleCinemaSelectionChanged(e: Event) {
@@ -156,7 +151,10 @@ export default class FilterModalElement extends HTMLElement {
   }
 
   connectedCallback() {
-    this.UpdateDialog();
+    this.buildButtons();
+    this.buildButtonEvents();
+    this.updateDialog();
+    this.dialogEl.showModal();
   }
 
   disconnectedCallback() {
@@ -200,6 +198,7 @@ export default class FilterModalElement extends HTMLElement {
       this.applyFilterSelection,
     );
     this.dialogEl.removeEventListener('click', this.clickOutsideDialog);
+    this.dispatchEvent(new CustomEvent('close'));
   };
 
   private clickOutsideDialog = (event: Event) => {

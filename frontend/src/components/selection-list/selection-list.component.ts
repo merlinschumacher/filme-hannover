@@ -21,8 +21,6 @@ export default class SelectionListElement extends HTMLElement {
     this.shadow = this.attachShadow({ mode: 'open' });
     this.shadow.appendChild(html.content.cloneNode(true));
     this.shadow.adoptedStyleSheets = [styleSheet];
-    const movieButtons = this.buildMovieButtons();
-    this.append(...movieButtons);
     const searchInput = this.shadow.safeQuerySelector(
       'input',
     ) as HTMLInputElement;
@@ -53,6 +51,8 @@ export default class SelectionListElement extends HTMLElement {
   }
 
   connectedCallback() {
+    const movieButtons = this.buildMovieButtons();
+    this.append(...movieButtons);
     this.updateSelections();
   }
 

@@ -33,11 +33,19 @@ export class Application {
     this.filterService = new FilterService();
     this.filterBar = new FilterBarElement();
     this.filterModal = new FilterModalElement();
+    this.filterBar.slot = 'filter-bar';
+    this.filterModal.slot = 'filter-modal';
+    this.filterBar.addEventListener('filterEditClick', () => {
+      this.appRootEl.appendChild(this.filterModal);
+    });
+    this.filterModal.addEventListener('filterChanged', this.filterChanged);
+    this.filterModal.addEventListener('close', () => {
+      this.filterModal.remove();
+    });
     this.cinemaLegend = new CinemaLegendElement();
     this.swiper = new SwiperElement();
     console.log('Initializing application...');
     this.appRootEl.appendChild(this.filterBar);
-    this.appRootEl.appendChild(this.filterModal);
     this.appRootEl.appendChild(this.swiper);
 
     this.filterService.on('databaseReady', (dataVersion: Date) => {
@@ -55,13 +63,25 @@ export class Application {
       document.adoptedStyleSheets = [this.buildCinemaStyleSheet(data)];
     });
 
+    this.filterService.on('dataReady', () => {
+      console.log('Data ready.');
+      this.filterModal.cinemas = this.filterService.getCinemas();
+      this.filterService
+        .getMovies()
+        .then((movies) => {
+          this.filterModal.movies = movies;
+        })
+        .catch((error: unknown) => {
+          console.error('Failed to get movies.', error);
+        });
+    });
+
     this.filterService.on('eventDataReady', (data) => {
       this.updateSwiper(data);
     });
 
     this.filterModal.addEventListener('filterChanged', this.filterChanged);
     this.swiper.addEventListener('scrollThresholdReached', this.loadNextEvents);
-
     this.filterService.setDateRange(this.nextVisibleDate, this.visibleDays);
     this.filterService.loadData();
   }

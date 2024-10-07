@@ -1,19 +1,18 @@
 #filter-info {
   margin-bottom: 1em;
   font-size: 1.1em;
-  font-weight: 700;
+  font-weight: bold;
 }
 
-button#open-filter {
-  flex: 1 1 100%;
+button#filter-edit-button {
   margin-bottom: 1em;
 }
 @media screen and (min-width: 600px) {
-  button#open-filter {
+  button#filter-edit-button {
     flex: unset;
   }
 }
 
-button#open-filter:hover {
+button#filter-edit-button:hover {
   background-color: var(--light-accent);
 }

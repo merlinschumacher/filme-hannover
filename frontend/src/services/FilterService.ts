@@ -87,7 +87,7 @@ export default class FilterService {
     return await this.db.getTotalMovieCount();
   }
 
-  public GetCinemas(): Cinema[] {
+  public getCinemas(): Cinema[] {
     return this.availableCinemas;
   }
 

@@ -1,6 +1,6 @@
 <slot name="filter-dialog"></slot>
 <div id="filter-controls">
-  <button id="open-filter" class="action-button">
+  <button id="filter-edit-button" class="action-button">
     <span id="filter-edit-icon" class="icon"></span>Filter bearbeiten
   </button>
   <div id="filter-info"></div>
