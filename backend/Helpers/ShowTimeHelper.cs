@@ -25,6 +25,7 @@ namespace backend.Helpers
             { ShowTimeLanguage.Korean, ["Koreanisch", "kor", "KO"] },
             { ShowTimeLanguage.Hindi, ["Hindi", " hind.", " hin." ] },
             { ShowTimeLanguage.Polish, ["Polnisch", "poln.", "PL"] },
+            { ShowTimeLanguage.Arabic, ["Arabisch", "arab."]},
             { ShowTimeLanguage.German, ["Deutsch"," de."," deu.", "dt.", "DE"] },
             { ShowTimeLanguage.Other, ["Andere", "Verschiedene", "versch.", "div.", "Malayalam", "Filipino", "Georgisch", "georg." ]},
             { ShowTimeLanguage.Unknown, ["Unbekannt"] },

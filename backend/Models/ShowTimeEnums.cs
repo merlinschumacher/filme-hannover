@@ -22,6 +22,7 @@
         Korean = 9,
         Hindi = 10,
         Polish = 11,
+        Arabic = 12,
         Other = 254,
         Unknown = -1,
     }
