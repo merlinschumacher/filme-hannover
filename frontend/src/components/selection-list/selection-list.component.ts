@@ -1,17 +1,12 @@
 import html from './selection-list.component.tpl';
 import css from './selection-list.component.css?inline';
-import Movie from '../../models/Movie';
 import SelectionListItemElement from '../selection-list-item/selection-list-item.component';
 
 const styleSheet = new CSSStyleSheet();
 styleSheet.replaceSync(css);
 
 export default class SelectionListElement extends HTMLElement {
-  setData(selectedItemIds: number[]) {
-    this.selectedItemIds = selectedItemIds;
-  }
-  public Movies: Movie[] = [];
-  public selectedItemIds: number[] = [];
+  private selectedItemIds: number[] = [];
   public onSelectionChanged?: (movies: number[]) => void;
 
   private shadow: ShadowRoot;
@@ -21,50 +16,30 @@ export default class SelectionListElement extends HTMLElement {
     this.shadow = this.attachShadow({ mode: 'open' });
     this.shadow.appendChild(html.content.cloneNode(true));
     this.shadow.adoptedStyleSheets = [styleSheet];
-    const searchInput = this.shadow.safeQuerySelector(
-      'input',
-    ) as HTMLInputElement;
-    searchInput.addEventListener('input', () => {
-      this.searchMovies(searchInput.value);
-    });
-
-    this.addEventListener('click', (ev: MouseEvent) => {
-      if (!(ev.target instanceof SelectionListItemElement)) return;
-      const movieId = parseInt(ev.target.getAttribute('value') ?? '0');
-      this.selectedItemIds.toggleElement(movieId);
-
-      if (!this.onSelectionChanged) return;
-      this.onSelectionChanged(this.selectedItemIds);
-    });
-  }
-
-  private buildMovieButtons(): SelectionListItemElement[] {
-    const options: SelectionListItemElement[] = [];
-    this.Movies.forEach((movie) => {
-      const movieButton = new SelectionListItemElement();
-      movieButton.slot = 'selection-list';
-      movieButton.setAttribute('label', movie.displayName);
-      movieButton.setAttribute('value', movie.id.toString());
-      options.push(movieButton);
-    });
-    return options;
   }
 
   connectedCallback() {
-    const movieButtons = this.buildMovieButtons();
-    this.append(...movieButtons);
-    this.updateSelections();
+    const searchInput = this.shadow.safeQuerySelector(
+      'input',
+    ) as HTMLInputElement;
+    searchInput.addEventListener('input', this.inputHandler);
+    this.addEventListener('click', this.clickHandler);
   }
 
-  private updateSelections() {
-    const options = this.querySelectorAll('selection-list-item');
-    options.forEach((option: Element) => {
-      const node = option as SelectionListItemElement;
-      node.setChecked(this.selectedItemIds.includes(node.getValue()));
-    });
+  disconnectedCallback() {
+    const searchInput = this.shadow.safeQuerySelector(
+      'input',
+    ) as HTMLInputElement;
+    searchInput.removeEventListener('input', this.inputHandler);
+    this.removeEventListener('click', this.clickHandler);
   }
 
-  private searchMovies(searchTerm: string) {
+  public setSelections(ids: number[]) {
+    this.selectedItemIds = ids;
+  }
+
+  private inputHandler = (event: Event) => {
+    const searchTerm = (event.target as HTMLInputElement).value;
     const options = this.querySelectorAll('selection-list-item');
     options.forEach((option: Element) => {
       const optionElement = option as SelectionListItemElement;
@@ -75,13 +50,22 @@ export default class SelectionListElement extends HTMLElement {
         optionElement.style.display = 'none';
       }
     });
-  }
+  };
 
-  public static BuildElement(movies: Movie[]): SelectionListElement {
-    const item = new SelectionListElement();
-    item.Movies = movies;
-    return item;
-  }
+  private clickHandler = (event: MouseEvent) => {
+    if (!(event.target instanceof SelectionListItemElement)) return;
+    const movieId = parseInt(event.target.getAttribute('value') ?? '0');
+    if (this.selectedItemIds.includes(movieId)) {
+      this.selectedItemIds = this.selectedItemIds.filter(
+        (id) => id !== movieId,
+      );
+    } else {
+      this.selectedItemIds.push(movieId);
+    }
+    if (this.onSelectionChanged) {
+      this.onSelectionChanged(this.selectedItemIds);
+    }
+  };
 }
 
 customElements.define('selection-list', SelectionListElement);

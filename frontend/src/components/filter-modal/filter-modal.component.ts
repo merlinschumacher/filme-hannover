@@ -2,7 +2,7 @@ import html from './filter-modal.component.tpl';
 import css from './filter-modal.component.css?inline';
 import buttonCss from '../common/action-button.css?inline';
 import CheckableButtonElement from '../checkable-button/checkable-button.component';
-import SelectionListElement from '../selection-list/selection-list.component';
+import MovieListElement from '../selection-list/selection-list.component';
 import Cinema from '../../models/Cinema';
 import Movie from '../../models/Movie';
 import {
@@ -18,6 +18,8 @@ import {
 } from '../../models/ShowTimeDubType';
 import Check from '@material-symbols/svg-400/outlined/check.svg?raw';
 import Close from '@material-symbols/svg-400/outlined/close.svg?raw';
+import FilterSelection from '../../models/FilterSelection';
+import SelectionListItemElement from '../selection-list-item/selection-list-item.component';
 
 const styleSheet = new CSSStyleSheet();
 styleSheet.replaceSync(css);
@@ -34,64 +36,14 @@ export default class FilterModalElement extends HTMLElement {
   private selectedRatings: MovieRating[] = allMovieRatings;
   private shadow: ShadowRoot;
   private dialogEl: HTMLDialogElement;
-  filterChangedEvent = new CustomEvent('filterChanged', {
-    detail: {
-      selectedCinemaIds: this.selectedCinemaIds,
-      selectedMovieIds: this.selectedMovieIds,
-      selectedDubTypes: this.selectedDubTypes,
-      selectedRatings: this.selectedRatings,
-    },
-  });
 
-  public setData(
-    selectedCinemaIds: number[],
-    selectedMovieIds: number[],
-    selectedDubTypes: ShowTimeDubType[],
-    selecteRatings: MovieRating[],
-  ) {
-    this.selectedCinemaIds = selectedCinemaIds;
-    this.selectedMovieIds = selectedMovieIds;
-    this.selectedDubTypes = selectedDubTypes;
-    this.selectedRatings = selecteRatings;
-  }
-
-  private updateDialog() {
-    const cinemaSelectionSlot = this.shadow.safeQuerySelector(
-      'slot[name="cinema-selection"]',
-    ) as HTMLSlotElement;
-    cinemaSelectionSlot.childNodes.forEach((node) => {
-      if (node instanceof CheckableButtonElement) {
-        node.setChecked(this.selectedCinemaIds.includes(node.getValue()));
-      }
-    });
-
-    const DubTypeSlot = this.shadow.safeQuerySelector(
-      'slot[name="type-selection"]',
-    ) as HTMLSlotElement;
-    DubTypeSlot.childNodes.forEach((node) => {
-      if (node instanceof CheckableButtonElement) {
-        node.setChecked(this.selectedDubTypes.includes(node.getValue()));
-      }
-    });
-
-    const movieRatingSlot = this.shadow.safeQuerySelector(
-      'slot[name="rating-selection"]',
-    ) as HTMLSlotElement;
-    movieRatingSlot.childNodes.forEach((node) => {
-      if (node instanceof CheckableButtonElement) {
-        node.setChecked(this.selectedRatings.includes(node.getValue()));
-      }
-    });
-
-    const movieSelectionSlot = this.shadow.safeQuerySelector(
-      'slot[name="movie-selection"]',
-    ) as HTMLSlotElement;
-
-    movieSelectionSlot.childNodes.forEach((node) => {
-      if (node instanceof SelectionListElement) {
-        node.setData(this.selectedMovieIds);
-      }
-    });
+  public setSelection(selection: FilterSelection) {
+    if (selection.selectedMovieIds.length != this.movies.length) {
+      this.selectedMovieIds = selection.selectedMovieIds;
+    }
+    this.selectedCinemaIds = selection.selectedCinemaIds;
+    this.selectedDubTypes = selection.selectedDubTypes;
+    this.selectedRatings = selection.selectedRatings;
   }
 
   constructor() {
@@ -109,11 +61,14 @@ export default class FilterModalElement extends HTMLElement {
   }
 
   private buildButtons() {
-    const movieList = SelectionListElement.BuildElement(this.movies);
+    const movieList = new MovieListElement();
+    movieList.setSelections(this.selectedMovieIds);
     movieList.onSelectionChanged = (movieIds: number[]) => {
       this.selectedMovieIds = movieIds;
     };
     movieList.slot = 'movie-selection';
+    const movieButtons = this.generateMovieButtons();
+    movieList.append(...movieButtons);
     this.append(movieList);
 
     const cinemaButtons: CheckableButtonElement[] =
@@ -131,29 +86,34 @@ export default class FilterModalElement extends HTMLElement {
 
   handleCinemaSelectionChanged(e: Event) {
     if (e.target instanceof CheckableButtonElement) {
-      const value = e.target.getValue();
-      this.selectedMovieIds.toggleElement(value);
+      const v = e.target.getValue();
+      this.selectedCinemaIds = this.selectedCinemaIds.filter(
+        (value: number) => value !== v,
+      );
     }
   }
 
   handleShowTimeDubTypeSelected(e: Event) {
     if (e.target instanceof CheckableButtonElement) {
-      const value = e.target.getValue();
-      this.selectedDubTypes.toggleElement(value);
+      const v = e.target.getValue();
+      this.selectedDubTypes = this.selectedDubTypes.filter(
+        (value) => value.valueOf() !== v,
+      );
     }
   }
 
   handleMovieRatingSelected(e: Event) {
     if (e.target instanceof CheckableButtonElement) {
-      const value = e.target.getValue();
-      this.selectedDubTypes.toggleElement(value);
+      const v = e.target.getValue();
+      this.selectedRatings = this.selectedRatings.filter(
+        (value) => value.valueOf() !== v,
+      );
     }
   }
 
   connectedCallback() {
     this.buildButtons();
     this.buildButtonEvents();
-    this.updateDialog();
     this.dialogEl.showModal();
   }
 
@@ -174,18 +134,22 @@ export default class FilterModalElement extends HTMLElement {
     );
     this.dialogEl.addEventListener('click', this.clickOutsideDialog);
   }
+
   private applyFilterSelection = () => {
-    this.dispatchEvent(this.filterChangedEvent);
+    const filterChangedEvent = new CustomEvent('filterChanged', {
+      detail: new FilterSelection(
+        this.selectedCinemaIds,
+        this.selectedMovieIds,
+        this.selectedDubTypes,
+        this.selectedRatings,
+      ),
+    });
+    this.dispatchEvent(filterChangedEvent);
     this.closeDialog();
   };
 
   private closeDialog = () => {
     this.dialogEl.close();
-
-    const movieSelectionSlot = this.shadow.safeQuerySelector(
-      "slot[name='movie-selection']",
-    ) as HTMLSlotElement;
-    movieSelectionSlot.innerHTML = '';
 
     const applyFilterDialogButtonEl =
       this.shadow.safeQuerySelector('#apply-filter');
@@ -216,61 +180,79 @@ export default class FilterModalElement extends HTMLElement {
     }
   };
 
+  private generateMovieButtons() {
+    const allChecked = this.selectedMovieIds.length === this.movies.length;
+    return this.movies.map((movie) => {
+      const movieButton = new SelectionListItemElement();
+      movieButton.slot = 'selection-list';
+      movieButton.setAttribute('label', movie.displayName);
+      movieButton.setAttribute('value', movie.id.toString());
+      if (!allChecked) {
+        movieButton.setChecked(this.selectedMovieIds.includes(movie.id));
+      }
+      return movieButton;
+    });
+  }
+
   private generateCinemaButtons() {
-    const cinemaButtons: CheckableButtonElement[] = [];
-    this.cinemas.forEach((cinema) => {
-      const cinemaButton = CheckableButtonElement.BuildElement(
-        cinema.displayName,
-        cinema.id.toString(),
-        cinema.color,
-      );
+    return this.cinemas.map((cinema) => {
+      const cinemaButton = new CheckableButtonElement();
       cinemaButton.slot = 'cinema-selection';
+      cinemaButton.setAttribute('label', cinema.displayName);
+      cinemaButton.setAttribute('value', cinema.id.toString());
+      cinemaButton.setAttribute('color', cinema.color);
+      cinemaButton.setChecked(this.selectedCinemaIds.includes(cinema.id));
       cinemaButton.addEventListener(
         'click',
         this.handleCinemaSelectionChanged.bind(this),
       );
-      cinemaButtons.push(cinemaButton);
+      return cinemaButton;
     });
-    return cinemaButtons;
   }
 
   private generateShowTimeDubTypeButtons() {
-    const showTimeDubTypeButtons: CheckableButtonElement[] = [];
-    const showTimeDubTypes: ShowTimeDubType[] = allShowTimeDubTypes;
-
-    showTimeDubTypes.forEach((showTimeDubType) => {
-      const showTimeDubTypeButton = CheckableButtonElement.BuildElement(
+    return allShowTimeDubTypes.map((showTimeDubType) => {
+      const showTimeDubTypeButton = new CheckableButtonElement();
+      showTimeDubTypeButton.setAttribute(
+        'label',
         getShowTimeDubTypeLabelString(showTimeDubType),
+      );
+      showTimeDubTypeButton.setAttribute(
+        'value',
         showTimeDubType.valueOf().toString(),
       );
+      showTimeDubTypeButton.setAttribute('color', '#000000');
+      showTimeDubTypeButton.setAttribute('checked', '');
       showTimeDubTypeButton.slot = 'type-selection';
+      showTimeDubTypeButton.setChecked(
+        this.selectedDubTypes.includes(showTimeDubType),
+      );
       showTimeDubTypeButton.addEventListener(
         'click',
         this.handleShowTimeDubTypeSelected.bind(this),
       );
-      showTimeDubTypeButtons.push(showTimeDubTypeButton);
+      return showTimeDubTypeButton;
     });
-    return showTimeDubTypeButtons;
   }
 
   private generateMovieRatingButtons() {
-    const movieRatingButtons: CheckableButtonElement[] = [];
-    const movieRatings: MovieRating[] = allMovieRatings;
-
-    movieRatings.forEach((movieRating) => {
-      const movieRatingButton = CheckableButtonElement.BuildElement(
-        getMovieRatingLabelString(movieRating),
-        movieRating.valueOf().toString(),
-        movieRatingColors.get(movieRating),
+    return allMovieRatings.map((rating) => {
+      const movieRatingButton = new CheckableButtonElement();
+      movieRatingButton.setAttribute(
+        'label',
+        getMovieRatingLabelString(rating),
       );
+      const movieRatingColor = movieRatingColors.get(rating);
+      movieRatingButton.setAttribute('color', movieRatingColor ?? '#000000');
+      movieRatingButton.setAttribute('value', rating.valueOf().toString());
       movieRatingButton.slot = 'rating-selection';
+      movieRatingButton.setChecked(this.selectedRatings.includes(rating));
       movieRatingButton.addEventListener(
         'click',
         this.handleMovieRatingSelected.bind(this),
       );
-      movieRatingButtons.push(movieRatingButton);
+      return movieRatingButton;
     });
-    return movieRatingButtons;
   }
 }
 

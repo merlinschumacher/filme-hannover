@@ -7,13 +7,6 @@ const styleSheet = new CSSStyleSheet();
 styleSheet.replaceSync(css);
 
 export default class CheckableButtonElement extends HTMLElement {
-  setChecked(checked: boolean) {
-    if (checked) {
-      this.setAttribute('checked', '');
-    } else {
-      this.removeAttribute('checked');
-    }
-  }
   static get observedAttributes(): string[] {
     return ['label', 'value', 'color', 'checked'];
   }
@@ -25,10 +18,6 @@ export default class CheckableButtonElement extends HTMLElement {
     this.shadow = this.attachShadow({ mode: 'open' });
     this.shadow.appendChild(html.content.cloneNode(true));
     this.shadow.adoptedStyleSheets = [styleSheet];
-  }
-
-  getValue(): number {
-    return parseInt(this.getAttribute('value') ?? '-1');
   }
 
   connectedCallback() {
@@ -76,6 +65,18 @@ export default class CheckableButtonElement extends HTMLElement {
     }
   }
 
+  getValue(): number {
+    return parseInt(this.getAttribute('value') ?? '-1');
+  }
+
+  setChecked(checked: boolean) {
+    if (checked) {
+      this.setAttribute('checked', '');
+    } else {
+      this.removeAttribute('checked');
+    }
+  }
+
   private handleClick = (ev: MouseEvent) => {
     ev.preventDefault();
     if (ev.target instanceof CheckableButtonElement) {
@@ -91,24 +92,6 @@ export default class CheckableButtonElement extends HTMLElement {
         el.checked = checked;
       }
     });
-  }
-
-  public static BuildElement(
-    label: string,
-    value: string,
-    color = '#000000',
-    checked = true,
-  ): CheckableButtonElement {
-    const element = document.createElement(
-      'checkable-button',
-    ) as CheckableButtonElement;
-    element.setAttribute('label', label);
-    element.setAttribute('value', value);
-    element.setAttribute('color', color);
-    if (checked) {
-      element.setAttribute('checked', '');
-    }
-    return element;
   }
 }
 

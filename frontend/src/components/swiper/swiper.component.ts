@@ -145,6 +145,7 @@ export default class SwiperElement extends HTMLElement {
   }
 
   replaceEvents(eventDays: Map<Date, EventData[]>) {
+    this.toggleLoading();
     if (eventDays.size === 0) {
       this.showNoResults();
     }

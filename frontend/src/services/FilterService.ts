@@ -10,6 +10,7 @@ import {
   ShowTimeDubType,
 } from '../models/ShowTimeDubType';
 import CinemaDb from './CinemaDb';
+import FilterSelection from '../models/FilterSelection';
 
 export default class FilterService {
   emitter: Emitter;
@@ -51,12 +52,13 @@ export default class FilterService {
   private async setInitialSelection() {
     const movies = await this.db.GetMovieIds(this.selectedRatings);
     const cinemas = await this.db.GetCinemaIds();
-    await this.setSelection(
+    const selection = new FilterSelection(
       cinemas,
       movies,
-      this.selectedShowTimeDubTypes,
-      this.selectedRatings,
+      allShowTimeDubTypes,
+      allMovieRatings,
     );
+    await this.setSelection(selection);
   }
 
   private loadCinemaData() {
@@ -95,17 +97,23 @@ export default class FilterService {
     return await this.db.getTotalCinemaCount();
   }
 
-  public async setSelection(
-    cinemaIds: number[],
-    movieIds: number[],
-    showTimeDubType: ShowTimeDubType[],
-    ratings: MovieRating[],
-  ): Promise<void> {
-    this.setSelectedMovieRatings(ratings);
-    await this.setSelectedCinemas(cinemaIds);
-    await this.setSelectedMovies(movieIds);
-    this.setSelectedShowTimeDubTypes(showTimeDubType);
+  public async setSelection(selection: FilterSelection): Promise<void> {
+    this.setSelectedMovieRatings(selection.selectedRatings);
+    await this.setSelectedCinemas(selection.selectedCinemaIds);
+    await this.setSelectedMovies(selection.selectedMovieIds);
+    this.setSelectedShowTimeDubTypes(selection.selectedDubTypes);
+    this.startDate = new Date();
+
     await this.getEventData();
+  }
+
+  public getSelection(): FilterSelection {
+    return new FilterSelection(
+      this.selectedCinemaIds,
+      this.selectedMovieIds,
+      this.selectedShowTimeDubTypes,
+      this.selectedRatings,
+    );
   }
 
   public setDateRange(startDate: Date, visibleDays: number): void {

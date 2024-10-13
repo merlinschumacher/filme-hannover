@@ -12,6 +12,7 @@ import {
   ShowTimeDubType,
 } from '../../models/ShowTimeDubType';
 import FilterIcon from '@material-symbols/svg-400/rounded/filter_alt.svg?raw';
+import FilterSelection from '../../models/FilterSelection';
 
 const styleSheet = new CSSStyleSheet();
 styleSheet.replaceSync(css);
@@ -41,16 +42,11 @@ export default class FilterBarElement extends HTMLElement {
   private selectedRatings: MovieRating[] = allMovieRatings;
   private shadow: ShadowRoot;
 
-  public setData(
-    selectedCinemaIds: number[],
-    selectedMovieIds: number[],
-    selectedDubTypes: ShowTimeDubType[],
-    selecteRatings: MovieRating[],
-  ) {
-    this.selectedCinemaIds = selectedCinemaIds;
-    this.selectedMovieIds = selectedMovieIds;
-    this.selectedDubTypes = selectedDubTypes;
-    this.selectedRatings = selecteRatings;
+  public setData(selection: FilterSelection) {
+    this.selectedCinemaIds = selection.selectedCinemaIds;
+    this.selectedMovieIds = selection.selectedMovieIds;
+    this.selectedDubTypes = selection.selectedDubTypes;
+    this.selectedRatings = selection.selectedRatings;
   }
 
   constructor() {
