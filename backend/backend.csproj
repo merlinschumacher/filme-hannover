@@ -21,7 +21,7 @@
 	<ItemGroup>
 		<PackageReference Include="CsvHelper" Version="33.0.1" />
 		<PackageReference Include="Fastenshtein" Version="1.0.10" />
-		<PackageReference Include="HtmlAgilityPack" Version="1.11.66" />
+		<PackageReference Include="HtmlAgilityPack" Version="1.11.67" />
 		<PackageReference Include="Ical.Net" Version="4.2.0" />
 		<PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="8.0.8" />
 		<PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0">
@@ -40,12 +40,12 @@
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3">
 			<TreatAsUsed>true</TreatAsUsed>
 		</PackageReference>
-		<PackageReference Include="Polly" Version="8.4.1" />
-		<PackageReference Include="Roslynator.Analyzers" Version="4.12.5">
+		<PackageReference Include="Polly" Version="8.4.2" />
+		<PackageReference Include="Roslynator.Analyzers" Version="4.12.7">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="Roslynator.Formatting.Analyzers" Version="4.12.5">
+		<PackageReference Include="Roslynator.Formatting.Analyzers" Version="4.12.7">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>

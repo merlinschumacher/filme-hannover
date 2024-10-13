@@ -195,7 +195,7 @@ namespace backend.Scrapers.Koki
             public required int TotalItems { get; set; } = 0;
         }
 
-        [GeneratedRegex(@"view\/(.*)\/\d\/\d")]
+        [GeneratedRegex(@"view/(\d*)")]
         private static partial Regex ViewIdRegex();
     }
 }
