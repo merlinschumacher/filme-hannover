@@ -41,7 +41,7 @@
 			<TreatAsUsed>true</TreatAsUsed>
 		</PackageReference>
 		<PackageReference Include="Polly" Version="8.4.2" />
-		<PackageReference Include="Roslynator.Analyzers" Version="4.12.7">
+		<PackageReference Include="Roslynator.Analyzers" Version="4.12.8">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
