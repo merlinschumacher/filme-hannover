@@ -37,7 +37,7 @@
     "vite-plugin-optimize-css-modules": "^1.1.0"
   },
   "dependencies": {
-    "@material-symbols/svg-400": "^0.24.0",
+    "@material-symbols/svg-400": "^0.25.0",
     "dexie": "^4.0.8",
     "inter-ui": "^4.0.2",
     "scroll-snap-slider": "^3.3.1"
