@@ -144,55 +144,20 @@ export default class SwiperElement extends HTMLElement {
     this.onReachendEnabled = true;
   }
 
-  replaceEvents(eventDays: Map<Date, EventData[]>) {
-    this.toggleLoading();
-    if (eventDays.size === 0) {
-      this.showNoResults();
-    }
-
-    const firstKey = eventDays.keys().next();
-    if (firstKey.done) {
-      throw new Error('eventDays is empty');
-    }
-    const dateElements: HTMLElement[] = this.generateDateElements(
-      firstKey,
-      eventDays,
-    );
-    this.replaceSlides(dateElements);
-    this.onReachendEnabled = true;
-  }
-
-  private generateDateElements(
-    firstKey: IteratorYieldResult<Date>,
-    eventDays: Map<Date, EventData[]>,
-  ) {
-    let lastDate: Date = firstKey.value;
-    const dateElements: HTMLElement[] = [];
-    eventDays.forEach((dayEvents, dateString) => {
-      const date = new Date(dateString);
-      if (!this.isConsecutiveDate(date, lastDate)) {
-        dateElements.push(new EmptyDayElement());
-      }
-      const dayList = DayListElement.BuildElement(date, dayEvents);
-      dateElements.push(dayList);
-      lastDate = date;
-    });
-    return dateElements;
-  }
-
   private appendSlide(slide: HTMLElement): void {
     slide.slot = 'slides';
     slide.classList.add('scroll-snap-slide');
     this.scrollSnapSliderEl.appendChild(slide);
     this.slideCount++;
     this.triggeredScrollThreshold = false;
+    this.hideLoader();
   }
 
-  public clearSlides(): void {
+  clearSlides(): void {
+    this.showLoader();
     this.onReachendEnabled = false;
     this.scrollSnapSliderEl.replaceChildren();
     this.slideCount = 0;
-    this.toggleLoading();
     this.triggeredScrollThreshold = false;
   }
 
@@ -201,25 +166,18 @@ export default class SwiperElement extends HTMLElement {
       noContentHtml.content.cloneNode(true),
     );
     this.slideCount = 0;
-    this.toggleLoading();
     this.triggeredScrollThreshold = false;
+    this.hideLoader();
   }
 
-  toggleLoading(): void {
-    this.loader.toggleAttribute('visible');
-    this.scrollSnapSliderEl.classList.toggle('disabled');
+  showLoader(): void {
+    this.loader.setAttribute('visible', 'true');
+    this.scrollSnapSliderEl.classList.add('disabled');
   }
 
-  private replaceSlides(slides: HTMLElement[]): void {
-    slides.forEach((slide) => {
-      slide.slot = 'slides';
-      slide.classList.add('scroll-snap-slide');
-    });
-    this.scrollSnapSliderEl.replaceChildren(...slides);
-    this.scrollSnapSlider.slideTo(0);
-    this.toggleLoading();
-    this.slideCount = slides.length;
-    this.triggeredScrollThreshold = false;
+  private hideLoader(): void {
+    this.loader.removeAttribute('visible');
+    this.scrollSnapSliderEl.classList.remove('disabled');
   }
 
   private isConsecutiveDate(first: Date, second: Date): boolean {

@@ -3,7 +3,6 @@ import ViewPortService from './services/ViewPortService';
 import Cinema from './models/Cinema';
 import FilterBarElement from './components/filter-bar/filter-bar.component';
 import FilterModalElement from './components/filter-modal/filter-modal.component';
-import EventDataResult from './models/EventDataResult';
 import SwiperElement from './components/swiper/swiper.component';
 import CinemaLegendElement from './components/cinema-legend/cinema-legend.component';
 import FilterSelection from './models/FilterSelection';
@@ -47,6 +46,7 @@ export class Application {
           console.debug('Setting movies in filter modal.');
           this.filterModal.movies = movies;
           this.filterModal.setSelection(this.filterService.getSelection());
+
           this.appRootEl.appendChild(this.filterModal);
         }
       })
@@ -95,10 +95,12 @@ export class Application {
       });
   };
 
-  private updateSwiper = (eventDataResult: EventDataResult): void => {
-    console.log('Updating swiper.');
-    this.swiper.addEvents(eventDataResult.EventData);
-  };
+  private async setFilterBarValues() {
+    const movieCount = await this.filterService.getMovieCount();
+    this.filterBar.setAttribute('movies', movieCount.toString());
+    const cinemaCount = await this.filterService.getCinemaCount();
+    this.filterBar.setAttribute('cinemas', cinemaCount.toString());
+  }
 
   private attachFilterServiceEventListeners() {
     this.filterService.on('databaseReady', (dataVersion: Date) => {
@@ -117,11 +119,13 @@ export class Application {
     });
 
     this.filterService.on('dataReady', () => {
+      void this.setFilterBarValues();
       this.filterBar.addEventListener('filterEditClick', this.showFilterModal);
     });
 
     this.filterService.on('eventDataReady', (data) => {
-      this.updateSwiper(data);
+      console.log('Updating swiper.');
+      this.swiper.addEvents(data.EventData);
     });
 
     this.filterService.setDateRange(this.nextVisibleDate, this.visibleDays);

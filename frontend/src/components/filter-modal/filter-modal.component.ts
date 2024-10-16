@@ -84,29 +84,43 @@ export default class FilterModalElement extends HTMLElement {
     this.append(...movieRatingButtons);
   }
 
+  private handleSelectionChange<T extends { valueOf(): T }>(
+    selectedItems: T[],
+    selectedItem: T,
+  ): T[] {
+    console.log('Selected items', selectedItems);
+    if (!selectedItems.includes(selectedItem)) {
+      selectedItems.push(selectedItem);
+    } else {
+      selectedItems = selectedItems.filter((item) => item !== selectedItem);
+    }
+    console.log('Resulting selected items', selectedItems);
+    return selectedItems;
+  }
+
   handleCinemaSelectionChanged(e: Event) {
     if (e.target instanceof CheckableButtonElement) {
-      const v = e.target.getValue();
-      this.selectedCinemaIds = this.selectedCinemaIds.filter(
-        (value: number) => value !== v,
+      this.selectedCinemaIds = this.handleSelectionChange(
+        this.selectedCinemaIds,
+        e.target.getValue(),
       );
     }
   }
 
   handleShowTimeDubTypeSelected(e: Event) {
     if (e.target instanceof CheckableButtonElement) {
-      const v = e.target.getValue();
-      this.selectedDubTypes = this.selectedDubTypes.filter(
-        (value) => value.valueOf() !== v,
+      this.selectedDubTypes = this.handleSelectionChange(
+        this.selectedDubTypes,
+        e.target.getValue(),
       );
     }
   }
 
   handleMovieRatingSelected(e: Event) {
     if (e.target instanceof CheckableButtonElement) {
-      const v = e.target.getValue();
-      this.selectedRatings = this.selectedRatings.filter(
-        (value) => value.valueOf() !== v,
+      this.selectedRatings = this.handleSelectionChange(
+        this.selectedRatings,
+        e.target.getValue(),
       );
     }
   }

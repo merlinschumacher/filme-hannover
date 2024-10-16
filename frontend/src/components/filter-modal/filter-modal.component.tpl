@@ -1,7 +1,7 @@
 <dialog id="filter-dialog">
   <div id="filter-header">
     <h3>Filter bearbeiten</h3>
-    <button id="close-filter">
+    <button id="close-filter" class="action-button">
       <span id="filter-close-icon" class="icon"></span>
     </button>
   </div>

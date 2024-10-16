@@ -297,6 +297,7 @@ export default class CinemaDb extends Dexie {
         }
       });
 
+    lastKey.setDate(lastKey.getDate() + 1);
     return lastKey;
   }
 }

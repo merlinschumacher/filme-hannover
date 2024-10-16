@@ -93,7 +93,7 @@ export default class FilterService {
     return this.availableCinemas;
   }
 
-  public async GetCinemaCount(): Promise<number> {
+  public async getCinemaCount(): Promise<number> {
     return await this.db.getTotalCinemaCount();
   }
 

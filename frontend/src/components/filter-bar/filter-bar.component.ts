@@ -20,17 +20,25 @@ const buttonStyleSheet = new CSSStyleSheet();
 buttonStyleSheet.replaceSync(buttonCss);
 
 export default class FilterBarElement extends HTMLElement {
-  public static observedAttributes = ['totalMovieCount', 'totalCinemaCount'];
+  static get observedAttributes(): string[] {
+    return ['movies', 'cinemas'];
+  }
   private TotalCinemaCount = 0;
   private TotalMovieCount = 0;
 
-  attributeChangedCallback(name: string, oldValue: string, newValue: string) {
+  attributeChangedCallback(
+    name: string,
+    oldValue: string | null,
+    newValue: string | null,
+  ) {
+    console.log('attributeChangedCallback', name, oldValue, newValue);
     if (oldValue === newValue) return;
+    if (newValue === null) return;
     switch (name) {
-      case 'totalMovieCount':
+      case 'movies':
         this.TotalMovieCount = parseInt(newValue);
         break;
-      case 'totalCinemaCount':
+      case 'cinemas':
         this.TotalCinemaCount = parseInt(newValue);
         break;
     }
@@ -47,6 +55,7 @@ export default class FilterBarElement extends HTMLElement {
     this.selectedMovieIds = selection.selectedMovieIds;
     this.selectedDubTypes = selection.selectedDubTypes;
     this.selectedRatings = selection.selectedRatings;
+    this.updateFilterInfo();
   }
 
   constructor() {
@@ -98,7 +107,7 @@ export default class FilterBarElement extends HTMLElement {
 
     let movieRatingStringList = this.selectedRatings
       .map((m) => getMovieRatingLabelString(m))
-      .sort((a, b) => a.localeCompare(b))
+      .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
       .join(', ');
     movieRatingStringList =
       this.selectedRatings.length === allMovieRatings.length
