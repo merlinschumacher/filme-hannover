@@ -41,6 +41,7 @@
     "@material-symbols/svg-400": "^0.25.1",
     "dexie": "^4.0.8",
     "inter-ui": "^4.0.2",
+    "nanoevents": "^9.1.0",
     "scroll-snap-slider": "^3.3.1"
   }
 }
