@@ -2,6 +2,7 @@
 using backend.Models;
 using backend.Services;
 using HtmlAgilityPack;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 using System.Text.RegularExpressions;
 
 namespace backend.Scrapers.Koki
@@ -29,6 +30,8 @@ namespace backend.Scrapers.Koki
 
         private readonly Regex _titleRegex = TitleRegex();
         private readonly Regex _viewIdRegex = ViewIdRegex();
+
+        private readonly string[] _eventDetailIndicators = { "OV", "OmU", "OmenglU", " Min.", "FSK " };
 
         public async Task ScrapeAsync()
         {
@@ -64,23 +67,21 @@ namespace backend.Scrapers.Koki
                     continue;
                 }
 
-                var movie = await ProcessMovie(eventJson);
-                await ProcessShowTime(eventElement, eventJson, movie);
+                var readMoreElement = eventElement.SelectSingleNode(_readMoreSelector);
+                if (readMoreElement is null) return;
+                var readMoreHref = readMoreElement.GetAttributeValue("href", "");
+                var (dubType, language, rating) = await GetShowTimeDetails(readMoreHref);
+                var movie = await ProcessMovie(eventJson, rating);
+                await ProcessShowTime(eventJson, movie, readMoreHref, dubType, language);
             }
         }
 
-        private async Task ProcessShowTime(HtmlNode eventElement, EventDetailJson eventDetailJson, Movie movie)
+        private async Task ProcessShowTime(EventDetailJson eventDetailJson, Movie movie, string? href = null, ShowTimeDubType dubType = ShowTimeDubType.Regular, ShowTimeLanguage language = ShowTimeLanguage.German)
         {
-            var readMoreElement = eventElement.SelectSingleNode(_readMoreSelector);
-            if (readMoreElement is null) return;
-            var readMoreHref = readMoreElement.GetAttributeValue("href", "");
-            if (string.IsNullOrWhiteSpace(readMoreHref)) return;
-            var showTimeUrl = new Uri(_baseUrl, readMoreHref);
-            var (dubType, language) = await GetShowTimeDubTypeLanguage(readMoreHref);
-
-            if (string.IsNullOrWhiteSpace(readMoreHref))
+            var showTimeUrl = cinema.Url;
+            if (href is not null)
             {
-                showTimeUrl = cinema.Url;
+                showTimeUrl = new Uri(_baseUrl, href);
             }
 
             var showTime = new ShowTime()
@@ -95,13 +96,14 @@ namespace backend.Scrapers.Koki
             await showTimeService.CreateAsync(showTime);
         }
 
-        private async Task<Movie> ProcessMovie(EventDetailJson eventJson)
+        private async Task<Movie> ProcessMovie(EventDetailJson eventJson, MovieRating rating = MovieRating.Unknown)
         {
             var movieTitle = GetMovieTitle(eventJson);
             var movie = new Movie()
             {
                 DisplayName = movieTitle,
                 Runtime = eventJson.EndDate - eventJson.StartDate,
+                Rating = rating,
             };
             movie = await movieService.CreateAsync(movie);
             await cinemaService.AddMovieToCinemaAsync(movie, cinema);
@@ -113,11 +115,11 @@ namespace backend.Scrapers.Koki
             return _titleRegex.Match(eventJson.Name).Groups[1].Value;
         }
 
-        private async Task<(ShowTimeDubType, ShowTimeLanguage)> GetShowTimeDubTypeLanguage(string? readMoreUrlString)
+        private async Task<(ShowTimeDubType, ShowTimeLanguage, MovieRating)> GetShowTimeDetails(string? readMoreUrlString)
         {
             if (string.IsNullOrWhiteSpace(readMoreUrlString))
             {
-                return (ShowTimeDubType.Regular, ShowTimeLanguage.German);
+                return (ShowTimeDubType.Regular, ShowTimeLanguage.German, MovieRating.Unknown);
             }
 
             var readMoreUrl = new Uri(_baseUrl, readMoreUrlString).ToString();
@@ -127,21 +129,30 @@ namespace backend.Scrapers.Koki
             {
                 var dubType = ShowTimeHelper.GetDubType(detailString);
                 var language = ShowTimeHelper.GetLanguage(detailString);
-                return (dubType, language);
+                var rating = MovieHelper.GetRatingMatch(detailString);
+
+                return (dubType, language, rating);
             }
-            return (ShowTimeDubType.Regular, ShowTimeLanguage.German);
+            return (ShowTimeDubType.Regular, ShowTimeLanguage.German, MovieRating.Unknown);
         }
 
-        private static async Task<string?> ProcessReadMorePageAsync(string url)
+        private async Task<string?> ProcessReadMorePageAsync(string url)
         {
             var htmlBody = await HttpHelper.GetHtmlDocumentAsync(new Uri(url));
+            string? detailString = null;
 
             var eventDetailElement = htmlBody.DocumentNode.SelectSingleNode(_eventPageDetailSelector);
+            if (eventDetailElement is null)
+            {
+                detailString = htmlBody.DocumentNode.ChildNodes.FirstOrDefault(e => _eventDetailIndicators.Any(i => e.InnerText.Contains(i)))?.InnerText;
+            }
+            else
+            {
+                var detailStrings = eventDetailElement.InnerText.Split(",");
+                detailString = detailStrings[^1];
+            }
 
-            if (eventDetailElement is null) return null;
-
-            var detailStrings = eventDetailElement.InnerText.Split(",");
-            return detailStrings[^1].Trim();
+            return detailString?.Trim();
         }
 
         [GeneratedRegex(@"\d{1,2}.\d{2}\s*Uhr:\s*(.*)")]

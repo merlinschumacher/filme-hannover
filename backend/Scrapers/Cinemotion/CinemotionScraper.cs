@@ -107,7 +107,7 @@ namespace backend.Scrapers.Cinemotion
             {
                 DisplayName = cinemotionMovie.Title,
                 Runtime = GetRuntime(cinemotionMovie),
-                Rating = cinemotionMovie.MovieRating ?? MovieRating.Unknown,
+                Rating = cinemotionMovie.Fsk ?? MovieRating.Unknown,
             };
 
             return await _movieService.CreateAsync(movie);
