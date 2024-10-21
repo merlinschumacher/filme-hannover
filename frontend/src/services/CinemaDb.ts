@@ -1,4 +1,4 @@
-import Dexie, { EntityTable, IndexableTypePart } from 'dexie';
+import Dexie, { EntityTable } from 'dexie';
 import { JsonData } from '../models/JsonData';
 import { EventData } from '../models/EventData';
 import { getData } from './HttpClient';
@@ -6,6 +6,7 @@ import Configuration from '../models/Configuration';
 import Cinema from '../models/Cinema';
 import Movie from '../models/Movie';
 import ShowTime from '../models/ShowTime';
+import { allMovieRatings, MovieRating } from '../models/MovieRating';
 Dexie.debug = true;
 
 export default class CinemaDb extends Dexie {
@@ -19,9 +20,9 @@ export default class CinemaDb extends Dexie {
 
   public dataVersionDate: Date = new Date();
 
-  private constructor() {
+  public constructor() {
     super('CinemaDb');
-    this.version(4).stores({
+    this.version(5).stores({
       cinemas: 'id, displayName, iconClass',
       movies: 'id, displayName, runtime, rating, releaseDate',
       showTimes:
@@ -35,7 +36,7 @@ export default class CinemaDb extends Dexie {
     this.configurations.mapToClass(Configuration);
   }
 
-  private async init() {
+  async init() {
     console.log('Opening database...');
     try {
       await this.open();
@@ -53,12 +54,6 @@ export default class CinemaDb extends Dexie {
       'Showtimes loaded: ' + (await this.showTimes.count()).toString(),
     );
     return this;
-  }
-
-  public static async Create() {
-    const db = new CinemaDb();
-    await db.init();
-    return db;
   }
 
   private async checkData() {
@@ -110,8 +105,12 @@ export default class CinemaDb extends Dexie {
           value: remoteVersionDate,
         });
         this.dataVersionDate = remoteVersionDate;
-      } catch (error) {
-        console.error(error);
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          console.error(error.message);
+        } else {
+          console.error('An unknown error occurred');
+        }
       }
       return true;
     }
@@ -174,10 +173,27 @@ export default class CinemaDb extends Dexie {
       .toArray();
   }
 
-  public async GetAllMovies(): Promise<Movie[]> {
+  public async GetCinemaIds(): Promise<number[]> {
+    return await this.cinemas.toCollection().primaryKeys();
+  }
+
+  public async GetMovieIds(ratings: MovieRating[] = []): Promise<number[]> {
+    if (ratings.length === 0) {
+      ratings = allMovieRatings;
+    }
+    return this.movies.where('rating').anyOf(ratings).primaryKeys();
+  }
+
+  public async getMovies(ratings: MovieRating[] = []): Promise<Movie[]> {
+    if (ratings.length === 0) {
+      ratings = allMovieRatings;
+    }
     const movieIds = await this.showTimes.orderBy('movie').uniqueKeys();
     const movieArray = await this.movies
-      .filter((movie) => movieIds.includes(movie.id))
+      .filter(
+        (movie) =>
+          movieIds.includes(movie.id) && ratings.includes(movie.rating),
+      )
       .toArray();
 
     const collator = new Intl.Collator(undefined, {
@@ -189,10 +205,17 @@ export default class CinemaDb extends Dexie {
     );
   }
 
+  public async getTotalMovieCount(): Promise<number> {
+    return this.movies.count();
+  }
+  public async getTotalCinemaCount(): Promise<number> {
+    return this.cinemas.count();
+  }
+
   public async GetEarliestShowTimeDate(
-    selectedCinemaIds: number[],
-    selectedMovieIds: number[],
-    selectedShowTimeDubTypes: number[],
+    cinemaIds: number[],
+    movieIds: number[],
+    dubTypes: number[],
   ): Promise<Date | null> {
     // get the first showtime date for the selected cinemas and movies
     const earliestShowTime = await this.showTimes
@@ -200,9 +223,9 @@ export default class CinemaDb extends Dexie {
       .and(
         (showTime) =>
           showTime.startTime.getTime() >= new Date().getTime() &&
-          selectedCinemaIds.includes(showTime.cinema) &&
-          selectedMovieIds.includes(showTime.movie) &&
-          selectedShowTimeDubTypes.includes(showTime.dubType),
+          cinemaIds.includes(showTime.cinema) &&
+          movieIds.includes(showTime.movie) &&
+          dubTypes.includes(showTime.dubType),
       )
       .first();
 
@@ -249,38 +272,35 @@ export default class CinemaDb extends Dexie {
     return eventData;
   }
 
-  public async GetEndDate(
+  public async getEndDate(
     startDate: Date,
     selectedCinemaIds: number[],
     selectedMovieIds: number[],
     selectedShowTimeDubTypes: number[],
     visibleDays: number,
   ): Promise<Date> {
-    const showTimes = await this.showTimes
-      .orderBy('date')
-      .filter(
-        (showtime) =>
-          showtime.date.getTime() >= startDate.getTime() &&
-          selectedCinemaIds.includes(showtime.cinema) &&
-          selectedMovieIds.includes(showtime.movie) &&
-          selectedShowTimeDubTypes.includes(showtime.dubType),
-      )
-      .keys();
+    let lastKey = new Date(startDate);
+    let keyCount = 0;
+    await this.showTimes
+      .where('date')
+      .aboveOrEqual(startDate)
+      .and((showtime) => selectedCinemaIds.includes(showtime.cinema))
+      .and((showtime) => selectedMovieIds.includes(showtime.movie))
+      .and((showtime) => selectedShowTimeDubTypes.includes(showtime.dubType))
+      .until(() => keyCount === visibleDays)
+      .eachKey((key) => {
+        if (key instanceof Date) {
+          if (new Date(key).getTime() > lastKey.getTime()) {
+            lastKey = key;
+            keyCount++;
+          }
+        }
+      });
 
-    const uniqueDates = Array.from(
-      new Set(showTimes.map((d: IndexableTypePart) => (d as Date).getTime())),
-    );
-
-    let endDate = new Date(startDate);
-    if (uniqueDates.length === 0) {
-      endDate.setDate(startDate.getDate() + visibleDays);
-    } else if (uniqueDates.length < visibleDays) {
-      endDate = new Date(uniqueDates[uniqueDates.length - 1]);
-    } else {
-      endDate = new Date(uniqueDates[visibleDays - 1]);
+    if (lastKey.getTime() === startDate.getTime()) {
+      lastKey.setSeconds(lastKey.getSeconds() + 1);
     }
 
-    endDate.setUTCHours(23, 59, 59, 999);
-    return endDate;
+    return lastKey;
   }
 }

@@ -27,6 +27,17 @@ namespace backend.Services
             var existingMovie = await FindMovieAsync(movie);
             if (existingMovie is not null)
             {
+                if (existingMovie.Rating is MovieRating.Unknown && movie.Rating is not MovieRating.Unknown)
+                {
+                    existingMovie.Rating = movie.Rating;
+                    await context.SaveChangesAsync();
+                }
+                if (existingMovie.Runtime == Constants.AverageMovieRuntime && movie.Runtime != Constants.AverageMovieRuntime)
+                {
+                    existingMovie.Runtime = movie.Runtime;
+                    await context.SaveChangesAsync();
+                }
+
                 return existingMovie;
             }
             // If it's not in the database, query TMDb

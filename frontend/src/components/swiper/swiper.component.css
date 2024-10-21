@@ -3,6 +3,7 @@
 :host {
   --loader-size: 8px;
   --loader-color: #000;
+  position: relative;
 }
 
 #swiper-wrapper {

@@ -19,7 +19,7 @@ namespace backend.Scrapers.Cinestar
             HasShop = true,
         };
 
-        private readonly Uri _apiBaseUri = new("https://www.cinestar.de/api/cinema/24/");
+        private readonly Uri _apiBaseUri = new("https://www.cinestar.de/api/cinema/24/show");
         private readonly Uri _shopUrlTemplate = new("https://webticketing3.cinestar.de/?cinemaId=38823&google_analytics=false");
         private readonly ShowTimeService _showTimeService;
 
@@ -136,8 +136,7 @@ namespace backend.Scrapers.Cinestar
         private async Task<IEnumerable<CinestarMovie>> GetMovieListAsync()
         {
             IList<CinestarMovie> cinestarMovies = [];
-            var apiEndpointUrl = new Uri(_apiBaseUri, "show");
-            var json = await HttpHelper.GetJsonAsync<IEnumerable<CinestarMovie>>(apiEndpointUrl);
+            var json = await HttpHelper.GetJsonAsync<IEnumerable<CinestarMovie>>(_apiBaseUri);
             if (json == null)
             {
                 return cinestarMovies;

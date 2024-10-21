@@ -1,82 +1,139 @@
 import Cinema from '../models/Cinema';
 import { EventData } from '../models/EventData';
 import EventDataResult from '../models/EventDataResult';
+import FilterServiceEvents from '../models/FilterServiceEvents';
 import Movie from '../models/Movie';
+import { allMovieRatings, MovieRating } from '../models/MovieRating';
+import { createNanoEvents, Emitter } from 'nanoevents';
 import {
-  getAllShowTimeDubTypes,
+  allShowTimeDubTypes,
   ShowTimeDubType,
 } from '../models/ShowTimeDubType';
 import CinemaDb from './CinemaDb';
+import FilterSelection from '../models/FilterSelection';
 
 export default class FilterService {
+  emitter: Emitter;
   private db: CinemaDb;
-  private availableMovies: Movie[] = [];
   private availableCinemas: Cinema[] = [];
-  private selectedMovies: Movie[] = [];
-  private selectedCinemas: Cinema[] = [];
-  private selectedShowTimeDubTypes: ShowTimeDubType[] =
-    getAllShowTimeDubTypes();
-  public resultListChanged?: () => void;
+  private selectedMovieIds: number[] = [];
+  private selectedCinemaIds: number[] = [];
+  private selectedShowTimeDubTypes: ShowTimeDubType[] = allShowTimeDubTypes;
+  private selectedRatings: MovieRating[] = allMovieRatings;
+  private visibleDays = 0;
+  private startDate: Date;
 
-  private constructor(CinemaDb: CinemaDb) {
-    this.db = CinemaDb;
+  public constructor() {
+    this.emitter = createNanoEvents<FilterServiceEvents>();
+    this.db = new CinemaDb();
+    this.startDate = new Date();
   }
 
-  public static async Create(): Promise<FilterService> {
-    const db = await CinemaDb.Create();
-    const service = new FilterService(db);
-    await service.initialize();
-    return service;
+  loadData(): void {
+    this.db
+      .init()
+      .then(() => {
+        console.log('Database initialized.');
+        this.emitter.emit('databaseReady', this.db.dataVersionDate);
+        this.loadCinemaData();
+        this.setInitialSelection()
+          .then(() => {
+            this.emitter.emit('dataReady');
+          })
+          .catch((error: unknown) => {
+            console.error('Failed to initialize database.', error);
+          });
+      })
+      .catch((error: unknown) => {
+        console.error('Failed to initialize database.', error);
+      });
   }
 
-  private async initialize(): Promise<void> {
-    this.availableMovies = await this.db.GetAllMovies();
-    this.availableCinemas = await this.db.GetAllCinemas();
-    this.selectedCinemas = this.availableCinemas;
-    this.selectedMovies = this.availableMovies;
+  private async setInitialSelection() {
+    const movies = await this.db.GetMovieIds(this.selectedRatings);
+    const cinemas = await this.db.GetCinemaIds();
+    const selection = new FilterSelection(
+      cinemas,
+      movies,
+      allShowTimeDubTypes,
+      allMovieRatings,
+    );
+    await this.setSelection(selection);
   }
 
-  public GetAllMovies(): Movie[] {
-    if (this.selectedMovies.length === 0) {
-      return this.availableMovies;
-    }
-    return this.availableMovies;
+  private loadCinemaData() {
+    this.db.cinemas
+      .toArray()
+      .then((cinemas) => {
+        this.availableCinemas = cinemas;
+        this.selectedCinemaIds = cinemas.map((c) => c.id);
+        this.emitter.emit('cinemaDataReady', cinemas);
+      })
+      .catch((error: unknown) => {
+        console.error('Failed to load cinemas.', error);
+      });
   }
 
-  public GetAllCinemas(): Cinema[] {
+  on<E extends keyof FilterServiceEvents>(
+    event: E,
+    callback: FilterServiceEvents[E],
+  ) {
+    return this.emitter.on(event, callback);
+  }
+
+  public async getMovies(): Promise<Movie[]> {
+    return await this.db.getMovies(this.selectedRatings);
+  }
+
+  public async getMovieCount(): Promise<number> {
+    return await this.db.getTotalMovieCount();
+  }
+
+  public getCinemas(): Cinema[] {
     return this.availableCinemas;
   }
 
-  public async SetSelection(
-    cinemas: Cinema[],
-    movies: Movie[],
-    showTimeDubType: ShowTimeDubType[],
-  ): Promise<void> {
-    await this.setSelectedCinemas(cinemas);
-    await this.setSelectedMovies(movies);
-    this.setSelectedShowTimeDubTypes(showTimeDubType);
-    if (this.resultListChanged) {
-      this.resultListChanged();
+  public async getCinemaCount(): Promise<number> {
+    return await this.db.getTotalCinemaCount();
+  }
+
+  public async setSelection(selection: FilterSelection): Promise<void> {
+    this.setSelectedMovieRatings(selection.selectedRatings);
+    await this.setSelectedCinemas(selection.selectedCinemaIds);
+    await this.setSelectedMovies(selection.selectedMovieIds);
+    this.setSelectedShowTimeDubTypes(selection.selectedDubTypes);
+    this.startDate = new Date();
+
+    await this.getEventData();
+  }
+
+  public getSelection(): FilterSelection {
+    return new FilterSelection(
+      this.selectedCinemaIds,
+      this.selectedMovieIds,
+      this.selectedShowTimeDubTypes,
+      this.selectedRatings,
+    );
+  }
+
+  public setDateRange(startDate: Date, visibleDays: number): void {
+    this.startDate = startDate;
+    this.visibleDays = visibleDays;
+  }
+
+  private async setSelectedMovies(movies: number[]): Promise<void> {
+    if (movies.length === 0) {
+      this.selectedMovieIds = await this.db.GetMovieIds(this.selectedRatings);
+    } else {
+      this.selectedMovieIds = movies;
     }
   }
 
-  private async setSelectedMovies(movies: Movie[]): Promise<void> {
-    if (movies.length === 0 && this.selectedCinemas.length === 0) {
-      this.selectedMovies = await this.db.GetAllMovies();
-    } else if (movies.length === 0) {
-      this.selectedMovies = this.availableMovies;
+  private async setSelectedCinemas(cinemas: number[]): Promise<void> {
+    if (cinemas.length === 0) {
+      this.selectedCinemaIds = await this.db.GetCinemaIds();
     } else {
-      this.selectedMovies = movies;
-    }
-  }
-
-  private async setSelectedCinemas(cinemas: Cinema[]): Promise<void> {
-    if (cinemas.length === 0 && this.selectedMovies.length === 0) {
-      this.selectedCinemas = await this.db.GetAllCinemas();
-    } else if (cinemas.length === 0) {
-      this.selectedCinemas = this.availableCinemas;
-    } else {
-      this.selectedCinemas = cinemas;
+      this.selectedCinemaIds = cinemas;
     }
   }
 
@@ -84,18 +141,23 @@ export default class FilterService {
     showTimeDubTypes: ShowTimeDubType[],
   ): void {
     if (showTimeDubTypes.length === 0) {
-      this.selectedShowTimeDubTypes = getAllShowTimeDubTypes();
+      this.selectedShowTimeDubTypes = allShowTimeDubTypes;
     }
     this.selectedShowTimeDubTypes = showTimeDubTypes;
   }
 
-  public async GetEvents(
-    startDate: Date,
-    visibleDays: number,
-  ): Promise<EventDataResult> {
-    const selectedCinemaIds = this.selectedCinemas.map((c) => c.id);
-    const selectedMovieIds = this.selectedMovies.map((m) => m.id);
+  private setSelectedMovieRatings(ratings: MovieRating[]): void {
+    if (ratings.length === 0) {
+      this.selectedRatings = allMovieRatings;
+    }
+    this.selectedRatings = ratings;
+  }
 
+  public async getNextPage(): Promise<void> {
+    await this.getEventData();
+  }
+
+  private async getEventData() {
     const events = await this.db.transaction(
       'r',
       this.db.showTimes,
@@ -104,43 +166,47 @@ export default class FilterService {
       async () => {
         // Get the first showtime date, if the start date is before the first showtime date, set the start date to the first showtime date
         const firstShowTimeDate = await this.db.GetEarliestShowTimeDate(
-          selectedCinemaIds,
-          selectedMovieIds,
+          this.selectedCinemaIds,
+          this.selectedMovieIds,
           this.selectedShowTimeDubTypes,
         );
         if (!firstShowTimeDate) {
           return [];
         }
-        if (startDate.getTime() < firstShowTimeDate.getTime()) {
-          startDate = firstShowTimeDate;
+        if (this.startDate.getTime() < firstShowTimeDate.getTime()) {
+          this.startDate = firstShowTimeDate;
         }
         // To fill up the requested visible days, we need to get the nth day for that range.
-        const endDate: Date = await this.db.GetEndDate(
-          startDate,
-          selectedCinemaIds,
-          selectedMovieIds,
+        const endDate: Date = await this.db.getEndDate(
+          this.startDate,
+          this.selectedCinemaIds,
+          this.selectedMovieIds,
           this.selectedShowTimeDubTypes,
-          visibleDays,
+          this.visibleDays,
         );
 
         return await this.db.GetEventData(
-          startDate,
+          this.startDate,
           endDate,
-          selectedCinemaIds,
-          selectedMovieIds,
+          this.selectedCinemaIds,
+          this.selectedMovieIds,
           this.selectedShowTimeDubTypes,
         );
       },
     );
     if (events.length === 0) {
-      return new EventDataResult(new Map<Date, EventData[]>(), null);
+      this.emitter.emit('eventDataReady', new EventDataResult(new Map(), null));
+      return;
     }
     const lastEventTime = events[events.length - 1].startTime;
+    this.startDate = new Date(lastEventTime);
+    this.startDate.setSeconds(this.startDate.getSeconds() + 1);
     const splitEvents = this.splitEventsIntoDays(events);
 
-    console.log('Events', splitEvents);
-
-    return new EventDataResult(splitEvents, lastEventTime);
+    this.emitter.emit(
+      'eventDataReady',
+      new EventDataResult(splitEvents, lastEventTime),
+    );
   }
 
   public getDataVersion(): string {

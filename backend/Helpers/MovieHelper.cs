@@ -7,12 +7,12 @@ namespace backend.Helpers
     {
         private static readonly Dictionary<MovieRating, string[]> _movieRatingMap = new()
         {
-            { MovieRating.FSK0, ["FSK 0", "FSK0", "FSK_0" , "ab 0 "] },
-            { MovieRating.FSK6, ["FSK 6", "FSK6","FSK_6", "ab 6 "] },
-            { MovieRating.FSK12, ["FSK 12", "FSK12", "FSK_12", "ab 12 "] },
-            { MovieRating.FSK16, ["FSK 16", "FSK16", "FSK_16", "ab 16"] },
-            { MovieRating.FSK18, ["FSK 18", "FSK18", "FSK_18", "ab 18"] },
-            { MovieRating.Unrated, ["keine Freigabe", "FSK ?"] }
+            { MovieRating.FSK0, ["FSK 0", "FSK0", "FSK_0", "FSK: 0", "ab 0 "] },
+            { MovieRating.FSK6, ["FSK 6", "FSK6","FSK_6", "FSK: 6", "ab 6 "] },
+            { MovieRating.FSK12, ["FSK 12", "FSK12", "FSK_12","FSK: 12", "ab 12 "] },
+            { MovieRating.FSK16, ["FSK 16", "FSK16", "FSK_16","FSK: 16", "ab 16"] },
+            { MovieRating.FSK18, ["FSK 18", "FSK18", "FSK_18","FSK: 18", "ab 18"] },
+            { MovieRating.Unrated, ["keine Freigabe", "FSK ?", "FSK_255", "FSKnotKnown"] }
         };
 
         public static MovieRating GetRatingMatch(string ratingString)

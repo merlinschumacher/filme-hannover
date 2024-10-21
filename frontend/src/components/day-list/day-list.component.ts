@@ -1,7 +1,7 @@
 import html from './day-list.component.tpl';
 import css from './day-list.component.css?inline';
 import { EventData } from '../../models/EventData';
-import EventItem from '../event-item/event-item.component';
+import EventItemElement from '../event-item/event-item.component';
 
 const styleSheet = new CSSStyleSheet();
 styleSheet.replaceSync(css);
@@ -74,9 +74,9 @@ export default class DayListElement extends HTMLElement {
 
   static BuildElement(date: Date, events: EventData[]) {
     let eventCumulativeDuration = 0;
-    const eventElements: EventItem[] = [];
+    const eventElements: EventItemElement[] = [];
     events.forEach((event) => {
-      const eventItem = EventItem.BuildElement(event);
+      const eventItem = EventItemElement.BuildElement(event);
       eventItem.slot = 'body';
       eventCumulativeDuration += +event.runtime;
       eventElements.push(eventItem);

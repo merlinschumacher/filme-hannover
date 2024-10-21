@@ -1,15 +1,13 @@
 import html from './selection-list.component.tpl';
 import css from './selection-list.component.css?inline';
-import Movie from '../../models/Movie';
 import SelectionListItemElement from '../selection-list-item/selection-list-item.component';
 
 const styleSheet = new CSSStyleSheet();
 styleSheet.replaceSync(css);
 
 export default class SelectionListElement extends HTMLElement {
-  public Movies: Movie[] = [];
-  private SelectedMovies: Movie[] = [];
-  public onSelectionChanged?: (movies: Movie[]) => void;
+  private selectedItemIds: number[] = [];
+  public onSelectionChanged?: (movies: number[]) => void;
 
   private shadow: ShadowRoot;
 
@@ -19,48 +17,29 @@ export default class SelectionListElement extends HTMLElement {
     this.shadow.appendChild(html.content.cloneNode(true));
     this.shadow.adoptedStyleSheets = [styleSheet];
   }
-  private buildMovieButtons(movies: Movie[]): SelectionListItemElement[] {
-    const options: SelectionListItemElement[] = [];
-    movies.forEach((movie) => {
-      const movieButton = new SelectionListItemElement();
-      movieButton.slot = 'selection-list';
-      movieButton.setAttribute('label', movie.displayName);
-      movieButton.setAttribute('value', movie.id.toString());
-      movieButton.addEventListener('click', (ev: MouseEvent) => {
-        const eventTarget = ev.target as SelectionListItemElement;
-        const movieId = parseInt(eventTarget.getAttribute('value') ?? '0');
-
-        if (this.SelectedMovies.some((m) => m.id === movieId)) {
-          this.SelectedMovies = this.SelectedMovies.filter(
-            (m) => m.id !== movieId,
-          );
-        } else {
-          this.SelectedMovies.push(movie);
-        }
-        if (!this.onSelectionChanged) return;
-        this.onSelectionChanged(this.SelectedMovies);
-      });
-      options.push(movieButton);
-    });
-    return options;
-  }
 
   connectedCallback() {
-    const options: SelectionListItemElement[] = [];
-    const movieButtons = this.buildMovieButtons(this.Movies);
-
-    options.push(...movieButtons);
-    this.append(...options);
-
     const searchInput = this.shadow.safeQuerySelector(
       'input',
     ) as HTMLInputElement;
-    searchInput.addEventListener('input', () => {
-      this.searchMovies(searchInput.value);
-    });
+    searchInput.addEventListener('input', this.inputHandler);
+    this.addEventListener('click', this.clickHandler);
   }
 
-  private searchMovies(searchTerm: string) {
+  disconnectedCallback() {
+    const searchInput = this.shadow.safeQuerySelector(
+      'input',
+    ) as HTMLInputElement;
+    searchInput.removeEventListener('input', this.inputHandler);
+    this.removeEventListener('click', this.clickHandler);
+  }
+
+  public setSelections(ids: number[]) {
+    this.selectedItemIds = ids;
+  }
+
+  private inputHandler = (event: Event) => {
+    const searchTerm = (event.target as HTMLInputElement).value;
     const options = this.querySelectorAll('selection-list-item');
     options.forEach((option: Element) => {
       const optionElement = option as SelectionListItemElement;
@@ -71,13 +50,22 @@ export default class SelectionListElement extends HTMLElement {
         optionElement.style.display = 'none';
       }
     });
-  }
+  };
 
-  public static BuildElement(movies: Movie[]): SelectionListElement {
-    const item = new SelectionListElement();
-    item.Movies = movies;
-    return item;
-  }
+  private clickHandler = (event: MouseEvent) => {
+    if (!(event.target instanceof SelectionListItemElement)) return;
+    const movieId = parseInt(event.target.getAttribute('value') ?? '0');
+    if (this.selectedItemIds.includes(movieId)) {
+      this.selectedItemIds = this.selectedItemIds.filter(
+        (id) => id !== movieId,
+      );
+    } else {
+      this.selectedItemIds.push(movieId);
+    }
+    if (this.onSelectionChanged) {
+      this.onSelectionChanged(this.selectedItemIds);
+    }
+  };
 }
 
 customElements.define('selection-list', SelectionListElement);

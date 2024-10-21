@@ -5,19 +5,23 @@ import { ScrollSnapDraggable, ScrollSnapSlider } from 'scroll-snap-slider';
 import '../../extensions/ShadowRootExtensions';
 import ChevronBackward from '@material-symbols/svg-400/outlined/chevron_backward.svg?raw';
 import ChevronForward from '@material-symbols/svg-400/outlined/chevron_forward.svg?raw';
-import Loader from '../loader/loader.component';
+import LoaderElement from '../loader/loader.component';
+import EmptyDayElement from '../empty-day/empty-day.component';
+import DayListElement from '../day-list/day-list.component';
+import { EventData } from '../../models/EventData';
 
 const styleSheet = new CSSStyleSheet();
 styleSheet.replaceSync(css);
 
-export default class Swiper extends HTMLElement {
+export default class SwiperElement extends HTMLElement {
   private scrollSnapSlider: ScrollSnapSlider;
   private scrollSnapSliderEl: HTMLElement;
   private triggeredScrollThreshold = false;
   private shadow: ShadowRoot;
   private slideCount = 1;
   private clickPosition = { x: 0, y: 0 };
-  private loader: Loader = new Loader();
+  private loader: LoaderElement = new LoaderElement();
+  private onReachendEnabled = false;
 
   constructor() {
     super();
@@ -36,6 +40,10 @@ export default class Swiper extends HTMLElement {
         return 0;
       },
     }).with([new ScrollSnapDraggable()]);
+    this.loader.setAttribute('visible', 'true');
+    this.shadow.prepend(this.loader);
+    this.shadow.safeQuerySelector('#swipe-left').innerHTML = ChevronBackward;
+    this.shadow.safeQuerySelector('#swipe-right').innerHTML = ChevronForward;
   }
 
   private handleMouseDown = (event: MouseEvent) => {
@@ -77,88 +85,124 @@ export default class Swiper extends HTMLElement {
       this.scrollSnapSliderEl.scrollWidth / 2
     ) {
       this.triggeredScrollThreshold = true;
-      this.dispatchEvent(
-        new CustomEvent('scroll-threshold-reached', { bubbles: true }),
-      );
+      if (this.onReachendEnabled) {
+        this.dispatchEvent(
+          new CustomEvent('scrollThresholdReached', { bubbles: true }),
+        );
+      }
     }
   };
 
   connectedCallback() {
-    this.loader.setAttribute('visible', 'true');
-    this.shadow.prepend(this.loader);
-    this.removeAllSlides();
-    this.shadow.safeQuerySelector('#swipe-left').innerHTML = ChevronBackward;
-    this.shadow.safeQuerySelector('#swipe-right').innerHTML = ChevronForward;
-
+    this.clearSlides();
     this.scrollSnapSlider.addEventListener('mousedown', this.handleMouseDown);
     this.scrollSnapSlider.addEventListener('click', this.handleClick);
     // Detect if the user has swiped to the last page and load more data
     this.scrollSnapSliderEl.addEventListener('scroll', () => {
       this.handleScrollThresholdReached();
     });
-    this.shadowRoot
-      ?.safeQuerySelector('#swipe-left')
+    this.shadow
+      .safeQuerySelector('#swipe-left')
       .addEventListener('click', this.handleSwipeLeft);
-    this.shadowRoot
-      ?.safeQuerySelector('#swipe-right')
+    this.shadow
+      .safeQuerySelector('#swipe-right')
       .addEventListener('click', this.handleSwipeRight);
   }
 
   disconnectedCallback() {
-    const link = this.shadow.safeQuerySelector('.link');
-    link.removeEventListener('mousedown', this.handleMouseDown);
-    link.removeEventListener('click', this.handleClick);
+    this.scrollSnapSlider.removeEventListener(
+      'mousedown',
+      this.handleMouseDown,
+    );
+    this.scrollSnapSlider.removeEventListener('click', this.handleClick);
+    this.shadow
+      .safeQuerySelector('#swipe-left')
+      .removeEventListener('click', this.handleSwipeLeft);
+    this.shadow
+      .safeQuerySelector('#swipe-right')
+      .removeEventListener('click', this.handleSwipeRight);
   }
 
-  appendSlide(slide: HTMLElement): void {
+  addEvents(eventDays: Map<Date, EventData[]>) {
+    const firstKey = eventDays.keys().next();
+    if (firstKey.done) {
+      if (this.scrollSnapSliderEl.children.length === 0) {
+        this.showNoResults();
+      }
+      return;
+    }
+    let lastDate: Date = firstKey.value;
+    eventDays.forEach((dayEvents, dateString) => {
+      const date = new Date(dateString);
+      if (!this.isConsecutiveDate(date, lastDate)) {
+        this.appendSlide(new EmptyDayElement());
+      }
+      const dayList = DayListElement.BuildElement(date, dayEvents);
+      this.appendSlide(dayList);
+      lastDate = date;
+    });
+    this.onReachendEnabled = true;
+  }
+
+  private appendSlide(slide: HTMLElement): void {
     slide.slot = 'slides';
     slide.classList.add('scroll-snap-slide');
     this.scrollSnapSliderEl.appendChild(slide);
     this.slideCount++;
     this.triggeredScrollThreshold = false;
+    this.hideLoader();
   }
 
-  removeAllSlides(): void {
+  clearSlides(): void {
+    this.showLoader();
+    this.onReachendEnabled = false;
     this.scrollSnapSliderEl.replaceChildren();
     this.slideCount = 0;
-    this.toggleLoading();
     this.triggeredScrollThreshold = false;
   }
 
-  displayNoResults(): void {
+  showNoResults(): void {
     this.scrollSnapSliderEl.replaceChildren(
       noContentHtml.content.cloneNode(true),
     );
     this.slideCount = 0;
-    this.toggleLoading();
     this.triggeredScrollThreshold = false;
+    this.hideLoader();
   }
 
-  private toggleLoading(): void {
-    this.loader.toggleAttribute('visible');
-    this.scrollSnapSliderEl.classList.toggle('disabled');
+  showLoader(): void {
+    this.loader.setAttribute('visible', 'true');
+    this.scrollSnapSliderEl.classList.add('disabled');
   }
 
-  showLoading(): void {
-    this.toggleLoading();
+  private hideLoader(): void {
+    this.loader.removeAttribute('visible');
+    this.scrollSnapSliderEl.classList.remove('disabled');
   }
 
-  replaceSlides(slides: HTMLElement[]): void {
-    slides.forEach((slide) => {
-      slide.slot = 'slides';
-      slide.classList.add('scroll-snap-slide');
-    });
-    this.scrollSnapSliderEl.replaceChildren(...slides);
-    this.scrollSnapSlider.slideTo(0);
-    this.toggleLoading();
-    this.slideCount = slides.length;
-    this.triggeredScrollThreshold = false;
-  }
+  private isConsecutiveDate(first: Date, second: Date): boolean {
+    const firstDate = new Date(
+      first.getFullYear(),
+      first.getMonth(),
+      first.getDate(),
+    );
+    const secondDate = new Date(
+      second.getFullYear(),
+      second.getMonth(),
+      second.getDate(),
+    );
 
-  static BuildElement(): Swiper {
-    const item = new Swiper();
-    return item;
+    const dstDiff = Math.abs(
+      first.getTimezoneOffset() - second.getTimezoneOffset(),
+    );
+    const DAY_IN_MS = 1000 * 60 * 60 * 24 + dstDiff * 60 * 1000;
+
+    const diff = firstDate.getTime() - secondDate.getTime();
+    if (Math.abs(diff) <= DAY_IN_MS) {
+      return true;
+    }
+    return false;
   }
 }
 
-customElements.define('swiper-element', Swiper);
+customElements.define('swiper-element', SwiperElement);

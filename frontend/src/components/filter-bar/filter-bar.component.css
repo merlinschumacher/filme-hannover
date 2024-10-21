@@ -1,0 +1,18 @@
+#filter-info {
+  margin-bottom: 1em;
+  font-size: 1.1em;
+  font-weight: bold;
+}
+
+button#filter-edit-button {
+  margin-bottom: 1em;
+}
+@media screen and (min-width: 600px) {
+  button#filter-edit-button {
+    flex: unset;
+  }
+}
+
+button#filter-edit-button:hover {
+  background-color: var(--light-accent);
+}

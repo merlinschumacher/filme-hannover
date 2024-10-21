@@ -1,112 +1,136 @@
-import FilterModal from "./components/filter-modal/filter-modal.component";
-import FilterService from "./services/FilterService";
-import ViewPortService from "./services/ViewPortService";
-import SwiperService from "./services/SwiperService";
-import Cinema from "./models/Cinema";
+import FilterService from './services/FilterService';
+import ViewPortService from './services/ViewPortService';
+import Cinema from './models/Cinema';
+import FilterBarElement from './components/filter-bar/filter-bar.component';
+import FilterModalElement from './components/filter-modal/filter-modal.component';
+import SwiperElement from './components/swiper/swiper.component';
+import CinemaLegendElement from './components/cinema-legend/cinema-legend.component';
+import FilterSelection from './models/FilterSelection';
 
 export class Application {
-  private filterService!: FilterService;
+  private filterService: FilterService;
   private viewPortService: ViewPortService = new ViewPortService();
-  private swiper: SwiperService;
-  private nextVisibleDate: Date = new Date();
+  private swiper: SwiperElement;
+  private nextVisibleDate: Date;
   private visibleDays: number = this.viewPortService.getVisibleDays() * 2;
   private appRootEl: HTMLElement = this.getAppRootEl();
+  private filterBar: FilterBarElement;
+  private filterModal: FilterModalElement | null;
+  private cinemaLegend: CinemaLegendElement;
 
   private getAppRootEl(): HTMLElement {
-    const appRootEl = document.querySelector("#app-root");
+    const appRootEl = document.querySelector('#app-root');
     if (appRootEl) {
       return appRootEl as HTMLElement;
     }
-    throw new Error("Failed to find app root element.");
+    throw new Error('Failed to find app root element.');
   }
 
-  private constructor() {
-    this.swiper = new SwiperService();
-    FilterService.Create()
-      .then((filterService) => {
-        this.filterService = filterService;
-        this.init();
-        this.appRootEl.appendChild(this.swiper.GetSwiperElement());
-        this.swiper.onReachEnd = this.updateSwiper;
-        this.updateSwiper(true);
-      })
-      .catch((error: unknown) => {
-        console.error("Failed to create filter service.", error);
-      });
-  }
-
-  private init() {
-    console.log("Initializing application...");
-    const cinemas = this.filterService.GetAllCinemas();
-    document.adoptedStyleSheets = [this.buildCinemaStyleSheet(cinemas)];
-    const filterModal = this.initFilter();
-    this.appRootEl.appendChild(filterModal);
-
-    const lastUpdateEl = document.querySelector("#lastUpdate");
-    if (lastUpdateEl) {
-      lastUpdateEl.textContent = this.filterService.getDataVersion();
+  private removeFilterModal = () => {
+    if (this.filterModal) {
+      this.filterModal.remove();
+      this.filterModal = null;
     }
-  }
+  };
 
-  public static Init(): Application {
-    const app = new Application();
-    return app;
-  }
-
-  private initFilter(): FilterModal {
-    const movies = this.filterService.GetAllMovies();
-    const cinemas = this.filterService.GetAllCinemas();
-    const filterModal = FilterModal.BuildElement(cinemas, movies);
-    filterModal.onFilterChanged = (cinemas, movies, showTimeDubTypes) => {
-      this.nextVisibleDate = new Date();
-      this.filterService
-        .SetSelection(cinemas, movies, showTimeDubTypes)
-        .then(() => {
-          console.log("Filter changed.");
-          console.debug("Cinemas:", cinemas);
-          console.debug("Movies:", movies);
-          console.debug("ShowTimeDubTypes:", showTimeDubTypes);
-        })
-        .catch((error: unknown) => {
-          console.error("Failed to set selection.", error);
-        });
-    };
-    this.filterService.resultListChanged = () => {
-      this.updateSwiper(true);
-    };
-    return filterModal;
-  }
-
-  private updateSwiper = (replaceSlides = false): void => {
-    if (replaceSlides) {
-      this.nextVisibleDate = new Date();
-      this.swiper.showLoading();
-    }
+  private showFilterModal = () => {
+    this.filterModal = new FilterModalElement();
+    this.filterModal.cinemas = this.filterService.getCinemas();
+    this.filterModal.slot = 'filter-modal';
+    this.filterModal.addEventListener('filterChanged', this.filterChanged);
+    this.filterModal.addEventListener('close', this.removeFilterModal);
     this.filterService
-      .GetEvents(this.nextVisibleDate, this.visibleDays)
-      .then((eventDataResult) => {
-        if (eventDataResult.EventData.size === 0) {
-          if (replaceSlides) {
-            this.swiper.NoResults();
-          }
-          return;
-        }
-        if (replaceSlides) {
-          this.swiper.ReplaceEvents(eventDataResult.EventData);
-        } else {
-          this.swiper.AddEvents(eventDataResult.EventData);
-        }
-        // Set the last visible date to the last date in the event list
-        const lastKey = [...eventDataResult.EventData.keys()].pop();
-        if (lastKey) {
-          lastKey.setDate(lastKey.getDate() + 1);
-          this.nextVisibleDate = lastKey;
+      .getMovies()
+      .then((movies) => {
+        if (this.filterModal) {
+          console.debug('Setting movies in filter modal.');
+          this.filterModal.movies = movies;
+          this.filterModal.setSelection(this.filterService.getSelection());
+
+          this.appRootEl.appendChild(this.filterModal);
         }
       })
       .catch((error: unknown) => {
-        console.error("Failed to get events.", error);
+        console.error('Failed to get movies.', error);
       });
   };
+
+  public constructor() {
+    this.nextVisibleDate = new Date();
+    this.filterService = new FilterService();
+    this.filterBar = new FilterBarElement();
+    this.filterModal = new FilterModalElement();
+    this.filterBar.slot = 'filter-bar';
+    this.filterModal.slot = 'filter-modal';
+    this.cinemaLegend = new CinemaLegendElement();
+    this.swiper = new SwiperElement();
+    this.swiper.addEventListener('scrollThresholdReached', this.loadNextEvents);
+    console.log('Initializing application...');
+    this.appRootEl.appendChild(this.filterBar);
+    this.appRootEl.appendChild(this.swiper);
+
+    this.attachFilterServiceEventListeners();
+  }
+
+  private loadNextEvents = () => {
+    void this.filterService.getNextPage();
+  };
+
+  private filterChanged = (event: Event) => {
+    console.debug('Filter changed event.');
+    const customEvent = event as CustomEvent<FilterSelection>;
+    this.filterBar.setData(customEvent.detail);
+    this.swiper.clearSlides();
+    this.filterService
+      .setSelection(customEvent.detail)
+      .then(() => {
+        console.debug('Filter changed.');
+        console.debug('Cinemas:', customEvent.detail.selectedCinemaIds);
+        console.debug('Movies:', customEvent.detail.selectedMovieIds);
+        console.debug('ShowTimeDubTypes:', customEvent.detail.selectedDubTypes);
+        console.debug('Ratings:', customEvent.detail.selectedRatings);
+      })
+      .catch((error: unknown) => {
+        console.error('Failed to set filter.', error);
+      });
+  };
+
+  private async setFilterBarValues() {
+    const movieCount = await this.filterService.getMovieCount();
+    this.filterBar.setAttribute('movies', movieCount.toString());
+    const cinemaCount = await this.filterService.getCinemaCount();
+    this.filterBar.setAttribute('cinemas', cinemaCount.toString());
+  }
+
+  private attachFilterServiceEventListeners() {
+    this.filterService.on('databaseReady', (dataVersion: Date) => {
+      console.log('Database ready.');
+      const lastUpdateEl = document.querySelector('#lastUpdate');
+      if (lastUpdateEl) {
+        lastUpdateEl.textContent = dataVersion.toLocaleString();
+      }
+    });
+
+    this.filterService.on('cinemaDataReady', (data) => {
+      this.cinemaLegend.setCinemaData(data);
+      this.cinemaLegend.slot = 'cinema-legend';
+      this.filterBar.appendChild(this.cinemaLegend);
+      document.adoptedStyleSheets = [this.buildCinemaStyleSheet(data)];
+    });
+
+    this.filterService.on('dataReady', () => {
+      void this.setFilterBarValues();
+      this.filterBar.addEventListener('filterEditClick', this.showFilterModal);
+    });
+
+    this.filterService.on('eventDataReady', (data) => {
+      console.log('Updating swiper.');
+      this.swiper.addEvents(data.EventData);
+    });
+
+    this.filterService.setDateRange(this.nextVisibleDate, this.visibleDays);
+    this.filterService.loadData();
+  }
 
   private buildCinemaStyleSheet(cinemas: Cinema[]) {
     const style = new CSSStyleSheet();
@@ -119,6 +143,6 @@ export class Application {
   }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  Application.Init();
+document.addEventListener('DOMContentLoaded', () => {
+  new Application();
 });

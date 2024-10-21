@@ -4,7 +4,7 @@ import css from './loader.component.css?inline';
 const styleSheet = new CSSStyleSheet();
 styleSheet.replaceSync(css);
 
-export default class Loader extends HTMLElement {
+export default class LoaderElement extends HTMLElement {
   private shadow: ShadowRoot;
   static get observedAttributes() {
     return ['visible'];
@@ -19,8 +19,7 @@ export default class Loader extends HTMLElement {
     this.loaderEl = this.shadow.safeQuerySelector('#loader');
     this.setAttribute('visible', 'true');
   }
-  attributeChangedCallback(name: string, oldValue: string, newValue: string) {
-    console.log('attributeChangedCallback', name, oldValue, newValue);
+  attributeChangedCallback(name: string, _: string, newValue: string) {
     switch (name) {
       case 'visible': {
         if (newValue) {
@@ -34,4 +33,4 @@ export default class Loader extends HTMLElement {
   }
 }
 
-customElements.define('loading-spinner', Loader);
+customElements.define('loading-spinner', LoaderElement);

@@ -27,7 +27,7 @@ namespace backend.Scrapers.Cinemotion
 
         public IEnumerable<Performance> Performances { get; set; } = [];
 
-        public MovieRating? MovieRating { get; set; }
+        public MovieRating? Fsk { get; set; }
     }
 
     public class Performance

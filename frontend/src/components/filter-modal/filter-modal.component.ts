@@ -1,239 +1,273 @@
 import html from './filter-modal.component.tpl';
 import css from './filter-modal.component.css?inline';
+import buttonCss from '../common/action-button.css?inline';
 import CheckableButtonElement from '../checkable-button/checkable-button.component';
-import SelectionListElement from '../selection-list/selection-list.component';
+import MovieListElement from '../selection-list/selection-list.component';
 import Cinema from '../../models/Cinema';
 import Movie from '../../models/Movie';
 import {
-  getAllShowTimeDubTypes,
-  getShowTimeDubTypeByNumber,
+  allMovieRatings,
+  getMovieRatingLabelString,
+  MovieRating,
+  movieRatingColors,
+} from '../../models/MovieRating';
+import {
+  allShowTimeDubTypes,
   getShowTimeDubTypeLabelString,
   ShowTimeDubType,
 } from '../../models/ShowTimeDubType';
-import FilterIcon from '@material-symbols/svg-400/rounded/filter_alt.svg?raw';
 import Check from '@material-symbols/svg-400/outlined/check.svg?raw';
 import Close from '@material-symbols/svg-400/outlined/close.svg?raw';
-import EventItem from '../event-item/event-item.component';
+import FilterSelection from '../../models/FilterSelection';
+import SelectionListItemElement from '../selection-list-item/selection-list-item.component';
 
 const styleSheet = new CSSStyleSheet();
 styleSheet.replaceSync(css);
+const buttonStyleSheet = new CSSStyleSheet();
+buttonStyleSheet.replaceSync(buttonCss);
 
-export default class FilterModal extends HTMLElement {
-  public Cinemas: Cinema[] = [];
-  public Movies: Movie[] = [];
+export default class FilterModalElement extends HTMLElement {
+  public cinemas: Cinema[] = [];
+  public movies: Movie[] = [];
 
-  private SelectedCinemas: Cinema[] = [];
-  private SelectedMovies: Movie[] = [];
-  private SelectedShowDubTimeTypes: ShowTimeDubType[] = [];
+  private selectedCinemaIds: number[] = [];
+  private selectedMovieIds: number[] = [];
+  private selectedDubTypes: ShowTimeDubType[] = allShowTimeDubTypes;
+  private selectedRatings: MovieRating[] = allMovieRatings;
   private shadow: ShadowRoot;
   private dialogEl: HTMLDialogElement;
 
-  public onFilterChanged?: (
-    cinemas: Cinema[],
-    movies: Movie[],
-    showTimeDubTypes: ShowTimeDubType[],
-  ) => void;
+  public setSelection(selection: FilterSelection) {
+    if (selection.selectedMovieIds.length != this.movies.length) {
+      this.selectedMovieIds = selection.selectedMovieIds;
+    }
+    this.selectedCinemaIds = selection.selectedCinemaIds;
+    this.selectedDubTypes = selection.selectedDubTypes;
+    this.selectedRatings = selection.selectedRatings;
+  }
 
   constructor() {
     super();
     this.shadow = this.attachShadow({ mode: 'open' });
     this.shadow.appendChild(html.content.cloneNode(true));
-    this.shadow.adoptedStyleSheets = [styleSheet];
-    this.shadow.safeQuerySelector('#filter-edit-icon').innerHTML = FilterIcon;
-    this.shadow.safeQuerySelector('#filter-apply-icon').innerHTML = Check;
-    this.shadow.safeQuerySelector('#filter-close-icon').innerHTML = Close;
+    this.shadow.adoptedStyleSheets = [styleSheet, buttonStyleSheet];
+
     this.dialogEl = this.shadow.safeQuerySelector(
       '#filter-dialog',
     ) as HTMLDialogElement;
+
+    this.shadow.safeQuerySelector('#filter-apply-icon').innerHTML = Check;
+    this.shadow.safeQuerySelector('#filter-close-icon').innerHTML = Close;
+  }
+
+  private buildButtons() {
+    const movieList = new MovieListElement();
+    movieList.setSelections(this.selectedMovieIds);
+    movieList.onSelectionChanged = (movieIds: number[]) => {
+      this.selectedMovieIds = movieIds;
+    };
+    movieList.slot = 'movie-selection';
+    const movieButtons = this.generateMovieButtons();
+    movieList.append(...movieButtons);
+    this.append(movieList);
+
+    const cinemaButtons: CheckableButtonElement[] =
+      this.generateCinemaButtons();
+    this.append(...cinemaButtons);
+
+    const showTimeDubTypeButtons: CheckableButtonElement[] =
+      this.generateShowTimeDubTypeButtons();
+    this.append(...showTimeDubTypeButtons);
+
+    const movieRatingButtons: CheckableButtonElement[] =
+      this.generateMovieRatingButtons();
+    this.append(...movieRatingButtons);
+  }
+
+  private handleSelectionChange<T extends { valueOf(): T }>(
+    selectedItems: T[],
+    selectedItem: T,
+  ): T[] {
+    console.log('Selected items', selectedItems);
+    if (!selectedItems.includes(selectedItem)) {
+      selectedItems.push(selectedItem);
+    } else {
+      selectedItems = selectedItems.filter((item) => item !== selectedItem);
+    }
+    console.log('Resulting selected items', selectedItems);
+    return selectedItems;
   }
 
   handleCinemaSelectionChanged(e: Event) {
     if (e.target instanceof CheckableButtonElement) {
-      const value = e.target.getAttribute('value') ?? '';
-      const cinemaId = parseInt(value);
-      if (!this.SelectedCinemas.find((c) => c.id === cinemaId)) {
-        const cinema = this.Cinemas.find((c) => c.id === cinemaId);
-        if (cinema) {
-          this.SelectedCinemas.push(cinema);
-        }
-      } else {
-        this.SelectedCinemas = this.SelectedCinemas.filter(
-          (c) => c.id !== cinemaId,
-        );
-      }
+      this.selectedCinemaIds = this.handleSelectionChange(
+        this.selectedCinemaIds,
+        e.target.getValue(),
+      );
     }
   }
 
   handleShowTimeDubTypeSelected(e: Event) {
     if (e.target instanceof CheckableButtonElement) {
-      const value = e.target.getAttribute('value') ?? '';
-      const typeNumber = parseInt(value);
-      const showTimeDubType = getShowTimeDubTypeByNumber(typeNumber);
-      if (!this.SelectedShowDubTimeTypes.includes(showTimeDubType)) {
-        this.SelectedShowDubTimeTypes.push(showTimeDubType);
-      } else {
-        this.SelectedShowDubTimeTypes = this.SelectedShowDubTimeTypes.filter(
-          (t) => t !== showTimeDubType,
-        );
-      }
+      this.selectedDubTypes = this.handleSelectionChange(
+        this.selectedDubTypes,
+        e.target.getValue(),
+      );
+    }
+  }
+
+  handleMovieRatingSelected(e: Event) {
+    if (e.target instanceof CheckableButtonElement) {
+      this.selectedRatings = this.handleSelectionChange(
+        this.selectedRatings,
+        e.target.getValue(),
+      );
     }
   }
 
   connectedCallback() {
+    this.buildButtons();
     this.buildButtonEvents();
-    this.SelectedCinemas = this.Cinemas;
-    const cinemaButtons: CheckableButtonElement[] =
-      this.generateCinemaButtons();
-
-    this.SelectedShowDubTimeTypes = getAllShowTimeDubTypes();
-    const showTimeDubTypeButtons: CheckableButtonElement[] =
-      this.generateShowTimeDubTypeButtons();
-
-    const cinemaLegend: EventItem[] = this.generateCinemaLegend();
-    this.append(...cinemaLegend);
-
-    const movieList = SelectionListElement.BuildElement(this.Movies);
-    movieList.onSelectionChanged = (movies: Movie[]) => {
-      this.SelectedMovies = movies;
-    };
-    movieList.slot = 'movie-selection';
-
-    this.append(...showTimeDubTypeButtons);
-    this.append(...cinemaButtons);
-    this.append(movieList);
-
-    this.updateFilterInfo();
+    this.dialogEl.showModal();
   }
 
-  private updateFilterInfo() {
-    const cinemaCount =
-      this.SelectedCinemas.length === 0 ||
-      this.SelectedCinemas.length === this.Cinemas.length
-        ? 'Alle'
-        : this.SelectedCinemas.length;
-    const movieCount =
-      this.SelectedMovies.length === 0 ||
-      this.SelectedMovies.length === this.Movies.length
-        ? 'alle'
-        : this.SelectedMovies.length;
-    const filterInfo = this.shadow.safeQuerySelector('#filter-info');
-    let showTimeDubTypeStringList = this.SelectedShowDubTimeTypes.map((t) =>
-      getShowTimeDubTypeLabelString(t),
-    )
-      .sort((a, b) => a.localeCompare(b))
-      .join(', ');
-    showTimeDubTypeStringList =
-      this.SelectedShowDubTimeTypes.length === 0 ||
-      this.SelectedShowDubTimeTypes.length == getAllShowTimeDubTypes().length
-        ? 'alle Vorführungen'
-        : showTimeDubTypeStringList;
-    const moviePluralSuffix = this.SelectedMovies.length === 1 ? '' : 'e';
-    const cinemaPluralSuffix = this.SelectedCinemas.length === 1 ? '' : 's';
-    filterInfo.textContent = `Aktueller Filter: ${cinemaCount.toString()} Kino${cinemaPluralSuffix}, ${movieCount.toString()} Film${moviePluralSuffix}, ${showTimeDubTypeStringList}`;
+  disconnectedCallback() {
+    this.closeDialog();
   }
 
   private buildButtonEvents() {
-    const openFilterDialogButtonEl =
-      this.shadow.safeQuerySelector('#open-filter');
     const applyFilterDialogButtonEl =
       this.shadow.safeQuerySelector('#apply-filter');
     const closeFilterDialogButtonEl =
       this.shadow.safeQuerySelector('#close-filter');
-    openFilterDialogButtonEl.addEventListener('click', () => {
-      this.dialogEl.showModal();
-    });
-    closeFilterDialogButtonEl.addEventListener('click', () => {
-      this.dialogEl.close();
-    });
 
-    applyFilterDialogButtonEl.addEventListener('click', () => {
-      if (this.onFilterChanged) {
-        this.onFilterChanged(
-          this.SelectedCinemas,
-          this.SelectedMovies,
-          this.SelectedShowDubTimeTypes,
-        );
-        this.updateFilterInfo();
-      }
-      this.dialogEl.close();
-    });
+    closeFilterDialogButtonEl.addEventListener('click', this.closeDialog);
+    applyFilterDialogButtonEl.addEventListener(
+      'click',
+      this.applyFilterSelection,
+    );
+    this.dialogEl.addEventListener('click', this.clickOutsideDialog);
+  }
 
-    this.dialogEl.addEventListener('click', (event: Event) => {
+  private applyFilterSelection = () => {
+    const filterChangedEvent = new CustomEvent('filterChanged', {
+      detail: new FilterSelection(
+        this.selectedCinemaIds,
+        this.selectedMovieIds,
+        this.selectedDubTypes,
+        this.selectedRatings,
+      ),
+    });
+    this.dispatchEvent(filterChangedEvent);
+    this.closeDialog();
+  };
+
+  private closeDialog = () => {
+    this.dialogEl.close();
+
+    const applyFilterDialogButtonEl =
+      this.shadow.safeQuerySelector('#apply-filter');
+    const closeFilterDialogButtonEl =
+      this.shadow.safeQuerySelector('#close-filter');
+
+    closeFilterDialogButtonEl.removeEventListener('click', this.closeDialog);
+    applyFilterDialogButtonEl.removeEventListener(
+      'click',
+      this.applyFilterSelection,
+    );
+    this.dialogEl.removeEventListener('click', this.clickOutsideDialog);
+    this.dispatchEvent(new CustomEvent('close'));
+  };
+
+  private clickOutsideDialog = (event: Event) => {
+    if (event.target instanceof HTMLDialogElement) {
       const mouseEvent = event as MouseEvent;
-      const rect = this.dialogEl.getBoundingClientRect();
+      const rect = event.target.getBoundingClientRect();
       const isInDialog =
         rect.top <= mouseEvent.clientY &&
         mouseEvent.clientY <= rect.top + rect.height &&
         rect.left <= mouseEvent.clientX &&
         mouseEvent.clientX <= rect.left + rect.width;
       if (!isInDialog) {
-        this.dialogEl.close();
+        this.closeDialog();
       }
+    }
+  };
+
+  private generateMovieButtons() {
+    const allChecked = this.selectedMovieIds.length === this.movies.length;
+    return this.movies.map((movie) => {
+      const movieButton = new SelectionListItemElement();
+      movieButton.slot = 'selection-list';
+      movieButton.setAttribute('label', movie.displayName);
+      movieButton.setAttribute('value', movie.id.toString());
+      if (!allChecked) {
+        movieButton.setChecked(this.selectedMovieIds.includes(movie.id));
+      }
+      return movieButton;
     });
   }
 
   private generateCinemaButtons() {
-    const cinemaButtons: CheckableButtonElement[] = [];
-    this.Cinemas.forEach((cinema) => {
-      const cinemaButton = CheckableButtonElement.BuildElement(
-        cinema.displayName,
-        cinema.id.toString(),
-        cinema.color,
-      );
+    return this.cinemas.map((cinema) => {
+      const cinemaButton = new CheckableButtonElement();
       cinemaButton.slot = 'cinema-selection';
+      cinemaButton.setAttribute('label', cinema.displayName);
+      cinemaButton.setAttribute('value', cinema.id.toString());
+      cinemaButton.setAttribute('color', cinema.color);
+      cinemaButton.setChecked(this.selectedCinemaIds.includes(cinema.id));
       cinemaButton.addEventListener(
         'click',
         this.handleCinemaSelectionChanged.bind(this),
       );
-      cinemaButtons.push(cinemaButton);
+      return cinemaButton;
     });
-    return cinemaButtons;
   }
 
   private generateShowTimeDubTypeButtons() {
-    const showTimeDubTypeButtons: CheckableButtonElement[] = [];
-    const showTimeDubTypes: ShowTimeDubType[] = [
-      ShowTimeDubType.Regular,
-      ShowTimeDubType.OriginalVersion,
-      ShowTimeDubType.Subtitled,
-      ShowTimeDubType.SubtitledEnglish,
-    ];
-
-    showTimeDubTypes.forEach((showTimeDubType) => {
-      const showTimeDubTypeButton = CheckableButtonElement.BuildElement(
+    return allShowTimeDubTypes.map((showTimeDubType) => {
+      const showTimeDubTypeButton = new CheckableButtonElement();
+      showTimeDubTypeButton.setAttribute(
+        'label',
         getShowTimeDubTypeLabelString(showTimeDubType),
+      );
+      showTimeDubTypeButton.setAttribute(
+        'value',
         showTimeDubType.valueOf().toString(),
       );
+      showTimeDubTypeButton.setAttribute('color', '#000000');
+      showTimeDubTypeButton.setAttribute('checked', '');
       showTimeDubTypeButton.slot = 'type-selection';
+      showTimeDubTypeButton.setChecked(
+        this.selectedDubTypes.includes(showTimeDubType),
+      );
       showTimeDubTypeButton.addEventListener(
         'click',
         this.handleShowTimeDubTypeSelected.bind(this),
       );
-      showTimeDubTypeButtons.push(showTimeDubTypeButton);
+      return showTimeDubTypeButton;
     });
-    return showTimeDubTypeButtons;
   }
 
-  private generateCinemaLegend() {
-    const elements: EventItem[] = [];
-    this.SelectedCinemas.forEach((cinema) => {
-      const cinemaLegendItem = new EventItem();
-      cinemaLegendItem.setAttribute('color', cinema.color);
-      cinemaLegendItem.setAttribute('icon', cinema.iconClass);
-      cinemaLegendItem.setAttribute('title', cinema.displayName);
-      cinemaLegendItem.setAttribute('href', cinema.url);
-      cinemaLegendItem.slot = 'cinema-legend';
-      elements.push(cinemaLegendItem);
+  private generateMovieRatingButtons() {
+    return allMovieRatings.map((rating) => {
+      const movieRatingButton = new CheckableButtonElement();
+      movieRatingButton.setAttribute(
+        'label',
+        getMovieRatingLabelString(rating),
+      );
+      const movieRatingColor = movieRatingColors.get(rating);
+      movieRatingButton.setAttribute('color', movieRatingColor ?? '#000000');
+      movieRatingButton.setAttribute('value', rating.valueOf().toString());
+      movieRatingButton.slot = 'rating-selection';
+      movieRatingButton.setChecked(this.selectedRatings.includes(rating));
+      movieRatingButton.addEventListener(
+        'click',
+        this.handleMovieRatingSelected.bind(this),
+      );
+      return movieRatingButton;
     });
-    return elements;
-  }
-
-  public static BuildElement(Cinemas: Cinema[], Movies: Movie[]): FilterModal {
-    const item = new FilterModal();
-    item.Cinemas = Cinemas;
-    item.Movies = Movies;
-    return item;
   }
 }
 
-customElements.define('filter-modal', FilterModal);
+customElements.define('filter-modal', FilterModalElement);

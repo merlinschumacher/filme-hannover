@@ -1,0 +1,11 @@
+:host {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+#cinema-legend ::slotted(.link) {
+  cursor: none;
+  pointer-events: none;
+}

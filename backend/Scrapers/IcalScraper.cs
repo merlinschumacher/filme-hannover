@@ -19,7 +19,7 @@ namespace backend.Scrapers
 
         protected static Movie GetMovieFromCalendarEvent(CalendarEvent calendarEvent) => new()
         {
-            DisplayName = calendarEvent.Summary,
+            DisplayName = string.IsNullOrWhiteSpace(calendarEvent.Summary) ? calendarEvent.Description : calendarEvent.Summary,
             Url = calendarEvent.Url,
             Runtime = GetRuntimeFromCalendarEvent(calendarEvent),
         };

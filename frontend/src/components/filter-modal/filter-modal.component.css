@@ -10,79 +10,28 @@
   gap: 1em;
 }
 
+.rating-selection {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 1em;
+}
+
 .cinema-selection,
 .movie-selection,
-.type-selection {
+.type-selection,
+.rating-selection {
   margin-bottom: 1em;
 }
 
-#filter-info {
-  margin-bottom: 1em;
-  font-size: 1.1em;
-  font-weight: 700;
-}
-
-button {
-  height: fit-content;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border: 1px solid black;
-  border-radius: 8px;
-  cursor: pointer;
-  transition:
-    background 0.1s,
-    border 0.1s;
-  font-weight: 700;
-  padding: 0.5rem;
-  background-color: #fff;
-  appearance: none;
-  color: #000000;
-  outline: none;
-}
-
-button:hover {
-  background-color: var(--light-accent);
-}
-
-button > .icon {
-  display: flex;
-  flex: 0 0 auto;
-}
-
-button > .icon > svg {
-  height: 2em;
-  width: 2em;
-}
-
-button#open-filter,
-button#close-filter,
-button#apply-filter {
-  background-color: var(--background-mediumblue);
-}
-button#open-filter {
-  flex: 1 1 100%;
-  margin-bottom: 1em;
-}
-@media screen and (min-width: 600px) {
-  button#open-filter {
-    flex: unset;
-  }
-}
-
-button#apply-filter {
+.action-button#apply-filter {
   width: 100%;
 }
 
-button#open-filter:hover {
-  background-color: var(--light-accent);
-}
-
-button#apply-filter:hover {
+.action-button#apply-filter:hover {
   background-color: var(--background-lightgreen);
 }
 
-button#close-filter:hover {
+.action-button#close-filter:hover {
   background-color: var(--background-lightred);
 }
 
@@ -103,18 +52,6 @@ button#close-filter:hover {
   flex-wrap: wrap;
   flex-direction: row;
   gap: 1em;
-}
-
-#cinema-legend {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: flex-start;
-}
-
-#cinema-legend ::slotted(.link) {
-  cursor: none;
-  pointer-events: none;
 }
 
 #filter-dialog {

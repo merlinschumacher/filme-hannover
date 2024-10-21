@@ -35,22 +35,9 @@ export function getShowTimeDubTypeLabelString(
   }
 }
 
-export function getAllShowTimeDubTypes() {
-  return [
-    ShowTimeDubType.Regular,
-    ShowTimeDubType.OriginalVersion,
-    ShowTimeDubType.Subtitled,
-    ShowTimeDubType.SubtitledEnglish,
-  ];
-}
-
-export function getShowTimeDubTypeByNumber(value: number): ShowTimeDubType {
-  switch (value) {
-    case 1:
-      return ShowTimeDubType.OriginalVersion;
-    case 2:
-      return ShowTimeDubType.Subtitled;
-    default:
-      return ShowTimeDubType.Regular;
-  }
-}
+export const allShowTimeDubTypes: ShowTimeDubType[] = [
+  ShowTimeDubType.Regular,
+  ShowTimeDubType.OriginalVersion,
+  ShowTimeDubType.Subtitled,
+  ShowTimeDubType.SubtitledEnglish,
+];
