@@ -27,6 +27,11 @@
   font-variant-numeric: tabular-nums;
 }
 
+.time:empty,
+.suffix:empty {
+  display: none;
+}
+
 .icon {
   flex: 0 0 auto;
   aspect-ratio: 1;

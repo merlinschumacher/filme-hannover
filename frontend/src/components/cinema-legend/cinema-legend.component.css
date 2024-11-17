@@ -3,6 +3,7 @@
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: flex-start;
+  gap: 0.5em;
 }
 
 #cinema-legend ::slotted(.link) {
