@@ -185,7 +185,7 @@ export default class FilterService {
           this.visibleDays,
         );
 
-        return await this.db.GetEventData(
+        return await this.db.getEventData(
           this.startDate,
           endDate,
           this.selectedCinemaIds,

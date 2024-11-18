@@ -236,7 +236,7 @@ export default class CinemaDb extends Dexie {
     return earliestShowTime.startTime;
   }
 
-  public async GetEventData(
+  public async getEventData(
     startDate: Date,
     endDate: Date,
     selectedCinemaIds: number[],
@@ -297,9 +297,9 @@ export default class CinemaDb extends Dexie {
         }
       });
 
-    if (lastKey.getTime() === startDate.getTime()) {
-      lastKey.setSeconds(lastKey.getSeconds() + 1);
-    }
+    lastKey.setHours(23);
+    lastKey.setMinutes(59);
+    lastKey.setSeconds(59);
 
     return lastKey;
   }
