@@ -30,6 +30,9 @@ COPY --from=fe-build-env /app/dist wwwroot
 # Stage 4: Build runtime image to run the application with necessary dependencies
 FROM mcr.microsoft.com/dotnet/runtime:8.0-alpine AS runtime
 ENV TZ="Europe/Berlin"
+ENV DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION=1
+ENV TERM=xterm
+
 LABEL org.opencontainers.image.description="This is the base image for the generation of filme-hannover.de"
 LABEL org.opencontainers.image.source="https://github.com/merlinschumacher/filme-hannover"
 RUN apk add --no-cache icu-libs tzdata
