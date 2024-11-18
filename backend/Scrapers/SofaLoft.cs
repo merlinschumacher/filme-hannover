@@ -60,59 +60,92 @@ namespace kinohannover.Scrapers
 
             foreach (var blogPost in blogPosts)
             {
-                var titleNode = blogPost.SelectSingleNode(_titleSelector);
-                var bodyNode = blogPost.SelectSingleNode(_itemBodySelector);
-
-                if (titleNode is null || bodyNode is null) continue;
-
-                var titleHref = titleNode.SelectSingleNode(".//a")?.GetAttributeValue("href", string.Empty);
-                var showTimeUrl = new Uri(titleHref ?? _cinema.Url.ToString());
-
-                var titleMatch = Regex.Match(titleNode.InnerText, _blogPostTitleRegexString);
-                if (!titleMatch.Success) continue;
-
-                if (titleMatch.Groups.Count < 4) continue;
-
-                var title = titleMatch.Groups[1].Value;
-                if (!DateOnly.TryParse(titleMatch.Groups[2].Value, CultureInfo.CurrentCulture, out var date)) continue;
-                if (!int.TryParse(titleMatch.Groups[3].Value, out var hour)) continue;
-                var startTime = date.ToDateTime(new TimeOnly(hour, 0));
-
-                var runtimeMatch = Regex.Match(bodyNode.InnerText, _runtimeRegexString);
-                var runtime = Constants.AverageMovieRuntime;
-                if (runtimeMatch.Success)
-                {
-                    var hours = int.Parse(runtimeMatch.Groups[1].Value);
-                    var minutes = int.Parse(runtimeMatch.Groups[2].Value);
-                    runtime = new TimeSpan(hours, minutes, 0);
-                }
-
-                var fsk = Regex.Match(bodyNode.InnerText, _fskRegexString);
-                var rating = MovieHelper.GetRating(fsk.Groups[1].Value);
-
-                var movie = new Movie
-                {
-                    DisplayName = title,
-                    Runtime = runtime,
-                    Rating = rating,
-                };
-
-                movie = await _movieService.CreateAsync(movie);
-                await _cinemaService.AddMovieToCinemaAsync(movie, _cinema);
-
-                var showTime = new ShowTime
-                {
-                    Cinema = _cinema,
-                    Movie = movie,
-                    StartTime = startTime,
-                    DubType = ShowTimeDubType.Regular,
-                    Language = ShowTimeLanguage.German,
-                    Url = showTimeUrl,
-                };
-
-                await _showTimeService.CreateAsync(showTime);
+                if (blogPost is null) continue;
+                await ProcessBlogPost(blogPost);
             }
 
+        }
+
+        private async Task ProcessBlogPost(HtmlNode node)
+        {
+            var titleNode = node.SelectSingleNode(_titleSelector);
+            var bodyNode = node.SelectSingleNode(_itemBodySelector);
+
+            if (titleNode is null || bodyNode is null) return;
+
+            var (title, startTime) = ParseTitleNode(titleNode);
+            var runtime = GetRuntime(bodyNode);
+            var rating = GetRating(bodyNode);
+
+            var movie = new Movie
+            {
+                DisplayName = title,
+                Runtime = runtime,
+                Rating = rating,
+            };
+
+            movie = await _movieService.CreateAsync(movie);
+            await _cinemaService.AddMovieToCinemaAsync(movie, _cinema);
+
+            var showTimeUrl = GetShowTimeUrl(titleNode);
+            var showTime = new ShowTime
+            {
+                Cinema = _cinema,
+                Movie = movie,
+                StartTime = startTime,
+                DubType = ShowTimeDubType.Regular,
+                Language = ShowTimeLanguage.German,
+                Url = showTimeUrl,
+            };
+
+            await _showTimeService.CreateAsync(showTime);
+        }
+
+        private static MovieRating GetRating(HtmlNode bodyNode)
+        {
+            var fsk = Regex.Match(bodyNode.InnerText, _fskRegexString);
+            return MovieHelper.GetRating(fsk.Groups[1].Value);
+        }
+
+        private static TimeSpan GetRuntime(HtmlNode bodyNode)
+        {
+            var runtimeMatch = Regex.Match(bodyNode.InnerText, _runtimeRegexString);
+            var runtime = Constants.AverageMovieRuntime;
+            if (runtimeMatch.Success)
+            {
+                var hours = int.Parse(runtimeMatch.Groups[1].Value);
+                var minutes = int.Parse(runtimeMatch.Groups[2].Value);
+                runtime = new TimeSpan(hours, minutes, 0);
+            }
+
+            return runtime;
+        }
+
+        private static (string title, DateTime startTime) ParseTitleNode(HtmlNode titleNode)
+        {
+            var titleMatch = Regex.Match(titleNode.InnerText, _blogPostTitleRegexString);
+            if (!titleMatch.Success || titleMatch.Groups.Count < 4) throw new InvalidOperationException("Title regex failed.");
+
+            if (!DateOnly.TryParse(titleMatch.Groups[2].Value, CultureInfo.CurrentCulture, out var date))
+                throw new InvalidOperationException("Date parsing failed.");
+            if (!int.TryParse(titleMatch.Groups[3].Value, out var hour))
+                throw new InvalidOperationException("Hour parsing failed.");
+
+            var title = titleMatch.Groups[1].Value;
+            var startTime = date.ToDateTime(new TimeOnly(hour, 0));
+
+            return (title, startTime);
+        }
+
+        private Uri GetShowTimeUrl(HtmlNode titleNode)
+        {
+            var titleHref = titleNode.SelectSingleNode(".//a")?.GetAttributeValue("href", string.Empty);
+            if (string.IsNullOrWhiteSpace(titleHref)) return _cinema.Url;
+            if (Uri.TryCreate(titleHref, UriKind.Absolute, out var showTimeUrl))
+            {
+                return showTimeUrl;
+            }
+            return _cinema.Url;
         }
     }
 }
