@@ -41,14 +41,15 @@ namespace kinohannover.Helpers
 
         private static string? GetTitleFromTmdbData(string title, Movie tmdbMovieDetails)
         {
-            var tmdbTitle = tmdbMovieDetails.Title.NormalizeDashes();
+            var tmdbTitle = tmdbMovieDetails.Title.NormalizeDashes().NormalizeQuotes();
+
             if (tmdbTitle.Equals(title, StringComparison.OrdinalIgnoreCase))
             {
                 return tmdbTitle;
             }
             if (tmdbMovieDetails.OriginalLanguage.Equals("DE", StringComparison.OrdinalIgnoreCase))
             {
-                return tmdbMovieDetails.OriginalTitle.NormalizeDashes();
+                return tmdbMovieDetails.OriginalTitle.NormalizeDashes().NormalizeQuotes();
             }
             tmdbTitle = GetAlternativeTitle(tmdbMovieDetails, "DE");
             if (tmdbTitle is not null)
@@ -56,25 +57,25 @@ namespace kinohannover.Helpers
                 return tmdbTitle;
             }
 
-            tmdbTitle = tmdbMovieDetails.Title.NormalizeDashes();
+            tmdbTitle = tmdbMovieDetails.Title.NormalizeDashes().NormalizeQuotes();
             if (tmdbTitle.DistancePercentageFrom(title, true) > 0.9)
             {
                 return tmdbTitle;
             }
 
-            tmdbTitle = tmdbMovieDetails.OriginalTitle.NormalizeDashes();
+            tmdbTitle = tmdbMovieDetails.OriginalTitle.NormalizeDashes().NormalizeQuotes();
             if (tmdbTitle.DistancePercentageFrom(title, true) > 0.9)
             {
                 return tmdbTitle;
             }
 
-            tmdbTitle = tmdbMovieDetails.AlternativeTitles.Titles.Find(e => e.Title.NormalizeDashes().DistancePercentageFrom(title) > 0.9)?.Title;
+            tmdbTitle = tmdbMovieDetails.AlternativeTitles.Titles.Find(e => e.Title.NormalizeDashes().NormalizeQuotes().DistancePercentageFrom(title) > 0.9)?.Title;
             return tmdbTitle ?? GetAlternativeTitle(tmdbMovieDetails, "EN");
         }
 
         public static string NormalizeTitle(string title)
         {
-            title = title.Normalize().NormalizeDashes();
+            title = title.Normalize().NormalizeDashes().NormalizeQuotes();
 
             title = ReplaceMultipleSpacesRegex().Replace(title, " ");
 
@@ -136,7 +137,21 @@ namespace kinohannover.Helpers
 
     public static class StringExtensions
     {
+
+        private static readonly string[] _quotationCharacters = ["❛", "❜", "❝", "❞", "🙶", "🙷", "🙸", "'", "\"", "«", "»", "‘", "’", "‚", "‛", "“", "”", "„", "‟", "‹", "›", "⹂"];
+
         private static readonly char[] _dashCharacters = ['-', '֊', '־', '᐀', '᠆', '‐', '‑', '‒', '–', '—', '―', '⸗', '⸚', '⸺', '⸻', '⹀', '⹝', '〜', '〰', '゠', '︱', '︲', '﹘', '﹣', '－'];
+
+        public static string NormalizeQuotes(this string s)
+        {
+            foreach (var quote in _quotationCharacters)
+            {
+                s = s.Trim();
+                s = s.Replace(quote, "\"");
+            }
+
+            return s;
+        }
 
         public static string NormalizeDashes(this string s)
 
