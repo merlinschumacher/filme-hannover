@@ -5,10 +5,13 @@ using backend.Models;
 using backend.Scrapers;
 using backend.Services;
 using HtmlAgilityPack;
+using kinohannover.Helpers;
+using Microsoft.Extensions.Logging;
 using System.Globalization;
 using System.Reflection.Metadata;
 using System.Security;
 using System.Text.RegularExpressions;
+using System.Web;
 
 namespace kinohannover.Scrapers
 {
@@ -28,7 +31,7 @@ namespace kinohannover.Scrapers
         private const string _runtimeRegexString = @"/(\d)\s?h\s?(\d{1,2})\s?min";
 
         private const string _fskRegexString = @"FSK\s?(\d{1,2})";
-
+        private readonly ILogger<SofaLoftScraper> _logger;
         private readonly CinemaService _cinemaService;
         private readonly Cinema _cinema = new()
         {
@@ -42,8 +45,9 @@ namespace kinohannover.Scrapers
         private readonly MovieService _movieService;
 
         public bool ReliableMetadata => false;
-        public SofaLoftScraper(MovieService movieService, CinemaService cinemaService, ShowTimeService showTimeService)
+        public SofaLoftScraper(ILogger<SofaLoftScraper> logger, MovieService movieService, CinemaService cinemaService, ShowTimeService showTimeService)
         {
+            _logger = logger;
             _cinemaService = cinemaService;
             _cinema = _cinemaService.Create(_cinema);
             _showTimeService = showTimeService;
@@ -61,7 +65,11 @@ namespace kinohannover.Scrapers
             foreach (var blogPost in blogPosts)
             {
                 if (blogPost is null) continue;
-                await ProcessBlogPost(blogPost);
+                try { await ProcessBlogPost(blogPost); }
+                catch (Exception e)
+                {
+                    _logger.LogDebug(e, "Error processing blog post.");
+                }
             }
 
         }
@@ -123,7 +131,9 @@ namespace kinohannover.Scrapers
 
         private static (string title, DateTime startTime) ParseTitleNode(HtmlNode titleNode)
         {
-            var titleMatch = Regex.Match(titleNode.InnerText, _blogPostTitleRegexString);
+            var normalizedTitle = titleNode.InnerText.NormalizeDashes().NormalizeQuotes();
+            normalizedTitle = HttpUtility.HtmlDecode(normalizedTitle);
+            var titleMatch = Regex.Match(normalizedTitle, _blogPostTitleRegexString);
             if (!titleMatch.Success || titleMatch.Groups.Count < 4) throw new InvalidOperationException("Title regex failed.");
 
             if (!DateOnly.TryParse(titleMatch.Groups[2].Value, CultureInfo.CurrentCulture, out var date))
