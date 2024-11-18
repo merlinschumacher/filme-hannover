@@ -136,7 +136,7 @@ namespace kinohannover.Scrapers
             var titleMatch = Regex.Match(normalizedTitle, _blogPostTitleRegexString);
             if (!titleMatch.Success || titleMatch.Groups.Count < 4) throw new InvalidOperationException("Title regex failed.");
 
-            if (!DateOnly.TryParse(titleMatch.Groups[2].Value, CultureInfo.CurrentCulture, out var date))
+            if (!DateOnly.TryParseExact(titleMatch.Groups[2].Value, "dd.MM.yyyy", out var date))
                 throw new InvalidOperationException("Date parsing failed.");
             if (!int.TryParse(titleMatch.Groups[3].Value, out var hour))
                 throw new InvalidOperationException("Hour parsing failed.");
