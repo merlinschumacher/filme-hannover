@@ -1,6 +1,5 @@
 import html from './filter-bar.component.tpl';
 import css from './filter-bar.component.css?inline';
-import buttonCss from '../common/action-button.css?inline';
 import {
   allMovieRatings,
   getMovieRatingLabelString,
@@ -16,8 +15,6 @@ import FilterSelection from '../../models/FilterSelection';
 
 const styleSheet = new CSSStyleSheet();
 styleSheet.replaceSync(css);
-const buttonStyleSheet = new CSSStyleSheet();
-buttonStyleSheet.replaceSync(buttonCss);
 
 export default class FilterBarElement extends HTMLElement {
   static get observedAttributes(): string[] {
@@ -62,7 +59,7 @@ export default class FilterBarElement extends HTMLElement {
     super();
     this.shadow = this.attachShadow({ mode: 'open' });
     this.shadow.appendChild(html.content.cloneNode(true));
-    this.shadow.adoptedStyleSheets = [styleSheet, buttonStyleSheet];
+    this.shadow.adoptedStyleSheets = [styleSheet];
     this.shadow.safeQuerySelector('#filter-edit-icon').innerHTML = FilterIcon;
   }
 
@@ -87,12 +84,12 @@ export default class FilterBarElement extends HTMLElement {
   private updateFilterInfo() {
     const cinemaCount =
       this.selectedCinemaIds.length === 0 ||
-      this.selectedCinemaIds.length === this.TotalCinemaCount
+        this.selectedCinemaIds.length === this.TotalCinemaCount
         ? 'Alle'
         : this.selectedCinemaIds.length;
     const movieCount =
       this.selectedMovieIds.length === 0 ||
-      this.selectedMovieIds.length === this.TotalMovieCount
+        this.selectedMovieIds.length === this.TotalMovieCount
         ? 'alle'
         : this.selectedMovieIds.length;
     const filterInfo = this.shadow.safeQuerySelector('#filter-info');
@@ -101,7 +98,7 @@ export default class FilterBarElement extends HTMLElement {
       .join(', ');
     showTimeDubTypeStringList =
       this.selectedDubTypes.length === 0 ||
-      this.selectedDubTypes.length == allShowTimeDubTypes.length
+        this.selectedDubTypes.length == allShowTimeDubTypes.length
         ? 'alle Vorführungen'
         : showTimeDubTypeStringList;
 

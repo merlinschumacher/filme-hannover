@@ -1,10 +1,11 @@
 .action-button {
-  height: fit-content;
+  height: 3rem;
   display: flex;
   justify-content: center;
   align-items: center;
-  border: 1px solid black;
-  border-radius: 8px;
+  border: var(--default-border);
+  border-radius: var(--default-border-radius);
+  box-shadow: var(--button-box-shadow);
   cursor: pointer;
   transition:
     background 0.1s,
@@ -15,19 +16,19 @@
   appearance: none;
   color: #000000;
   outline: none;
-  background-color: var(--background-mediumblue);
+  user-select: none;
 }
 
 .action-button:hover {
   background-color: var(--light-accent);
 }
 
-.action-button > .icon {
+.action-button>.icon {
   display: flex;
   flex: 0 0 auto;
 }
 
-.action-button > .icon > svg {
+.action-button>.icon>svg {
   height: 2em;
   width: 2em;
 }

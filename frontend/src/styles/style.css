@@ -1,0 +1,52 @@
+body>h1:first-of-type {
+  margin-top: 0;
+}
+
+.leadin {
+  margin-bottom: 1em;
+  font-size: 1.25em;
+}
+
+body,
+:root,
+* {
+  font-family: var(--font-family);
+}
+
+body {
+  font-size: 0.75em;
+  padding: 1em;
+}
+
+h4 {
+  margin-bottom: 0.5em;
+  font-weight: 700;
+  display: block;
+  width: 100%;
+}
+
+:root {
+  --slide-width: calc(100% - 2px);
+}
+
+@media (min-width: 640px) {
+  :root {
+    --slide-width: 360px;
+  }
+}
+
+#tmdb {
+  height: 1em;
+  display: flex;
+  align-items: center;
+}
+
+#tmdb img {
+  height: 0.75em;
+  width: auto;
+  margin-right: 0.5em;
+}
+
+#app-root:empty {
+  min-height: max(100vmin);
+}

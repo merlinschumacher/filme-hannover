@@ -4,7 +4,7 @@
   width: 100%;
 }
 
-:host > label {
+:host>label {
   display: block;
   margin-bottom: 0.5em;
   font-weight: 700;
@@ -25,7 +25,8 @@
   padding: 0 1.5em;
   margin-bottom: 1em;
   border-radius: 8px;
-  border: 1px solid black;
+  border: var(--default-border);
+  box-shadow: var(--button-box-shadow);
   height: 4em;
 }
 

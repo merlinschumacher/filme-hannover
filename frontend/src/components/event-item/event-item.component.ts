@@ -1,13 +1,10 @@
 import html from './event-item.component.tpl';
 import css from './event-item.component.css?inline';
-import cssicons from './event-item.component.icons.css?inline';
 import { EventData } from '../../models/EventData';
 import { getShowTimeDubTypeAttributeString as getShowTimeDubTypeAttributeString } from '../../models/ShowTimeDubType';
 import { getShowTimeLanguageString } from '../../models/ShowTimeLanguage';
 const styleSheet = new CSSStyleSheet();
 styleSheet.replaceSync(css);
-const iconStyleSheet = new CSSStyleSheet();
-iconStyleSheet.replaceSync(cssicons);
 
 export default class EventItemElement extends HTMLElement {
   public static observedAttributes = [
@@ -24,7 +21,7 @@ export default class EventItemElement extends HTMLElement {
   constructor() {
     super();
     this.shadow = this.attachShadow({ mode: 'open' });
-    this.shadow.adoptedStyleSheets = [styleSheet, iconStyleSheet];
+    this.shadow.adoptedStyleSheets = [styleSheet];
     this.shadow.appendChild(html.content.cloneNode(true));
   }
 

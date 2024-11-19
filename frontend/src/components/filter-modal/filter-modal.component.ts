@@ -1,6 +1,5 @@
 import html from './filter-modal.component.tpl';
 import css from './filter-modal.component.css?inline';
-import buttonCss from '../common/action-button.css?inline';
 import CheckableButtonElement from '../checkable-button/checkable-button.component';
 import MovieListElement from '../selection-list/selection-list.component';
 import Cinema from '../../models/Cinema';
@@ -23,8 +22,6 @@ import SelectionListItemElement from '../selection-list-item/selection-list-item
 
 const styleSheet = new CSSStyleSheet();
 styleSheet.replaceSync(css);
-const buttonStyleSheet = new CSSStyleSheet();
-buttonStyleSheet.replaceSync(buttonCss);
 
 export default class FilterModalElement extends HTMLElement {
   public cinemas: Cinema[] = [];
@@ -50,7 +47,7 @@ export default class FilterModalElement extends HTMLElement {
     super();
     this.shadow = this.attachShadow({ mode: 'open' });
     this.shadow.appendChild(html.content.cloneNode(true));
-    this.shadow.adoptedStyleSheets = [styleSheet, buttonStyleSheet];
+    this.shadow.adoptedStyleSheets = [styleSheet];
 
     this.dialogEl = this.shadow.safeQuerySelector(
       '#filter-dialog',

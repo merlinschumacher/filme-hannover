@@ -1,3 +1,5 @@
+@import url(../../styles/action-button.css);
+
 .cinema-selection {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
@@ -23,6 +25,11 @@
   margin-bottom: 1em;
 }
 
+.action-button#close-filter {
+  height: 3em;
+  width: 3em;
+}
+
 .action-button#apply-filter {
   width: 100%;
 }
@@ -33,12 +40,14 @@
 
 .action-button#close-filter:hover {
   background-color: var(--background-lightred);
+  height: 3em;
+  width: 3em;
 }
 
 #filter-dialog {
-  border-radius: 8px;
-  border: 1px solid black;
-  box-shadow: 0 0 10px var(--dark-accent);
+  border-radius: var(--default-border-radius);
+  border: var(--default-border);
+  box-shadow: var(--default-box-shadow);
 }
 
 #filter-header {

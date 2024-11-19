@@ -1,10 +1,10 @@
 :host {
   display: flex;
   flex-direction: column;
-  border: 1px solid #000000;
+  border: 1px solid rgba(0, 0, 0, 0.24);
   font-size: 1.1em;
   cursor: grab;
-  border-radius: 8px;
+  border-radius: var(--default-border-radius);
   overflow: auto;
 }
 
@@ -28,7 +28,7 @@
   }
 }
 
-:host > * {
+:host>* {
   align-self: stretch;
 }
 
@@ -63,6 +63,14 @@
   background-color: var(--background-mediumblue);
 }
 
+:host(.saturday) .body {
+  background-color: color-mix(in srgb, var(--background-mediumblue) 33%, transparent);
+}
+
 :host(.sunday) .header {
   background-color: var(--background-mediumblue2);
+}
+
+:host(.sunday) .body {
+  background-color: color-mix(in srgb, var(--background-mediumblue2) 33%, transparent);
 }

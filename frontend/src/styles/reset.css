@@ -1,33 +1,3 @@
-:root {
-  --light-accent: #ddd;
-  --dark-accent: #707070;
-  --highlighted-color: #fffadf;
-  --background-lightblue: #f0ffff;
-  --background-mediumblue: #e3f5ff;
-  --background-mediumblue2: #d5ebff;
-  --background-lightgreen: #b9ffae;
-  --background-lightred: #ffaeae;
-  --light-text: #626262;
-  --font-family: 'Inter', 'Helvetica Neue', 'Roboto', 'Helvetica', 'Arial',
-    sans-serif;
-}
-
-/* inter-regular - latin_latin-ext */
-@font-face {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 400;
-  src: url('assets/inter-regular.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
-}
-
-/* inter-700 - latin_latin-ext */
-@font-face {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 700;
-  src: url('assets/inter-bold.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
-}
-
 /* Box sizing rules */
 *,
 *::before,
@@ -130,52 +100,4 @@ textarea:not([rows]) {
 /* Anything that has been anchored to should have extra scroll margin */
 :target {
   scroll-margin-block: 5ex;
-}
-
-body > h1:first-of-type {
-  margin-top: 0;
-}
-
-.leadin {
-  margin-bottom: 1em;
-  font-size: 1.25em;
-}
-
-body {
-  font-family: var(--font-family);
-  font-size: 0.75em;
-  padding: 1em;
-}
-
-h4 {
-  margin-bottom: 0.5em;
-  font-weight: 700;
-  display: block;
-  width: 100%;
-}
-
-:root {
-  --slide-width: calc(100% - 2px);
-}
-
-@media (min-width: 640px) {
-  :root {
-    --slide-width: 360px;
-  }
-}
-
-#tmdb {
-  height: 1em;
-  display: flex;
-  align-items: center;
-}
-
-#tmdb img {
-  height: 0.75em;
-  width: auto;
-  margin-right: 0.5em;
-}
-
-#app-root:empty {
-  min-height: max(100vmin);
 }
