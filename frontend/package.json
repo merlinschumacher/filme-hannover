@@ -40,7 +40,7 @@
   "dependencies": {
     "@material-symbols/svg-400": "^0.27.0",
     "dexie": "^4.0.10",
-    "inter-ui": "^4.0.2",
+    "inter-ui": "^4.1.0",
     "nanoevents": "^9.1.0",
     "scroll-snap-slider": "^3.3.1"
   }
