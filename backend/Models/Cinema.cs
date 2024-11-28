@@ -1,4 +1,6 @@
-﻿namespace backend.Models
+﻿using Schema.NET;
+
+namespace backend.Models
 {
     public class Cinema
     {
@@ -31,5 +33,7 @@
         {
             return DisplayName;
         }
+
+        public required MovieTheater SchemaMetadata { get; set; }
     }
 }
