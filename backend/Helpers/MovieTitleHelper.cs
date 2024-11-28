@@ -75,6 +75,9 @@ namespace kinohannover.Helpers
 
         public static string NormalizeTitle(string title)
         {
+            // Clear all control characters
+            title = Regex.Replace(title, @"\p{C}+", string.Empty);
+
             title = title.Normalize().NormalizeDashes().NormalizeQuotes();
 
             title = ReplaceMultipleSpacesRegex().Replace(title, " ");
@@ -92,12 +95,36 @@ namespace kinohannover.Helpers
             {
                 return ToTitleCase(title);
             }
-            else if (upperCaseWords > 1)
+            else if ((CountWords(title) >= 2 && upperCaseWords > 2) || upperCaseWords > 1)
             {
                 return ToTitleCase(title);
             }
 
             return title.Trim();
+        }
+
+        private static int CountWords(string text)
+        {
+            int wordCount = 0, index = 0;
+
+            // skip whitespace until first word
+            while (index < text.Length && char.IsWhiteSpace(text[index]))
+                index++;
+
+            while (index < text.Length)
+            {
+                // check if current char is part of a word
+                while (index < text.Length && !char.IsWhiteSpace(text[index]))
+                    index++;
+
+                wordCount++;
+
+                // skip whitespace until next word
+                while (index < text.Length && char.IsWhiteSpace(text[index]))
+                    index++;
+            }
+
+            return wordCount;
         }
 
         private static string ToTitleCase(string title)
@@ -140,14 +167,14 @@ namespace kinohannover.Helpers
 
         private static readonly string[] _quotationCharacters = ["❛", "❜", "❝", "❞", "🙶", "🙷", "🙸", "'", "\"", "«", "»", "‘", "’", "‚", "‛", "“", "”", "„", "‟", "‹", "›", "⹂"];
 
-        private static readonly char[] _dashCharacters = ['-', '֊', '־', '᐀', '᠆', '‐', '‑', '‒', '–', '—', '―', '⸗', '⸚', '⸺', '⸻', '⹀', '⹝', '〜', '〰', '゠', '︱', '︲', '﹘', '﹣', '－'];
+        private static readonly char[] _dashCharacters = ['-', '֊', '־', '᠆', '‐', '‑', '‒', '–', '—', '―', '⸗', '⸚', '⸺', '⸻', '⹀', '⹝', '', '︲', '﹘', '﹣', '－'];
 
         public static string NormalizeQuotes(this string s)
         {
             foreach (var quote in _quotationCharacters)
             {
                 s = s.Trim();
-                s = s.Replace(quote, "\"");
+                Regex.Replace(s, $"\\s{quote}", "–");
             }
 
             return s;
@@ -159,7 +186,7 @@ namespace kinohannover.Helpers
             foreach (var dash in _dashCharacters)
             {
                 s = s.Trim(dash);
-                s = s.Replace(dash, '–');
+                Regex.Replace(s, $"\\s{dash}\\s?", "–");
             }
 
             return s;
