@@ -13,7 +13,6 @@
 
 .scroll-snap-slider {
   border-radius: var(--default-border-radius);
-  box-shadow: var(--default-box-shadow);
   overscroll-behavior-x: none;
   overscroll-behavior-y: auto;
 }
