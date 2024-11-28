@@ -24,7 +24,7 @@
 		<PackageReference Include="HtmlAgilityPack" Version="1.11.71" />
 		<PackageReference Include="Ical.Net" Version="4.3.1" />
 		<PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="8.0.11" />
-		<PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0">
+		<PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
