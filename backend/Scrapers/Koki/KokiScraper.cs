@@ -33,20 +33,10 @@ namespace backend.Scrapers.Koki
 
         public async Task ScrapeAsync()
         {
-            var cinetixxScraper = new KoKiCinetixxScraper(_movieService, _showTimeService, _cinemaService, _cinema);
             var hannoverDeScraper = new KoKiHannoverDeScraper(_movieService, _showTimeService, _cinemaService, _cinema);
             var kircheUndKinoScraper = new KokiKircheundKinoScraper(_logger, _movieService, _showTimeService, _cinemaService, _cinema);
 
             var exceptions = new List<Exception>();
-
-            try
-            {
-                await cinetixxScraper.ScrapeAsync();
-            }
-            catch (Exception ex)
-            {
-                exceptions.Add(ex);
-            }
 
             try
             {
