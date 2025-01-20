@@ -26,7 +26,7 @@
   margin-bottom: 1em;
   border-radius: 8px;
   border: var(--default-border);
-  box-shadow: var(--button-box-shadow);
+  box-shadow: var(--input-box-shadow);
   height: 4em;
 }
 

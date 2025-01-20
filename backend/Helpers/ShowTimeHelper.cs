@@ -14,22 +14,38 @@ namespace backend.Helpers
 
         private static readonly Dictionary<ShowTimeLanguage, string[]> _showTimeLanguageMap = new()
         {
-            { ShowTimeLanguage.Danish, ["Dänisch", "dän", "DK"] },
-            { ShowTimeLanguage.English, ["Englisch","English"," eng."," engl.","EN","GB","UK","US", "USA"] },
-            { ShowTimeLanguage.French, ["Französisch","franz","frnz","frz","FR"] },
-            { ShowTimeLanguage.Spanish, ["Spanisch"," span.","SP"," ES."] },
-            { ShowTimeLanguage.Italian, ["Italienisch","ital","IT"] },
-            { ShowTimeLanguage.Turkish, ["Türkisch", "türk","trk", " TR"] },
+            { ShowTimeLanguage.Danish, ["Dänisch", "dän."] },
+            { ShowTimeLanguage.English, ["Englisch","English"," eng."," engl."] },
+            { ShowTimeLanguage.French, ["Französisch","franz.","frnz","frz."] },
+            { ShowTimeLanguage.Spanish, ["Spanisch"," span."] },
+            { ShowTimeLanguage.Italian, ["Italienisch","ital."] },
+            { ShowTimeLanguage.Turkish, ["Türkisch", "türk","trk"] },
             { ShowTimeLanguage.Russian, ["Russisch", "russ"] },
-            { ShowTimeLanguage.Japanese, ["Japanisch", "jap", "JP", "JA"] },
-            { ShowTimeLanguage.Korean, ["Koreanisch", "kor", "KO"] },
+            { ShowTimeLanguage.Japanese, ["Japanisch", "jap."] },
+            { ShowTimeLanguage.Korean, ["Koreanisch", "kor."] },
             { ShowTimeLanguage.Hindi, ["Hindi", " hind.", " hin." ] },
-            { ShowTimeLanguage.Polish, ["Polnisch", "poln.", "PL"] },
+            { ShowTimeLanguage.Polish, ["Polnisch", "poln.", "pol."] },
             { ShowTimeLanguage.Arabic, ["Arabisch", "arab."]},
-            { ShowTimeLanguage.German, ["Deutsch"," de."," deu.", "dt.", "DE"] },
+            { ShowTimeLanguage.German, ["Deutsch"," de."," deu.", "dt."] },
             { ShowTimeLanguage.Other, ["Andere", "Verschiedene", "versch.", "div.", "Malayalam", "Filipino", "Georgisch", "georg." ]},
             { ShowTimeLanguage.Unknown, ["Unbekannt"] },
         };
+        private static readonly Dictionary<ShowTimeLanguage, string[]> _showTimeLanguageCountryCodeMap = new()
+        {
+            { ShowTimeLanguage.Danish, ["DK"] },
+            { ShowTimeLanguage.English, ["EN","GB","UK","US", "USA"] },
+            { ShowTimeLanguage.French, ["FR"] },
+            { ShowTimeLanguage.Spanish, ["SP"," ES"] },
+            { ShowTimeLanguage.Italian, ["IT"] },
+            { ShowTimeLanguage.Turkish, ["TR"] },
+            { ShowTimeLanguage.Russian, ["RUS", "RUSS", "SU"] },
+            { ShowTimeLanguage.Japanese, ["JP", "JA", "JAP"] },
+            { ShowTimeLanguage.Korean, ["KO", "KOR"] },
+            { ShowTimeLanguage.Polish, ["PL", "POL"] },
+            { ShowTimeLanguage.German, ["DE", "AT", "CH"] },
+        };
+
+        public static readonly int _longestShowTimeLanguageString = _showTimeLanguageMap.Values.Max(e => e.Length);
 
         public static string GetLanguageName(ShowTimeLanguage language)
         {
@@ -51,6 +67,10 @@ namespace backend.Helpers
         public static ShowTimeLanguage? TryGetLanguage(string language, ShowTimeLanguage? def)
         {
             var result = FindMatchingDictionaryKey(language, _showTimeLanguageMap, ShowTimeLanguage.Unknown);
+            if (result == ShowTimeLanguage.Unknown)
+            {
+                result = FindMatchingDictionaryKey(language, _showTimeLanguageCountryCodeMap, ShowTimeLanguage.Unknown, padding: " ");
+            }
             if (result == ShowTimeLanguage.Unknown)
             {
                 return def;
@@ -137,12 +157,14 @@ namespace backend.Helpers
 
             return matches;
         }
-        private static T FindMatchingDictionaryKey<T>(string needle, Dictionary<T, string[]> dictionary, T defaultValue) where T : notnull
+        private static T FindMatchingDictionaryKey<T>(string needle, Dictionary<T, string[]> dictionary, T defaultValue, string? padding = "", StringComparison stringComparison = StringComparison.OrdinalIgnoreCase) where T : notnull
         {
             foreach (var (key, value) in dictionary)
             {
                 // If the needle is an exact match for the haystack, return the key
-                if (Array.Exists(value, v => !string.IsNullOrWhiteSpace(v) && needle.Equals(v, StringComparison.OrdinalIgnoreCase)))
+                if (Array.Exists(value, v => !string.IsNullOrWhiteSpace(v) && needle.Equals(
+                    padding + v + padding, stringComparison
+                    )))
                 {
                     return key;
                 }
@@ -150,7 +172,9 @@ namespace backend.Helpers
             // If no exact match is found, check if the haystack contains one of the values
             foreach (var (key, value) in dictionary)
             {
-                if (Array.Exists(value, v => !string.IsNullOrWhiteSpace(v) && needle.Contains(v, StringComparison.OrdinalIgnoreCase)))
+                if (Array.Exists(value, v => !string.IsNullOrWhiteSpace(v) && needle.Contains(
+                    padding + v + padding, stringComparison
+                    )))
                 {
                     return key;
                 }
