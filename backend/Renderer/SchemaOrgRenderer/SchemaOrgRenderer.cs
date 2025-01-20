@@ -13,7 +13,6 @@ public class SchemaOrgRenderer(DatabaseContext context) : IRenderer
         var cinemas = context.Cinema.Select(c => c.SchemaMetadata).ToList();
         var cinemaSchemas = new List<MovieTheater>();
         var showTimes = context.ShowTime.Include(s => s.Movie).Include(s => s.Cinema).ToList();
-
         var screeningEvents = new List<ScreeningEvent>();
 
         foreach (var showTime in showTimes)
@@ -27,7 +26,7 @@ public class SchemaOrgRenderer(DatabaseContext context) : IRenderer
                 StartDate = showTime.StartTime,
                 EndDate = showTime.EndTime,
                 EventStatus = EventStatusType.EventScheduled,
-
+                WorkPresented = showTime.Movie.SchemaMetadata,
             };
 
 
