@@ -3,8 +3,12 @@ using backend.Helpers;
 using backend.Models;
 using backend.Scrapers;
 using backend.Services;
+using CsvHelper.TypeConversion;
 using HtmlAgilityPack;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 using System.Globalization;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace kinohannover.Scrapers.FilmkunstKinos
@@ -166,6 +170,9 @@ namespace kinohannover.Scrapers.FilmkunstKinos
 
         private async Task ProcessShowTimeAsync(Movie movie, string? specialEventTitle, DateTime dateTime, ShowTimeDubType type, ShowTimeLanguage language, Uri performanceUri)
         {
+            // Replace the subdomain to get the mobile version of the page, because the desktop -> mobile version redirect is broken on Apollos website
+            performanceUri = ReplaceSubdomain(performanceUri);
+
             var showTime = new ShowTime()
             {
                 Movie = movie,
@@ -179,6 +186,20 @@ namespace kinohannover.Scrapers.FilmkunstKinos
 
             await _showTimeService.CreateAsync(showTime);
         }
+
+        private static Uri ReplaceSubdomain(Uri uri)
+        {
+            var hostname = uri.Host;
+            hostname = hostname.Replace("www.", "m.");
+            var uriBuilder = new UriBuilder(uri)
+            {
+                Host = hostname,
+                // Remove the port, so that the UriBuilder doesn't append it to the URL
+                Port = -1,
+            };
+            return uriBuilder.Uri;
+        }
+
 
         private static DateTime? GetShowDateTime(DateOnly date, HtmlNode movieNode)
         {
