@@ -36,7 +36,7 @@ namespace backend.Scrapers
         {
             var htmlDocument = await HttpHelper.GetHtmlDocumentAsync(_dataUrl, _postData);
 
-            var events = htmlDocument.DocumentNode.SelectNodes("//a[@class='event kino']");
+            var events = htmlDocument.DocumentNode.SelectNodes("//a[contains(@class, 'event')]");
             if (events is null) return;
 
             foreach (var eventNode in events)
