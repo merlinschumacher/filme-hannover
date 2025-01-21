@@ -26,7 +26,7 @@ namespace backend.Helpers
             { ShowTimeLanguage.Hindi, ["Hindi", " hind.", " hin." ] },
             { ShowTimeLanguage.Polish, ["Polnisch", "poln.", "pol."] },
             { ShowTimeLanguage.Arabic, ["Arabisch", "arab."]},
-            { ShowTimeLanguage.German, ["Deutsch"," de."," deu.", "dt."] },
+            { ShowTimeLanguage.German, ["Deutsch"," de."," deu.", "dt.", "Deutsch mit englischen Liedern"] },
             { ShowTimeLanguage.Other, ["Andere", "Verschiedene", "versch.", "div.", "Malayalam", "Filipino", "Georgisch", "georg." ]},
             { ShowTimeLanguage.Unknown, ["Unbekannt"] },
         };
