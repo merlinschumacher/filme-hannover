@@ -8,6 +8,14 @@ namespace backend.Helpers
     {
         private static readonly HttpClient _httpClient = new();
 
+        public static async Task<HtmlDocument> PostFormAsync(Uri uri, Dictionary<string, string> formValues)
+        {
+            var content = new FormUrlEncodedContent(formValues);
+            string? html = await LoadHttpContentAsync(uri, content);
+            var doc = new HtmlDocument();
+            doc.LoadHtml(html);
+            return doc;
+        }
         public static async Task<HtmlDocument> GetHtmlDocumentAsync(Uri uri, StringContent? content = null)
         {
             string? html = await GetHttpContentAsync(uri, content);
@@ -17,6 +25,11 @@ namespace backend.Helpers
         }
 
         public static async Task<string?> GetHttpContentAsync(Uri uri, StringContent? content = null)
+        {
+            return await LoadHttpContentAsync(uri, content);
+        }
+
+        private static async Task<string?> LoadHttpContentAsync(Uri uri, ByteArrayContent? content = null)
         {
             // If not in debug mode, add a delay to prevent spamming the server
             if (!System.Diagnostics.Debugger.IsAttached)

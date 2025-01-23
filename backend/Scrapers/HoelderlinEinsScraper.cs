@@ -16,7 +16,11 @@ namespace backend.Scrapers
 
         public bool ReliableMetadata => false;
         private readonly Uri _dataUrl = new("https://www.hoelderlin-eins.de/veranstaltungen");
-        private readonly StringContent _postData = new("action=search_events_grouped&category=7");
+        private readonly Dictionary<string, string> _postData = new Dictionary<string, string>
+        {
+            { "action", "search_events_grouped" },
+            { "category", "7" },
+        };
 
         private readonly Cinema _cinema = new()
         {
@@ -34,7 +38,7 @@ namespace backend.Scrapers
 
         public async Task ScrapeAsync()
         {
-            var htmlDocument = await HttpHelper.GetHtmlDocumentAsync(_dataUrl, _postData);
+            var htmlDocument = await HttpHelper.PostFormAsync(_dataUrl, _postData);
 
             var events = htmlDocument.DocumentNode.SelectNodes("//a[contains(@class, 'event')]");
             if (events is null) return;
