@@ -10,7 +10,7 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts,.html,.css --fix --ignore-path .gitignore"
   },
   "optionalDependencies": {
-    "@rollup/rollup-linux-x64-gnu": "4.31.0"
+    "@rollup/rollup-linux-x64-gnu": "4.32.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",
