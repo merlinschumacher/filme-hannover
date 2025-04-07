@@ -1,4 +1,5 @@
 ﻿using backend.Data;
+using backend.Extensions;
 using backend.Models;
 using kinohannover.Helpers;
 using Microsoft.EntityFrameworkCore;
@@ -27,37 +28,37 @@ namespace backend.Services
             var existingMovie = await FindMovieAsync(movie);
             if (existingMovie is not null)
             {
-                logger.LogInformation("Movie '{Title}' already exists in the database", movie.DisplayName);
-                existingMovie = UpdateExistingMovieMetadata(movie, existingMovie);
-                await context.SaveChangesAsync();
+                if (existingMovie.Rating is MovieRating.Unknown && movie.Rating is not MovieRating.Unknown)
+                {
+                    existingMovie.Rating = movie.Rating;
+                    await context.SaveChangesAsync();
+                }
+                if (existingMovie.Runtime == Constants.AverageMovieRuntime && movie.Runtime != Constants.AverageMovieRuntime)
+                {
+                    existingMovie.Runtime = movie.Runtime;
+                    await context.SaveChangesAsync();
+                }
+
                 return existingMovie;
             }
-
             // If it's not in the database, query TMDb
-            var tmdbMovie = await QueryTmdbAsync(movie);
-            // If we found a match in TMDb, check again if the movie is in the database
-            if (tmdbMovie is not null)
-            {
-                tmdbMovie = UpdateExistingMovieMetadata(movie, tmdbMovie);
-                existingMovie = await FindMovieAsync(tmdbMovie);
-            }
+            movie = await QueryTmdbAsync(movie);
 
+            // If we found a match in TMDb, check again if the movie is in the database
+            existingMovie = await FindMovieAsync(movie);
             if (existingMovie is not null)
             {
-                logger.LogInformation("Movie '{Title}' already exists in the database", movie.DisplayName);
-                existingMovie = UpdateExistingMovieMetadata(movie, existingMovie);
-                await context.SaveChangesAsync();
                 return existingMovie;
             }
+
             // If the movie is still not in the database, create it
             await AddMovieAsync(movie);
-
             return movie;
         }
 
         private async Task<Movie> AddMovieAsync(Movie movie)
         {
-            logger.LogInformation("Creating movie '{Title}'", movie.DisplayName);
+            logger.LogInformation("Creating movie {Title}", movie.DisplayName);
             await context.Movies.AddAsync(movie);
             await context.SaveChangesAsync();
             return movie;
@@ -79,7 +80,7 @@ namespace backend.Services
 
             if (movie.ReleaseDate.HasValue)
             {
-                query.Where(m => m.ReleaseDate == movie.ReleaseDate);
+                query = query.Where(m => m.ReleaseDate == movie.ReleaseDate);
             }
 
             var result = await query.FirstOrDefaultAsync();
@@ -99,7 +100,7 @@ namespace backend.Services
             return similiarMovies.OrderByDescending(e => e.Value).FirstOrDefault().Key;
         }
 
-        private async Task<Movie?> QueryTmdbAsync(Movie movie, bool guessHarder = true)
+        private async Task<Movie> QueryTmdbAsync(Movie movie, bool guessHarder = true)
         {
             try
             {
@@ -119,14 +120,13 @@ namespace backend.Services
                     movie.ReleaseDate = tmdbMovieDetails.ReleaseDate;
                     movie.Runtime = DetermineMovieLength(originalRuntime: movie.Runtime, tmdbRuntime: tmdbMovieDetails.Runtime);
                     movie.TrailerUrl = SelectTrailer(tmdbMovieDetails);
-                    return movie;
                 }
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error querying TMDb for movie {Movie}", movie);
             }
-            return null;
+            return movie;
         }
 
         /// <summary>
@@ -177,20 +177,6 @@ namespace backend.Services
             }
             return null;
         }
-
-        private static Movie UpdateExistingMovieMetadata(Movie movie, Movie existingMovie)
-        {
-            if (existingMovie.Rating is MovieRating.Unknown && movie.Rating is not MovieRating.Unknown)
-            {
-                existingMovie.Rating = movie.Rating;
-            }
-            if (existingMovie.Runtime == Constants.AverageMovieRuntime && movie.Runtime != Constants.AverageMovieRuntime)
-            {
-                existingMovie.Runtime = movie.Runtime;
-            }
-            return existingMovie;
-        }
-
 
         [GeneratedRegex(@"\s+")]
         private static partial Regex DuplicateSpaceRegex();

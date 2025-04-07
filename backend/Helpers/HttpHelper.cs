@@ -13,14 +13,14 @@ namespace backend.Helpers
             var content = new FormUrlEncodedContent(formValues);
             string? html = await LoadHttpContentAsync(uri, content);
             var doc = new HtmlDocument();
-            doc.LoadHtml(html);
+            doc.LoadHtml(html ?? "");
             return doc;
         }
         public static async Task<HtmlDocument> GetHtmlDocumentAsync(Uri uri, StringContent? content = null)
         {
             string? html = await GetHttpContentAsync(uri, content);
             var doc = new HtmlDocument();
-            doc.LoadHtml(html);
+            doc.LoadHtml(html ?? "");
             return doc;
         }
 
