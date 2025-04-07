@@ -1,5 +1,6 @@
 import html from './swiper.component.tpl';
 import css from './swiper.component.css?inline';
+import sliderCss from 'scroll-snap-slider/dist/scroll-snap-slider.css?inline';
 import noContentHtml from '../no-content/no-content.component.tpl';
 import { ScrollSnapDraggable, ScrollSnapSlider } from 'scroll-snap-slider';
 import '../../extensions/ShadowRootExtensions';
@@ -11,7 +12,7 @@ import DayListElement from '../day-list/day-list.component';
 import { EventData } from '../../models/EventData';
 
 const styleSheet = new CSSStyleSheet();
-styleSheet.replaceSync(css);
+styleSheet.replaceSync(sliderCss + css);
 
 export default class SwiperElement extends HTMLElement {
   private scrollSnapSlider: ScrollSnapSlider;
@@ -81,7 +82,7 @@ export default class SwiperElement extends HTMLElement {
     }
     if (
       this.scrollSnapSliderEl.scrollLeft +
-        this.scrollSnapSliderEl.clientWidth >=
+      this.scrollSnapSliderEl.clientWidth >=
       this.scrollSnapSliderEl.scrollWidth / 2
     ) {
       this.triggeredScrollThreshold = true;
