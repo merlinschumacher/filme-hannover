@@ -10,7 +10,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Cleanup
         run: |
-          gh cache delete --all -R $GH_REPO --confirm
+          gh cache delete --all -R $GH_REPO
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}

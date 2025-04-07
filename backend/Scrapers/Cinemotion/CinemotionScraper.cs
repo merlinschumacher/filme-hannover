@@ -46,7 +46,7 @@ namespace backend.Scrapers.Cinemotion
             var json = JsonConvert.DeserializeObject<CinemotionRoot>(cdata);
             if (json is null) return;
             var movies = json.ApiData.MovieList.Movies;
-            foreach (var (key, cinemotionMovie) in movies)
+            foreach (var (_, cinemotionMovie) in movies)
             {
                 if (cinemotionMovie is null)
                 {

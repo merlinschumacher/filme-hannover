@@ -26,7 +26,7 @@ namespace backend.Helpers
             { ShowTimeLanguage.Hindi, ["Hindi", " hind.", " hin." ] },
             { ShowTimeLanguage.Polish, ["Polnisch", "poln.", "pol."] },
             { ShowTimeLanguage.Arabic, ["Arabisch", "arab."]},
-            { ShowTimeLanguage.German, ["Deutsch"," de."," deu.", "dt."] },
+            { ShowTimeLanguage.German, ["Deutsch"," de."," deu.", "dt.", "Deutsch mit englischen Liedern"] },
             { ShowTimeLanguage.Other, ["Andere", "Verschiedene", "versch.", "div.", "Malayalam", "Filipino", "Georgisch", "georg." ]},
             { ShowTimeLanguage.Unknown, ["Unbekannt"] },
         };
@@ -118,8 +118,8 @@ namespace backend.Helpers
         /// OF is a common abbreviation for OriginalFassung in German cinemas
         /// but in many English movie titles OF appears in the title itself.
         /// And sometimes the movie title is in English, uppercase and contains OF.
-        /// We'll check if string is uppercase and contains OF, 
-        /// This is a simple heuristic to determine if it is used as OriginalVersion indicator. 
+        /// We'll check if string is uppercase and contains OF,
+        /// This is a simple heuristic to determine if it is used as OriginalVersion indicator.
         /// Check if the ratio of uppercase letters is higher than 70%.
         /// If so, we'll check if OF is in the last third of the string, as OF is usually at the end of the title
         /// </summary>
