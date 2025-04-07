@@ -1,23 +1,20 @@
 
 using backend;
+using backend.Extensions;
 using backend.Helpers;
 using backend.Models;
 using backend.Scrapers;
 using backend.Services;
 using HtmlAgilityPack;
-using kinohannover.Helpers;
 using Microsoft.Extensions.Logging;
 using System.Globalization;
-using System.Reflection.Metadata;
-using System.Security;
 using System.Text.RegularExpressions;
 using System.Web;
 
 namespace kinohannover.Scrapers
 {
-    public class SofaLoftScraper : IScraper
+    public partial class SofaLoftScraper : IScraper
     {
-
         private readonly Uri _dataUri = new("https://www.sofaloft.de/category/alle-beitraege/kino/");
 
         private const string _blogPostSelector = "//div[contains(@class, 'kl-blog-item-container')]";
@@ -56,7 +53,6 @@ namespace kinohannover.Scrapers
 
         public async Task ScrapeAsync()
         {
-
             var doc = await HttpHelper.GetHtmlDocumentAsync(_dataUri);
             var blogPosts = doc.DocumentNode.SelectNodes(_blogPostSelector);
 
@@ -71,7 +67,6 @@ namespace kinohannover.Scrapers
                     _logger.LogDebug(e, "Error processing blog post.");
                 }
             }
-
         }
 
         private async Task ProcessBlogPost(HtmlNode node)
@@ -111,13 +106,13 @@ namespace kinohannover.Scrapers
 
         private static MovieRating GetRating(HtmlNode bodyNode)
         {
-            var fsk = Regex.Match(bodyNode.InnerText, _fskRegexString);
+            var fsk = RatingMatchRegex().Match(bodyNode.InnerText);
             return MovieHelper.GetRating(fsk.Groups[1].Value);
         }
 
         private static TimeSpan GetRuntime(HtmlNode bodyNode)
         {
-            var runtimeMatch = Regex.Match(bodyNode.InnerText, _runtimeRegexString);
+            var runtimeMatch = RuntimeMatchRegex().Match(bodyNode.InnerText);
             var runtime = Constants.AverageMovieRuntime;
             if (runtimeMatch.Success)
             {
@@ -133,10 +128,10 @@ namespace kinohannover.Scrapers
         {
             var normalizedTitle = titleNode.InnerText.NormalizeDashes().NormalizeQuotes();
             normalizedTitle = HttpUtility.HtmlDecode(normalizedTitle);
-            var titleMatch = Regex.Match(normalizedTitle, _blogPostTitleRegexString);
+            var titleMatch = TitleMatchRegex().Match(normalizedTitle);
             if (!titleMatch.Success || titleMatch.Groups.Count < 4) throw new InvalidOperationException("Title regex failed.");
 
-            if (!DateOnly.TryParseExact(titleMatch.Groups[2].Value, "dd.MM.yyyy", out var date))
+            if (!DateOnly.TryParseExact(titleMatch.Groups[2].Value, "dd.MM.yyyy", new CultureInfo("de-DE"), DateTimeStyles.AssumeLocal, out var date))
                 throw new InvalidOperationException("Date parsing failed.");
             if (!int.TryParse(titleMatch.Groups[3].Value, out var hour))
                 throw new InvalidOperationException("Hour parsing failed.");
@@ -157,5 +152,12 @@ namespace kinohannover.Scrapers
             }
             return _cinema.Url;
         }
+
+        [GeneratedRegex(_blogPostTitleRegexString)]
+        private static partial Regex TitleMatchRegex();
+        [GeneratedRegex(_runtimeRegexString)]
+        private static partial Regex RuntimeMatchRegex();
+        [GeneratedRegex(_fskRegexString)]
+        private static partial Regex RatingMatchRegex();
     }
 }

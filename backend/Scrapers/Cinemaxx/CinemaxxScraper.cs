@@ -20,7 +20,7 @@ namespace backend.Scrapers.Cinemaxx
         };
 
         public bool ReliableMetadata => true;
-        private const int _cinemaxxId = 81;
+        private const int _cinemaxxId = 1304;
 
         private readonly Uri _baseUri = new("https://www.cinemaxx.de/");
         private readonly List<string> _specialEventTitles = ["Maxxi Mornings:", "Mini Mornings:", "Sharkweek:", "Shark Week:"];

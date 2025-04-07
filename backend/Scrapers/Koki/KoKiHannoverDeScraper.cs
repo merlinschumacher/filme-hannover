@@ -2,7 +2,6 @@
 using backend.Models;
 using backend.Services;
 using HtmlAgilityPack;
-using Microsoft.EntityFrameworkCore.Query.Internal;
 using System.Text.RegularExpressions;
 
 namespace backend.Scrapers.Koki

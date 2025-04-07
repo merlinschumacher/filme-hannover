@@ -6,21 +6,48 @@ namespace backend.Helpers
 {
     public static class HttpHelper
     {
-        private static readonly HttpClient _httpClient = new();
+        private static readonly HttpClient _httpClient = new()
+        {
+            Timeout = TimeSpan.FromSeconds(30),
+        };
+
+        static HttpHelper()
+        {
+            // Set the default user agent for all HttpClient instances
+            // Some cinemas block requests from unknown user agents or 
+            // break if no user agent is set
+            var userAgent = GetRandomUserAgentAsync().Result;
+            _httpClient.DefaultRequestHeaders.Add("User-Agent", userAgent);
+        }
+
+        private static async Task<string> GetRandomUserAgentAsync()
+        {
+            using var client = new HttpClient();
+            client.Timeout = TimeSpan.FromSeconds(30);
+            var response = await client.GetAsync("https://cdn.jsdelivr.net/gh/microlinkhq/top-user-agents@master/src/desktop.json");
+
+            var json = await response.Content.ReadAsStringAsync();
+            var userAgents = JsonConvert.DeserializeObject<List<string>>(json);
+            if (userAgents is null || userAgents.Count == 0)
+                throw new OperationCanceledException("Failed to load user agents");
+            var random = new Random();
+            var randomIndex = random.Next(userAgents.Count);
+            return userAgents[randomIndex];
+        }
 
         public static async Task<HtmlDocument> PostFormAsync(Uri uri, Dictionary<string, string> formValues)
         {
             var content = new FormUrlEncodedContent(formValues);
             string? html = await LoadHttpContentAsync(uri, content);
             var doc = new HtmlDocument();
-            doc.LoadHtml(html);
+            doc.LoadHtml(html ?? "");
             return doc;
         }
         public static async Task<HtmlDocument> GetHtmlDocumentAsync(Uri uri, StringContent? content = null)
         {
             string? html = await GetHttpContentAsync(uri, content);
             var doc = new HtmlDocument();
-            doc.LoadHtml(html);
+            doc.LoadHtml(html ?? "");
             return doc;
         }
 

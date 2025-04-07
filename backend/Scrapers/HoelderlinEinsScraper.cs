@@ -16,7 +16,7 @@ namespace backend.Scrapers
 
         public bool ReliableMetadata => false;
         private readonly Uri _dataUrl = new("https://www.hoelderlin-eins.de/veranstaltungen");
-        private readonly Dictionary<string, string> _postData = new Dictionary<string, string>
+        private readonly Dictionary<string, string> _postData = new()
         {
             { "action", "search_events_grouped" },
             { "category", "7" },

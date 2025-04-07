@@ -35,6 +35,6 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
-    "sourceMap": true,
+    "sourceMap": true
   }
 }

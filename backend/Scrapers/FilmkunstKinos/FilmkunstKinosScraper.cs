@@ -92,6 +92,12 @@ namespace kinohannover.Scrapers.FilmkunstKinos
         {
             var dateString = filmTagNode.SelectSingleNode(_dateSelector).InnerText;
             if (string.IsNullOrWhiteSpace(dateString)) return;
+            // Append a dot to the date string if it doesn't end with one,
+            // to ensure it can be parsed correctly. Some of the cinemas miss it.
+            if (!dateString.EndsWith('.'))
+            {
+                dateString += ".";
+            }
             var date = DateOnly.ParseExact(dateString, _dateFormat, CultureInfo.CurrentCulture);
             var timeNodes = filmTagNode.SelectNodes(_aElemeSelector);
             if (timeNodes is null) return;

@@ -1,5 +1,3 @@
-@import 'scroll-snap-slider';
-
 :host {
   --loader-size: 8px;
   --loader-color: #000;
@@ -17,10 +15,10 @@
   overscroll-behavior-y: auto;
 }
 
-.scroll-snap-slider.disabled {
-  pointer-events: none;
-  filter: grayscale(1) opacity(0.5);
-}
+  .scroll-snap-slider.disabled {
+    pointer-events: none;
+    filter: grayscale(1) opacity(0.5);
+  }
 
 .scroll-snap-slide {
   height: fit-content;
@@ -73,18 +71,18 @@ button {
   cursor: pointer;
 }
 
-button:focus {
-  outline: none;
-}
+  button:focus {
+    outline: none;
+  }
 
-button>svg {
-  height: 32px;
-  width: auto;
-  background-color: #fff;
-  border-radius: 100%;
-  border: var(--default-border);
-  box-shadow: var(--default-box-shadow);
-}
+  button > svg {
+    height: 32px;
+    width: auto;
+    background-color: #fff;
+    border-radius: 100%;
+    border: var(--default-border);
+    box-shadow: var(--default-box-shadow);
+  }
 
 #swipe-left {
   left: 0;
