@@ -16,30 +16,13 @@ namespace backend.Scrapers
             ShopUrl = new("https://www.kino-im-sprengel.de/kontakt.php"),
             Color = "#42d4f4",
             IconClass = "plus",
-            SchemaMetadata = new MovieTheater
+            Address = new PostalAddress()
             {
-                Name = "Kino im Sprengel",
-                Url = new Uri("https://www.kino-im-sprengel.de/"),
-                Email = "info@ kino-im-sprengel.de",
-                Telephone = "+49511703814",
-                FaxNumber = "+49511703841",
-                FoundingDate = new DateTime(1988, 5, 1),
-                ScreenCount = 1,
-                CurrenciesAccepted = "EUR",
-                PaymentAccepted = "Cash",
-                Geo = new GeoCoordinates()
-                {
-                    Latitude = 52.387777,
-                    Longitude = 9.718536
-                },
-                Address = new PostalAddress()
-                {
-                    StreetAddress = "Klaus-Müller-Kilian-Weg 1",
-                    PostalCode = "30167",
-                    AddressLocality = "Hannover",
-                    AddressRegion = "NI",
-                    AddressCountry = "DE"
-                }
+                StreetAddress = "Klaus-Müller-Kilian-Weg 1",
+                PostalCode = "30167",
+                AddressLocality = "Hannover",
+                AddressRegion = "Niedersachsen",
+                AddressCountry = "DE"
             }
         };
 

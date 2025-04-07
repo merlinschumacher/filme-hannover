@@ -1,15 +1,13 @@
-﻿using backend;
-using backend.Helpers;
+﻿using backend.Helpers;
 using backend.Models;
 using backend.Scrapers;
 using backend.Services;
-using CsvHelper.TypeConversion;
 using HtmlAgilityPack;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
+using Schema.NET;
 using System.Globalization;
-using System.Text;
 using System.Text.RegularExpressions;
+using Constants = backend.Constants;
+using Movie = backend.Models.Movie;
 
 namespace kinohannover.Scrapers.FilmkunstKinos
 {
@@ -22,6 +20,14 @@ namespace kinohannover.Scrapers.FilmkunstKinos
             ShopUrl = new("https://www.apollokino.de/?v=&mp=Tickets"),
             Color = "#000075",
             IconClass = "square",
+            Address = new PostalAddress()
+            {
+                AddressCountry = "DE",
+                AddressLocality = "Hannover",
+                AddressRegion = "Niedersachsen",
+                PostalCode = "30451",
+                StreetAddress = "Limmerstraße 50",
+            },
         };
 
         public bool ReliableMetadata => false;
@@ -117,7 +123,7 @@ namespace kinohannover.Scrapers.FilmkunstKinos
 
                     var (title, type, language) = GetMovieDetailsFromTitle(titleNode);
                     (type, language) = GetMovieDetailsFromDescription(description);
-                    Movie movie = await ProcessMovieAsync(title, description);
+                    var movie = await ProcessMovieAsync(title, description);
                     var showDateTime = GetShowDateTime(date, movieNode);
                     if (showDateTime == null) continue;
 

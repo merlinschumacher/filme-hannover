@@ -1,6 +1,7 @@
 ﻿using backend.Helpers;
 using backend.Models;
 using backend.Services;
+using Schema.NET;
 
 namespace backend.Scrapers
 {
@@ -30,6 +31,14 @@ namespace backend.Scrapers
             Color = "#808000",
             IconClass = "slash",
             HasShop = false,
+            Address = new PostalAddress()
+            {
+                AddressCountry = "DE",
+                AddressLocality = "Hannover",
+                AddressRegion = "Niedersachsen",
+                PostalCode = "30625",
+                StreetAddress = "Hölderlinstraße 1",
+            },
         };
 
         private readonly CinemaService _cinemaService;

@@ -2,7 +2,9 @@
 using backend.Models;
 using backend.Services;
 using kinohannover.Scrapers.Cinemaxx;
+using Schema.NET;
 using System.Globalization;
+using Movie = backend.Models.Movie;
 
 namespace backend.Scrapers.Cinemaxx
 {
@@ -17,6 +19,14 @@ namespace backend.Scrapers.Cinemaxx
             Color = "#f032e6",
             IconClass = "triangle-up",
             HasShop = true,
+            Address = new PostalAddress()
+            {
+                AddressCountry = "DE",
+                AddressLocality = "Hannover",
+                AddressRegion = "Niedersachsen",
+                PostalCode = "30161",
+                StreetAddress = "Raschplatz 9L",
+            },
         };
 
         public bool ReliableMetadata => true;

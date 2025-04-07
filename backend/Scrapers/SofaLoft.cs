@@ -1,5 +1,3 @@
-
-using backend;
 using backend.Extensions;
 using backend.Helpers;
 using backend.Models;
@@ -7,9 +5,12 @@ using backend.Scrapers;
 using backend.Services;
 using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
+using Schema.NET;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Web;
+using Constants = backend.Constants;
+using Movie = backend.Models.Movie;
 
 namespace kinohannover.Scrapers
 {
@@ -37,6 +38,14 @@ namespace kinohannover.Scrapers
             ShopUrl = new("https://www.sofaloft.de/category/alle-beitraege/kino/"),
             Color = "#aa62ff",
             IconClass = "hourglass",
+            Address = new PostalAddress()
+            {
+                AddressCountry = "DE",
+                AddressLocality = "Hannover",
+                AddressRegion = "Niedersachsen",
+                PostalCode = "30173",
+                StreetAddress = "Jordanstraße 26",
+            },
         };
         private readonly ShowTimeService _showTimeService;
         private readonly MovieService _movieService;

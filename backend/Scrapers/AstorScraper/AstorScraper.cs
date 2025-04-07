@@ -4,7 +4,9 @@ using backend.Services;
 using kinohannover.Scrapers.AstorScraper;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
+using Schema.NET;
 using System.Text.RegularExpressions;
+using Movie = backend.Models.Movie;
 
 namespace backend.Scrapers.AstorScraper
 {
@@ -19,6 +21,14 @@ namespace backend.Scrapers.AstorScraper
             IconClass = "rhombus",
             ReliableMetadata = true,
             HasShop = true,
+            Address = new PostalAddress()
+            {
+                AddressCountry = "DE",
+                AddressLocality = "Hannover",
+                AddressRegion = "Niedersachsen",
+                PostalCode = "30159",
+                StreetAddress = "Nikolaistraße 8",
+            },
         };
 
         public bool ReliableMetadata => true;

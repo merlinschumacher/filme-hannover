@@ -1,5 +1,6 @@
 ﻿using backend.Services;
 using Microsoft.Extensions.Logging;
+using Schema.NET;
 
 namespace backend.Scrapers
 {
@@ -20,6 +21,14 @@ namespace backend.Scrapers
                 ShopUrl = _uri,
                 Color = "#3cb44b",
                 IconClass = "cross",
+                Address = new PostalAddress()
+                {
+                    AddressCountry = "DE",
+                    AddressLocality = "Hannover",
+                    AddressRegion = "Niedersachsen",
+                    PostalCode = "30169",
+                    StreetAddress = "Ferdinand-Wilhelm-Fricke-Weg 8",
+                },
             };
         }
     }

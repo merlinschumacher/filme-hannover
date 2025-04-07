@@ -34,6 +34,20 @@ namespace backend.Models
             return DisplayName;
         }
 
-        public required MovieTheater SchemaMetadata { get; set; }
+        public required PostalAddress Address { get; set; }
+
+        public MovieTheater GetSchemaData()
+        {
+            return new MovieTheater
+            {
+                Name = DisplayName,
+                Url = Url,
+                Address = new List<IPostalAddress>
+                {
+                    Address
+                },
+                SameAs = Url,
+            };
+        }
     }
 }

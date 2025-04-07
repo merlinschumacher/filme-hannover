@@ -1,55 +1,60 @@
 
 using backend.Data;
-using backend.Renderer;
+using backend.Helpers;
+using backend.Models;
 using Microsoft.EntityFrameworkCore;
 using Schema.NET;
 
-public class SchemaOrgRenderer(DatabaseContext context) : IRenderer
+namespace backend.Renderer.SchemaOrgRenderer
 {
-    public void Render(string path)
+    public class SchemaOrgRenderer(DatabaseContext context) : IRenderer
     {
-        path = Path.Combine(path, "schemaorg.json");
-
-        var cinemas = context.Cinema.Select(c => c.SchemaMetadata).ToList();
-        var cinemaSchemas = new List<MovieTheater>();
-        var showTimes = context.ShowTime.Include(s => s.Movie).Include(s => s.Cinema).ToList();
-        var screeningEvents = new List<ScreeningEvent>();
-
-        foreach (var showTime in showTimes)
+        public void Render(string path)
         {
+            path = Path.Combine(path, "schemaorg.json");
 
-            var screeningEvent = new ScreeningEvent()
+            var showTimes = context.ShowTime.Include(s => s.Movie).Include(s => s.Cinema).ToList();
+            var screeningEvents = new List<IListItem>();
+
+            foreach (var showTime in showTimes)
             {
-                Name = showTime.Movie.DisplayName,
-                Url = showTime.Url,
-                Location = showTime.Cinema.SchemaMetadata,
-                StartDate = showTime.StartTime,
-                EndDate = showTime.EndTime,
-                EventStatus = EventStatusType.EventScheduled,
-                WorkPresented = showTime.Movie.SchemaMetadata,
+
+                var screeningEvent = new ScreeningEvent()
+                {
+                    Name = showTime.Movie.DisplayName,
+                    Url = showTime.Url ?? showTime.Cinema.Url,
+                    Location = new List<IPostalAddress>()
+                {
+                    showTime.Cinema.Address
+                },
+                    StartDate = showTime.StartTime,
+                    EndDate = showTime.EndTime,
+                    Duration = showTime.Movie.Runtime,
+                    EventStatus = EventStatusType.EventScheduled,
+                    WorkPresented = showTime.Movie.GetSchemaData(),
+                    InLanguage = ShowTimeHelper.GetLanguageCode(showTime.Language),
+                };
+                if (showTime.DubType != ShowTimeDubType.Regular)
+                {
+                    screeningEvent.AdditionalType = showTime.DubType.ToString();
+                }
+                screeningEvents.Add(new ListItem()
+                {
+                    Item = screeningEvent
+                });
+            }
+            var itemList = new ItemList()
+            {
+                ItemListElement = screeningEvents,
+                Name = "Kinovorstellungen in Hannover",
+                Description = "Eine Liste aller Kinovorstellungen in Hannover",
+                Url = new Uri("https://filme-hannover.de"),
+                ItemListOrder = ItemListOrderType.ItemListUnordered,
             };
 
+            var json = itemList.ToString();
+            File.WriteAllText(path, json);
 
         }
-
-
-
-        // {
-        //     "@context" = "http://schema.org",
-        //     "@type" = "MovieTheater",
-        //     "name" = c.DisplayName,
-        //     "url" = c.Url,
-        //     "image" = c.IconClass,
-        //     "address" = new
-        //     {
-        //         "@type" = "PostalAddress",
-        //         "addressLocality" = "Hannover",
-        //         "addressRegion" = "NI",
-        //         "postalCode" = "30159",
-        //         "streetAddress" = c.DisplayName
-        //     }
-        //     // });
-
-
     }
 }

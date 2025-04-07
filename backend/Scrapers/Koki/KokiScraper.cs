@@ -1,6 +1,7 @@
 ﻿using backend.Models;
 using backend.Services;
 using Microsoft.Extensions.Logging;
+using Schema.NET;
 
 namespace backend.Scrapers.Koki
 {
@@ -20,6 +21,14 @@ namespace backend.Scrapers.Koki
             Color = "#000000",
             IconClass = "hexagon",
             HasShop = false,
+            Address = new PostalAddress()
+            {
+                AddressCountry = "DE",
+                AddressLocality = "Hannover",
+                AddressRegion = "Niedersachsen",
+                PostalCode = "30159",
+                StreetAddress = "Sophienstraße 2",
+            },
         };
 
         public KokiScraper(ILogger<KokiScraper> logger, MovieService movieService, ShowTimeService showTimeService, CinemaService cinemaService)

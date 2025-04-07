@@ -2,6 +2,8 @@
 using backend.Models;
 using backend.Services;
 using Newtonsoft.Json;
+using Schema.NET;
+using Movie = backend.Models.Movie;
 
 namespace backend.Scrapers.Cinemotion
 {
@@ -17,6 +19,14 @@ namespace backend.Scrapers.Cinemotion
             Color = "#f5db31",
             IconClass = "circle",
             HasShop = true,
+            Address = new PostalAddress()
+            {
+                AddressCountry = "DE",
+                AddressLocality = "Langenhagen",
+                AddressRegion = "Niedersachsen",
+                PostalCode = "30853",
+                StreetAddress = "Walsroder Straße 105",
+            },
         };
 
         private readonly CinemaService _cinemaService;

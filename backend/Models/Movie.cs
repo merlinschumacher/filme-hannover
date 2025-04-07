@@ -1,4 +1,5 @@
 ﻿using kinohannover.Helpers;
+using Schema.NET;
 
 namespace backend.Models
 {
@@ -77,6 +78,39 @@ namespace backend.Models
         public override string ToString()
         {
             return DisplayName;
+        }
+
+        public Schema.NET.Movie GetSchemaData()
+        {
+            var movie = new Schema.NET.Movie
+            {
+                Name = DisplayName,
+                Description = Description ?? "Keine Beschreibung vorhanden.",
+                Genre = "Movie",
+            };
+
+            if (PosterUrl != null)
+            {
+                movie.Image = new Uri(PosterUrl);
+            }
+            if (TrailerUrl != null)
+            {
+                movie.Trailer = new VideoObject
+                {
+                    Url = TrailerUrl,
+                    Name = DisplayName,
+                    Description = Description ?? "",
+                };
+            }
+            if (ReleaseDate.HasValue)
+            {
+                movie.DatePublished = ReleaseDate;
+            }
+            if (Rating != MovieRating.Unknown && Rating != MovieRating.Unrated && Rating != MovieRating.FSK0)
+            {
+                movie.TypicalAgeRange = (int)Rating + "-";
+            }
+            return movie;
         }
     }
 }

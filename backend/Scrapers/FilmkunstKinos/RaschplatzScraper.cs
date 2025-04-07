@@ -1,6 +1,7 @@
 ﻿using backend.Models;
 using backend.Services;
 using kinohannover.Scrapers.FilmkunstKinos;
+using Schema.NET;
 
 namespace backend.Scrapers.FilmkunstKinos
 {
@@ -14,6 +15,14 @@ namespace backend.Scrapers.FilmkunstKinos
             Color = "#800000",
             IconClass = "triangle-down",
             HasShop = true,
+            Address = new PostalAddress()
+            {
+                AddressCountry = "DE",
+                AddressLocality = "Hannover",
+                AddressRegion = "Niedersachsen",
+                PostalCode = "30161",
+                StreetAddress = "Raschplatz 5",
+            },
         };
 
         public bool ReliableMetadata => false;

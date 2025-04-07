@@ -52,6 +52,11 @@ namespace backend.Helpers
             var values = _showTimeLanguageMap[language];
             return values[0];
         }
+        public static string GetLanguageCode(ShowTimeLanguage language)
+        {
+            var values = _showTimeLanguageCountryCodeMap[language];
+            return values[0];
+        }
 
         public static string GetTypeName(ShowTimeDubType type)
         {

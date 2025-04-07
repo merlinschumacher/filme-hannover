@@ -2,7 +2,9 @@
 using backend.Models;
 using backend.Services;
 using Microsoft.AspNetCore.WebUtilities;
+using Schema.NET;
 using System.Globalization;
+using Movie = backend.Models.Movie;
 
 namespace backend.Scrapers.Cinestar
 {
@@ -17,6 +19,14 @@ namespace backend.Scrapers.Cinestar
             IconClass = "star",
             ReliableMetadata = true,
             HasShop = true,
+            Address = new PostalAddress()
+            {
+                AddressCountry = "DE",
+                AddressLocality = "Garbsen",
+                AddressRegion = "Niedersachsen",
+                PostalCode = "30823",
+                StreetAddress = "Rathausplatz 2",
+            },
         };
 
         private readonly Uri _apiBaseUri = new("https://www.cinestar.de/api/cinema/24/show");

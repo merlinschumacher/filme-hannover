@@ -2,6 +2,7 @@
 using backend.Models;
 using backend.Services;
 using Ical.Net;
+using Schema.NET;
 
 namespace backend.Scrapers
 {
@@ -20,6 +21,14 @@ namespace backend.Scrapers
             Color = "#4363d8",
             IconClass = "note",
             HasShop = false,
+            Address = new PostalAddress()
+            {
+                AddressCountry = "DE",
+                AddressLocality = "Hannover",
+                AddressRegion = "Niedersachsen",
+                PostalCode = "30169",
+                StreetAddress = "Rudolf-von-Bennigsen-Ufer 22",
+            },
         };
 
         private readonly CinemaService _cinemaService;
