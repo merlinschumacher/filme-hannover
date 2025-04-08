@@ -17,6 +17,7 @@ export class Application {
   private filterBar: FilterBarElement;
   private filterModal: FilterModalElement | null;
   private cinemaLegend: CinemaLegendElement;
+  private firstPageLoadCompleted: boolean = false;
 
   private getAppRootEl(): HTMLElement {
     const appRootEl = document.querySelector('#app-root');
@@ -126,6 +127,13 @@ export class Application {
     this.filterService.on('eventDataReady', (data) => {
       console.log('Updating swiper.');
       this.swiper.addEvents(data.EventData);
+      if (!this.firstPageLoadCompleted) {
+        const footerEl = document.querySelector('footer');
+        if (footerEl) {
+          footerEl.style.display = 'unset';
+        }
+        this.firstPageLoadCompleted = true;
+      }
     });
 
     this.filterService.setDateRange(this.nextVisibleDate, this.visibleDays);
