@@ -3,11 +3,12 @@ using backend.Data;
 using backend.Helpers;
 using backend.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Schema.NET;
 
 namespace backend.Renderer.SchemaOrgRenderer
 {
-    public class SchemaOrgRenderer(DatabaseContext context) : IRenderer
+    public class SchemaOrgRenderer(ILogger<SchemaOrgRenderer> logger, DatabaseContext context) : IRenderer
     {
         public void Render(string path)
         {
@@ -18,7 +19,6 @@ namespace backend.Renderer.SchemaOrgRenderer
 
             foreach (var showTime in showTimes)
             {
-
                 var screeningEvent = new ScreeningEvent()
                 {
                     Name = showTime.Movie.DisplayName,
@@ -43,6 +43,7 @@ namespace backend.Renderer.SchemaOrgRenderer
                     Item = screeningEvent
                 });
             }
+#pragma warning disable S1075 // URIs should not be hardcoded
             var itemList = new ItemList()
             {
                 ItemListElement = screeningEvents,
@@ -51,10 +52,11 @@ namespace backend.Renderer.SchemaOrgRenderer
                 Url = new Uri("https://filme-hannover.de"),
                 ItemListOrder = ItemListOrderType.ItemListUnordered,
             };
+#pragma warning restore S1075 // URIs should not be hardcoded
 
             var json = itemList.ToString();
+            logger.LogInformation("Writing schema.org data to {Path}", path);
             File.WriteAllText(path, json);
-
         }
     }
 }

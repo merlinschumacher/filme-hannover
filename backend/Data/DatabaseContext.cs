@@ -1,15 +1,18 @@
 ﻿using backend.Models;
+using backend.Data.Converters;
 using Microsoft.EntityFrameworkCore;
+using Schema.NET;
+using Movie = backend.Models.Movie;
 
 namespace backend.Data
 {
-    public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbContext(options)
+    public class DatabaseContext : DbContext
     {
+        public DatabaseContext(DbContextOptions<DatabaseContext> options) : base(options) { }
+
         public DbSet<Movie> Movies { get; set; } = default!;
         public DbSet<Alias> Aliases { get; set; } = default!;
-
         public DbSet<Cinema> Cinema { get; set; } = default!;
-
         public DbSet<ShowTime> ShowTime { get; set; } = default!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -17,7 +20,9 @@ namespace backend.Data
             modelBuilder.UseCollation("NOCASE");
 
             modelBuilder.Entity<Cinema>()
-                .OwnsOne(p => p.SchemaMetadata, b => b.ToJson());
+                .Property(c => c.Address)
+                .HasConversion(new PostalAddressConverter()); // Use the custom converter
+
             modelBuilder.Entity<Movie>(m => m.Property(n => n.DisplayName).UseCollation("NOCASE"));
             modelBuilder.Entity<Movie>(m => m.Navigation(n => n.Aliases).AutoInclude());
             modelBuilder.Entity<Movie>(m => m.HasMany(n => n.Aliases).WithOne(a => a.Movie).OnDelete(DeleteBehavior.Cascade));
