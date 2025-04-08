@@ -1,5 +1,6 @@
 /* inter-regular - latin_latin-ext */
 @font-face {
+  font-display: block;
   font-family: 'Inter';
   font-style: normal;
   font-weight: 400;
@@ -9,6 +10,7 @@
 
 /* inter-700 - latin_latin-ext */
 @font-face {
+  font-display: block;
   font-family: 'Inter';
   font-style: normal;
   font-weight: 700;
