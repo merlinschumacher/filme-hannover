@@ -15,6 +15,7 @@ namespace backend.Services
             {
                 throw new InvalidOperationException("No output directory configured.");
             }
+            outputDirectory = Path.GetFullPath(outputDirectory);
 
             if (!Directory.Exists(outputDirectory))
             {
