@@ -79,7 +79,7 @@ self.onmessage = async (event) => {
       self.postMessage({ type, data: result, requestId });
     }
   } catch (error) {
-    console.error(`Error in worker handling ${type}:`, error);
+    console.error('Error in worker handling %s:', type, error);
     if (requestId) {
       const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
       self.postMessage({ type: 'error', data: errorMessage, requestId });
