@@ -135,9 +135,12 @@ export default class CinemaDb extends Dexie {
   }
 
   private async loadData() {
-    const response = await fetch(
-      new URL(this.remoteDataUrl, window.location.href),
+    const response = await getData(
+      this.remoteDataUrl
     );
+    if (!response) {
+      throw new Error('Failed to load data');
+    }
     const json = this.parseWithDate(await response.text());
     const data = Object.assign(new JsonData(), json);
     try {

@@ -1,4 +1,3 @@
-import FilterService from './services/FilterService';
 import ViewPortService from './services/ViewPortService';
 import Cinema from './models/Cinema';
 import FilterBarElement from './components/filter-bar/filter-bar.component';
@@ -6,9 +5,10 @@ import FilterModalElement from './components/filter-modal/filter-modal.component
 import SwiperElement from './components/swiper/swiper.component';
 import CinemaLegendElement from './components/cinema-legend/cinema-legend.component';
 import FilterSelection from './models/FilterSelection';
+import FilterServiceWorkerAdapter from './services/FilterServiceWorkerAdapter';
 
 export class Application {
-  private filterService: FilterService;
+  private filterService: FilterServiceWorkerAdapter;
   private viewPortService: ViewPortService = new ViewPortService();
   private swiper: SwiperElement;
   private nextVisibleDate: Date;
@@ -34,19 +34,19 @@ export class Application {
     }
   };
 
-  private showFilterModal = () => {
+  private showFilterModal = async () => {
     this.filterModal = new FilterModalElement();
-    this.filterModal.cinemas = this.filterService.getCinemas();
+    this.filterModal.cinemas = await this.filterService.getCinemas();
     this.filterModal.slot = 'filter-modal';
     this.filterModal.addEventListener('filterChanged', this.filterChanged);
     this.filterModal.addEventListener('close', this.removeFilterModal);
     this.filterService
       .getMovies()
-      .then((movies) => {
+      .then(async (movies) => {
         if (this.filterModal) {
           console.debug('Setting movies in filter modal.');
           this.filterModal.movies = movies;
-          this.filterModal.setSelection(this.filterService.getSelection());
+          this.filterModal.setSelection(await this.filterService.getSelection());
 
           this.appRootEl.appendChild(this.filterModal);
         }
@@ -58,7 +58,7 @@ export class Application {
 
   public constructor() {
     this.nextVisibleDate = new Date();
-    this.filterService = new FilterService();
+    this.filterService = new FilterServiceWorkerAdapter();
     this.filterBar = new FilterBarElement();
     this.filterModal = new FilterModalElement();
     this.filterBar.slot = 'filter-bar';
