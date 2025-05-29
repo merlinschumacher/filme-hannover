@@ -141,9 +141,8 @@ namespace kinohannover.Scrapers.FilmkunstKinos
             var result = (Constants.AverageMovieRuntime, MovieRating.Unknown);
             if (description is null) return result;
             var runtime = MovieHelper.GetRuntime(description, @"\d{1,3} Min");
-            runtime ??= Constants.AverageMovieRuntime;
             var rating = MovieHelper.GetRating(description, @"ab\s*(\d{1,2})\s*J\.?");
-            return (runtime.Value, rating);
+            return (runtime, rating);
         }
 
         private async Task<Movie> ProcessMovieAsync(string title, string? description)

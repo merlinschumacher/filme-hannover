@@ -39,7 +39,7 @@ namespace backend.Helpers
             return MovieRating.Unknown;
         }
 
-        public static TimeSpan? GetRuntime(string text, string regEx = @"(\d{1,3})\s*min\.?")
+        public static TimeSpan GetRuntime(string text, string regEx = @"(\d{1,3})\s*min\.?")
         {
             var runtimeRegex = new Regex(regEx, RegexOptions.IgnoreCase);
             var runtimeMatch = runtimeRegex.Match(text);

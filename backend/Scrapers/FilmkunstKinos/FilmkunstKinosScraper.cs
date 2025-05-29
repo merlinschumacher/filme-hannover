@@ -58,7 +58,7 @@ namespace kinohannover.Scrapers.FilmkunstKinos
             title = details.title;
             var type = details.type;
             var language = details.language;
-            var runtime = MovieHelper.GetRuntime(description) ?? Constants.AverageMovieRuntime;
+            var runtime = MovieHelper.GetRuntime(description);
             var rating = MovieHelper.GetRatingMatch(description);
 
             var movie = new Movie()
