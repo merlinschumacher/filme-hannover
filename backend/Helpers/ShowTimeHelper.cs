@@ -42,6 +42,8 @@ namespace backend.Helpers
             { ShowTimeLanguage.Japanese, ["JP", "JA", "JAP"] },
             { ShowTimeLanguage.Korean, ["KO", "KOR"] },
             { ShowTimeLanguage.Polish, ["PL", "POL"] },
+            { ShowTimeLanguage.Arabic, ["AR", "ARA"] },
+            { ShowTimeLanguage.Hindi, ["HI", "HIN"] },
             { ShowTimeLanguage.German, ["DE", "AT", "CH"] },
         };
 
