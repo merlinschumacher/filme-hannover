@@ -7,7 +7,7 @@ namespace backend.Extensions
         public static void AddServicesByInterface<T>(this IServiceCollection services)
         {
             var servicesThatImplementInterface = typeof(T).Assembly.GetTypes()
-                .Where(t => t.GetInterfaces().Contains(typeof(T)) && !t.IsInterface);
+                .Where(t => t.GetInterfaces().Contains(typeof(T)) && !t.IsInterface && !t.IsAbstract);
 
             foreach (var service in servicesThatImplementInterface)
             {
