@@ -29,52 +29,61 @@ export default class EventItemElement extends HTMLElement {
     if (oldValue === newValue) return;
 
     switch (name) {
-      case 'title':
-        this.shadow.updateElement(
-          '.title',
-          (el) => (el.textContent = newValue),
-        );
-        break;
-      case 'href':
-        if (!newValue || newValue === '') {
-          this.shadow.updateElement('.link', (el) => {
-            el.classList.add('disabled');
-            el.removeAttribute('href');
-          });
-        } else {
-          this.shadow.updateElement('.link', (el) => {
-            el.classList.remove('disabled');
-            el.setAttribute('href', newValue);
-          });
+      case 'title': {
+        const titleEl = this.shadow.safeQuerySelector('.title');
+        if (titleEl.textContent !== newValue) {
+          titleEl.textContent = newValue;
         }
         break;
-      case 'color':
-        this.shadow.updateElement(
-          '.icon',
-          (el) => (el.style.backgroundColor = newValue),
-        );
+      }
+      case 'href': {
+        const linkEl = this.shadow.safeQuerySelector('.link');
+        if (!newValue || newValue === '') {
+          if (!linkEl.classList.contains('disabled')) {
+            linkEl.classList.add('disabled');
+          }
+          linkEl.removeAttribute('href');
+        } else {
+          if (linkEl.classList.contains('disabled')) {
+            linkEl.classList.remove('disabled');
+          }
+          if (linkEl.getAttribute('href') !== newValue) {
+            linkEl.setAttribute('href', newValue);
+          }
+        }
         break;
+      }
+      case 'color': {
+        const iconEl = this.shadow.safeQuerySelector('.icon');
+        if (iconEl.style.backgroundColor !== newValue) {
+          iconEl.style.backgroundColor = newValue;
+        }
+        break;
+      }
       case 'icon': {
-        this.shadow.updateElement('.icon', (el) => {
-          el.classList.add('cinema-icon-' + newValue);
-        });
+        const iconEl = this.shadow.safeQuerySelector('.icon');
+        const className = 'cinema-icon-' + newValue;
+        if (!iconEl.classList.contains(className)) {
+          iconEl.classList.add(className);
+        }
         break;
       }
       case 'time': {
         const date = new Date(newValue);
         const dateString = date.toLocaleTimeString([], { timeStyle: 'short' });
-        this.shadow.updateElement(
-          '.time',
-          (el) => (el.textContent = dateString),
-        );
+        const timeEl = this.shadow.safeQuerySelector('.time');
+        if (timeEl.textContent !== dateString) {
+          timeEl.textContent = dateString;
+        }
         break;
       }
-      case 'suffix':
-        this.shadow.updateElement(
-          '.suffix',
-          (el) => (el.textContent = newValue),
-        );
+      case 'suffix': {
+        const suffixEl = this.shadow.safeQuerySelector('.suffix');
+        if (suffixEl.textContent !== newValue) {
+          suffixEl.textContent = newValue;
+        }
         break;
+      }
     }
   }
 

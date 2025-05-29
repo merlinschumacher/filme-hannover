@@ -56,9 +56,10 @@ namespace backend.Renderer.JsonRenderer
         public void Render(string path)
         {
             path = Path.Combine(path, "data.json");
-            var data = new JsonData()
-            {
-                Cinemas = context.Cinema.OrderBy(e => e.DisplayName).Select(c => new CinemaDto
+
+            var cinemas = context.Cinema
+                .OrderBy(e => e.DisplayName)
+                .Select(c => new CinemaDto
                 {
                     Id = c.Id,
                     DisplayName = c.DisplayName,
@@ -66,18 +67,26 @@ namespace backend.Renderer.JsonRenderer
                     ShopUrl = c.ShopUrl,
                     Color = c.Color,
                     IconClass = c.IconClass,
-                    Movies = c.Movies.Select(m => m.Id)
-                }),
-                Movies = context.Movies.OrderBy(e => e.DisplayName).Select(m => new MovieDto
+                    Movies = c.Movies.Select(m => m.Id).ToList(),
+                })
+                .ToList();
+
+            var movies = context.Movies
+                .OrderBy(e => e.DisplayName)
+                .Select(m => new MovieDto
                 {
                     Id = m.Id,
                     DisplayName = m.DisplayName,
                     ReleaseDate = m.ReleaseDate,
-                    Cinemas = m.Cinemas.Select(c => c.Id),
+                    Cinemas = m.Cinemas.Select(c => c.Id).ToList(),
                     Runtime = m.Runtime.TotalMinutes,
                     Rating = m.Rating,
-                }),
-                ShowTimes = context.ShowTime.OrderBy(e => e.StartTime).Select(s => new ShowTimeDto
+                })
+                .ToList();
+
+            var showTimes = context.ShowTime
+                .OrderBy(e => e.StartTime)
+                .Select(s => new ShowTimeDto
                 {
                     Id = s.Id,
                     Date = s.StartTime.ToUniversalTime().Date,
@@ -89,10 +98,16 @@ namespace backend.Renderer.JsonRenderer
                     DubType = s.DubType,
                     Url = s.Url ?? s.Cinema.Url,
                 })
+                .ToList();
+
+            var data = new JsonData
+            {
+                Cinemas = cinemas,
+                Movies = movies,
+                ShowTimes = showTimes,
             };
 
             WriteJsonToFile(data, path);
-
             File.WriteAllText(path + ".update", DateTime.UtcNow.ToString("O"));
         }
 
