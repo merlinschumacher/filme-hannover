@@ -58,13 +58,8 @@ export default class CinemaDb extends Dexie {
 
   private async checkData() {
     const dataVersion = await this.configurations.get(this.dataVersionKey);
-    this.dataVersionDate = new Date(
-      (dataVersion?.value as string | number) || 0,
-    );
-    const dataReloadRequired = await this.DataReloadRequired(
-      this.dataVersionDate,
-    );
-    if (dataReloadRequired) {
+    this.dataVersionDate = new Date((dataVersion?.value as string | number | Date) || 0);
+    if (await this.DataReloadRequired(this.dataVersionDate)) {
       console.log('Data version changed, loading data.');
       await this.loadData();
     }
@@ -72,46 +67,25 @@ export default class CinemaDb extends Dexie {
   }
 
   private async removeObsoleteData() {
-    // Subtract one hour from the current date
-    const currentDate = new Date();
-    currentDate.setHours(currentDate.getHours() - 1);
-    const showTimes = await this.showTimes
-      .where('startTime')
-      .below(currentDate)
-      .primaryKeys();
-    await this.showTimes.bulkDelete(showTimes);
+    // Remove showtimes that started more than 1 hour ago
+    const cutoff = new Date(Date.now() - 60 * 60 * 1000);
+    await this.showTimes.where('startTime').below(cutoff).delete();
 
+    // Remove movies without showtimes
     const movieIds = await this.showTimes.orderBy('movie').uniqueKeys();
-    const movies = await this.movies.where('id').noneOf(movieIds).primaryKeys();
-    await this.movies.bulkDelete(movies);
+    await this.movies.where('id').noneOf(movieIds).delete();
 
+    // Remove cinemas without showtimes
     const cinemaIds = await this.showTimes.orderBy('cinema').uniqueKeys();
-    const cinemas = await this.cinemas
-      .where('id')
-      .noneOf(cinemaIds)
-      .primaryKeys();
-
-    await this.cinemas.bulkDelete(cinemas);
+    await this.cinemas.where('id').noneOf(cinemaIds).delete();
   }
 
   private async DataReloadRequired(currentDataVersion: Date): Promise<boolean> {
-    const remoteVersionText =
-      (await (await getData(this.remoteVersionDateUrl))?.text()) ?? '0';
+    const remoteVersionText = (await (await getData(this.remoteVersionDateUrl))?.text()) ?? '0';
     const remoteVersionDate = new Date(remoteVersionText);
     if (currentDataVersion.getTime() !== remoteVersionDate.getTime()) {
-      try {
-        await this.configurations.put({
-          id: this.dataVersionKey,
-          value: remoteVersionDate,
-        });
-        this.dataVersionDate = remoteVersionDate;
-      } catch (error: unknown) {
-        if (error instanceof Error) {
-          console.error(error.message);
-        } else {
-          console.error('An unknown error occurred');
-        }
-      }
+      await this.configurations.put({ id: this.dataVersionKey, value: remoteVersionDate });
+      this.dataVersionDate = remoteVersionDate;
       return true;
     }
     return false;
@@ -165,15 +139,8 @@ export default class CinemaDb extends Dexie {
 
   public async GetAllCinemas(): Promise<Cinema[]> {
     // Get all cinemas that have showtimes
-    const cinemaIds = await this.cinemas.toCollection().primaryKeys();
-    const cinemasWithShowTimes = await this.showTimes
-      .where('cinema')
-      .anyOf(cinemaIds)
-      .uniqueKeys();
-    return this.cinemas
-      .orderBy('displayName')
-      .and((cinema) => cinemasWithShowTimes.includes(cinema.id))
-      .toArray();
+    const cinemaIds = await this.showTimes.orderBy('cinema').uniqueKeys();
+    return this.cinemas.where('id').anyOf(cinemaIds).sortBy('displayName');
   }
 
   public async GetCinemaIds(): Promise<number[]> {
@@ -192,20 +159,8 @@ export default class CinemaDb extends Dexie {
       ratings = allMovieRatings;
     }
     const movieIds = await this.showTimes.orderBy('movie').uniqueKeys();
-    const movieArray = await this.movies
-      .filter(
-        (movie) =>
-          movieIds.includes(movie.id) && ratings.includes(movie.rating),
-      )
-      .toArray();
-
-    const collator = new Intl.Collator(undefined, {
-      numeric: true,
-      sensitivity: 'base',
-    });
-    return movieArray.sort((a, b) =>
-      collator.compare(a.displayName, b.displayName),
-    );
+    const movies = await this.movies.where('id').anyOf(movieIds).and(m => ratings.includes(m.rating)).toArray();
+    return movies.sort((a, b) => new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' }).compare(a.displayName, b.displayName));
   }
 
   public async getTotalMovieCount(): Promise<number> {
