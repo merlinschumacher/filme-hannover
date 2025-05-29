@@ -35,13 +35,14 @@ export default class DayListElement extends HTMLElement {
           month: 'long',
           day: 'numeric',
         });
-        this.shadow.safeQuerySelector('.header').textContent = dateString;
+        // Only update if changed
+        const headerEl = this.shadow.safeQuerySelector('.header');
+        if (headerEl.textContent !== dateString) {
+          headerEl.textContent = dateString;
+        }
         break;
       }
-      case 'duration': {
-        this.updateFooterText();
-        break;
-      }
+      case 'duration':
       case 'eventcount': {
         this.updateFooterText();
         break;
@@ -54,7 +55,10 @@ export default class DayListElement extends HTMLElement {
     const duration = this.getAttribute('duration') ?? 0;
     const eventHours = +duration / 60;
     const footerText = `${eventCount.toString()} Vorführungen, ca. ${eventHours.toFixed(0)} h`;
-    this.shadow.updateElement('.footer', (el) => (el.textContent = footerText));
+    const footerEl = this.shadow.safeQuerySelector('.footer');
+    if (footerEl.textContent !== footerText) {
+      footerEl.textContent = footerText;
+    }
   }
 
   private getHeaderClass(date: Date): string {
@@ -74,19 +78,19 @@ export default class DayListElement extends HTMLElement {
 
   static BuildElement(date: Date, events: EventData[]) {
     let eventCumulativeDuration = 0;
-    const eventElements: EventItemElement[] = [];
+    const fragment = document.createDocumentFragment();
     events.forEach((event) => {
       const eventItem = EventItemElement.BuildElement(event);
       eventItem.slot = 'body';
       eventCumulativeDuration += +event.runtime;
-      eventElements.push(eventItem);
+      fragment.appendChild(eventItem);
     });
 
     const item = new DayListElement();
     item.setAttribute('date', date.toDateString());
     item.setAttribute('eventcount', events.length.toString());
     item.setAttribute('duration', eventCumulativeDuration.toString());
-    item.replaceChildren(...eventElements);
+    item.replaceChildren(fragment);
     return item;
   }
 }

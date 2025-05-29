@@ -133,23 +133,25 @@ export default class SwiperElement extends HTMLElement {
       return;
     }
     let lastDate: Date = firstKey.value;
+    const fragment = document.createDocumentFragment();
     eventDays.forEach((dayEvents, dateString) => {
       const date = new Date(dateString);
       if (!this.isConsecutiveDate(date, lastDate)) {
-        this.appendSlide(new EmptyDayElement());
+        const emptyDay = new EmptyDayElement();
+        emptyDay.slot = 'slides';
+        emptyDay.classList.add('scroll-snap-slide');
+        fragment.appendChild(emptyDay);
+        this.slideCount++;
       }
       const dayList = DayListElement.BuildElement(date, dayEvents);
-      this.appendSlide(dayList);
+      dayList.slot = 'slides';
+      dayList.classList.add('scroll-snap-slide');
+      fragment.appendChild(dayList);
+      this.slideCount++;
       lastDate = date;
     });
+    this.scrollSnapSliderEl.appendChild(fragment);
     this.onReachendEnabled = true;
-  }
-
-  private appendSlide(slide: HTMLElement): void {
-    slide.slot = 'slides';
-    slide.classList.add('scroll-snap-slide');
-    this.scrollSnapSliderEl.appendChild(slide);
-    this.slideCount++;
     this.triggeredScrollThreshold = false;
     this.hideLoader();
   }
@@ -157,7 +159,7 @@ export default class SwiperElement extends HTMLElement {
   clearSlides(): void {
     this.showLoader();
     this.onReachendEnabled = false;
-    this.scrollSnapSliderEl.replaceChildren();
+    this.scrollSnapSliderEl.replaceChildren(document.createDocumentFragment());
     this.slideCount = 0;
     this.triggeredScrollThreshold = false;
   }
