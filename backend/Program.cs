@@ -4,6 +4,7 @@ using backend.Extensions;
 using backend.Renderer;
 using backend.Scrapers;
 using backend.Services;
+using kinohannover.Scrapers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,6 +30,8 @@ static void ConfigureServices(HostApplicationBuilder builder)
     builder.Services.AddScoped<ShowTimeService>();
 
     builder.Services.AddServicesByInterface<IScraper>();
+    // Use the following line to register scrapers manually for debugging or specific configurations
+    // builder.Services.AddScoped<IScraper, CinemaDelSolScraper>();
     builder.Services.AddServicesByInterface<IRenderer>();
 
     builder.Services.AddSingleton<DatabaseMigrationService>();
