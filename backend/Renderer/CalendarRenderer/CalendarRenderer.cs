@@ -14,12 +14,12 @@ namespace backend.Renderer.CalendarRenderer
 
         public void Render(string path)
         {
-            var moviesAll = context.Movies.Include(e => e.Cinemas).Include(e => e.ShowTimes);
+            var moviesAll = context.Movies.Include(e => e.Cinemas).Include(e => e.ShowTimes).ToList();
             var allCinemas = new CinemaInfo("Alle Kinos", "#ffffff");
             _cinemaInfos.Add(allCinemas);
             WriteCalendarToFile(moviesAll, Path.Combine(path, allCinemas.CalendarFile));
 
-            foreach (var cinema in context.Cinema.OrderBy(e => e.DisplayName))
+            foreach (var cinema in context.Cinema.OrderBy(e => e.DisplayName).ToList())
             {
                 var cinemaInfo = new CinemaInfo(cinema);
                 _cinemaInfos.Add(cinemaInfo);
@@ -28,7 +28,7 @@ namespace backend.Renderer.CalendarRenderer
                 {
                     DisplayName = e.DisplayName,
                     ShowTimes = e.ShowTimes.Where(e => e.Cinema == cinema).ToList()
-                });
+                }).ToList();
                 WriteCalendarToFile(movies, Path.Combine(path, cinemaInfo.CalendarFile));
             }
         }

@@ -2,6 +2,7 @@
 using backend.Extensions;
 using backend.Models;
 using kinohannover.Helpers;
+using kinohannover.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -10,7 +11,7 @@ using TMDbLib.Client;
 
 namespace backend.Services
 {
-    public partial class MovieService(DatabaseContext context, ILogger<MovieService> logger, IOptions<AppOptions> appOptions)
+    public sealed partial class MovieService(DatabaseContext context, ILogger<MovieService> logger, IOptions<AppOptions> appOptions) : DataServiceBase<Movie>(context, logger)
     {
         private readonly TMDbClient _tmdbClient = new(appOptions.Value.TmdbApiKey);
         private static readonly Uri _tmdbPosterBaseUrl = new("https://image.tmdb.org/t/p/w500");
@@ -19,7 +20,7 @@ namespace backend.Services
         private const string _tmdbVideoTypeConst = "Trailer";
         private const string _tmdbVideoPlatformConst = "YouTube";
 
-        public async Task<Movie> CreateAsync(Movie movie)
+        public override async Task<Movie> CreateAsync(Movie movie)
         {
             movie.DisplayName = movie.DisplayName.Trim();
             movie.DisplayName = ReplaceLineBreakRegex().Replace(movie.DisplayName, " ");
@@ -31,12 +32,10 @@ namespace backend.Services
                 if (existingMovie.Rating is MovieRating.Unknown && movie.Rating is not MovieRating.Unknown)
                 {
                     existingMovie.Rating = movie.Rating;
-                    await context.SaveChangesAsync();
                 }
                 if (existingMovie.Runtime == Constants.AverageMovieRuntime && movie.Runtime != Constants.AverageMovieRuntime)
                 {
                     existingMovie.Runtime = movie.Runtime;
-                    await context.SaveChangesAsync();
                 }
 
                 return existingMovie;
@@ -58,15 +57,14 @@ namespace backend.Services
 
         private async Task<Movie> AddMovieAsync(Movie movie)
         {
-            logger.LogInformation("Creating movie {Title}", movie.DisplayName);
-            await context.Movies.AddAsync(movie);
-            await context.SaveChangesAsync();
+            _logger.LogInformation("Creating movie {Title}", movie.DisplayName);
+            await _context.Movies.AddAsync(movie);
             return movie;
         }
 
         private async Task<Movie?> FindMovieAsync(Movie movie)
         {
-            var query = context.Movies.Include(m => m.Cinemas).Include(e => e.Aliases).AsQueryable();
+            var query = _context.Movies.Include(m => m.Cinemas).Include(e => e.Aliases).AsQueryable();
 
             if (movie.TmdbId.HasValue)
             {
@@ -93,7 +91,7 @@ namespace backend.Services
 
             foreach (var alias in movie.Aliases)
             {
-                var movies = context.Aliases.Include(e => e.Movie).AsEnumerable().Select(a => new KeyValuePair<Movie, double>(a.Movie, a.Value.DistancePercentageFrom(movie.DisplayName, true))).Where(e => e.Value > 0.9);
+                var movies = _context.Aliases.Include(e => e.Movie).AsEnumerable().Select(a => new KeyValuePair<Movie, double>(a.Movie, a.Value.DistancePercentageFrom(movie.DisplayName, true))).Where(e => e.Value > 0.9);
                 similiarMovies.AddRange(movies);
             }
 
@@ -124,7 +122,7 @@ namespace backend.Services
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Error querying TMDb for movie {Movie}", movie);
+                _logger.LogError(ex, "Error querying TMDb for movie {Movie}", movie);
             }
             return movie;
         }

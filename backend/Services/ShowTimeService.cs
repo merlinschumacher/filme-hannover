@@ -1,22 +1,23 @@
 ﻿using backend.Data;
 using backend.Models;
+using kinohannover.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace backend.Services
 {
-    public class ShowTimeService(DatabaseContext context, ILogger<ShowTimeService> logger)
+    public sealed class ShowTimeService(DatabaseContext context, ILogger<ShowTimeService> logger) : DataServiceBase<ShowTime>(context, logger)
     {
-        public async Task<ShowTime?> CreateAsync(ShowTime showTime)
+        public override async Task<ShowTime> CreateAsync(ShowTime showTime)
         {
             // Don't add showtimes that have already passed more than an hour ago
             if (showTime.StartTime < DateTime.Now.AddHours(-1))
             {
-                return null;
+                return showTime;
             }
 
             // Check if the showtime is already in the database. Ids, Cinema and Time are not enough to uniquely identify a showtime.
-            var existingShowTime = await context.ShowTime.FirstOrDefaultAsync(s => s.StartTime == showTime.StartTime
+            var existingShowTime = await _context.ShowTime.FirstOrDefaultAsync(s => s.StartTime == showTime.StartTime
                                                                       && s.Movie == showTime.Movie
                                                                       && s.Cinema == showTime.Cinema
                                                                       && s.DubType == showTime.DubType
@@ -24,9 +25,9 @@ namespace backend.Services
 
             if (existingShowTime is null)
             {
-                logger.LogDebug("Adding ShowTime for '{Movie}' at {Time} at '{Cinema}'", showTime.Movie.DisplayName, showTime.StartTime, showTime.Cinema);
-                await context.ShowTime.AddAsync(showTime);
-                await context.SaveChangesAsync();
+                _logger.LogDebug("Adding ShowTime for '{Movie}' at {Time} at '{Cinema}'", showTime.Movie.DisplayName, showTime.StartTime, showTime.Cinema);
+                await _context.ShowTime.AddAsync(showTime);
+                await _context.SaveChangesAsync();
             }
             else
             {
@@ -38,7 +39,7 @@ namespace backend.Services
 
         public async Task<ShowTime?> FindSimilarShowTime(Cinema cinema, DateTime startTime, string movieTitle, TimeSpan tolerance)
         {
-            var query = context.ShowTime.Include(s => s.Movie).Include(s => s.Cinema).AsQueryable();
+            var query = _context.ShowTime.Include(s => s.Movie).Include(s => s.Cinema).AsQueryable();
 
             var lowerBound = startTime - tolerance;
             var upperBound = startTime + tolerance;
@@ -54,7 +55,7 @@ namespace backend.Services
 
             if (result is not null)
             {
-                logger.LogDebug("Found similar ShowTime for {Movie} at {Time} at {Cinema}", result.Movie, result.StartTime, result.Cinema);
+                _logger.LogDebug("Found similar ShowTime for {Movie} at {Time} at {Cinema}", result.Movie, result.StartTime, result.Cinema);
             }
 
             return result;
