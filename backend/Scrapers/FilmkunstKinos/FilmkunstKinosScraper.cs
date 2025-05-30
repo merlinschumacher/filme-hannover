@@ -90,7 +90,7 @@ namespace kinohannover.Scrapers.FilmkunstKinos
 
         private async Task ProcessShowTimesAsync(HtmlNode filmTagNode, Movie movie, ShowTimeDubType type, ShowTimeLanguage language)
         {
-            var dateString = filmTagNode.SelectSingleNode(_dateSelector).InnerText;
+            var dateString = filmTagNode.SelectSingleNode(_dateSelector)?.InnerText;
             if (string.IsNullOrWhiteSpace(dateString)) return;
             // Append a dot to the date string if it doesn't end with one,
             // to ensure it can be parsed correctly. Some of the cinemas miss it.
