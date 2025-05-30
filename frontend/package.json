@@ -21,7 +21,7 @@
     "@typescript-eslint/parser": "8.32.1",
     "cssnano": "^7.0.7",
     "eslint": "^9.27.0",
-    "eslint-plugin-prettier": "^5.4.0",
+    "eslint-plugin-prettier": "^5.4.1",
     "globals": "^16.2.0",
     "html-minifier-terser": "^7.2.0",
     "npm-run-all2": "^8.0.4",
