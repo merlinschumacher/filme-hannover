@@ -15,6 +15,8 @@ namespace backend.Services
 
             using var scope = serviceScopeFactory.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+            logger.LogInformation("Applying database migrations...");
+            logger.LogInformation("Database provider: {Provider}", dbContext.Database.ProviderName);
 
             await dbContext.Database.MigrateAsync(stoppingToken);
 
