@@ -1,3 +1,4 @@
+using backend.Helpers;
 using backend.Services;
 using CodeHollow.FeedReader;
 using Microsoft.Extensions.Logging;
@@ -25,8 +26,19 @@ namespace kinohannover.Scrapers
             {
                 return [];
             }
-
-            var feed = await FeedReader.ReadAsync(rssFeedUrl);
+            Feed feed;
+            try
+            {
+                // We need to get the content of the RSS feed URL with the HttpHelper, because
+                // FeedReader does not use a user agent and some servers block requests without a user agent.
+                var htmlContent = await HttpHelper.GetHttpContentAsync(new Uri(rssFeedUrl));
+                feed = FeedReader.ReadFromString(htmlContent ?? "");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error reading RSS feed from {RssFeedUrl}", rssFeedUrl);
+                return [];
+            }
 
             if (feed?.Items == null || feed.Items.Count == 0)
             {
