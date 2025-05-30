@@ -65,7 +65,7 @@ namespace backend.Scrapers.Koki
                 }
 
                 var readMoreElement = eventElement.SelectSingleNode(_readMoreSelector);
-                if (readMoreElement is null) return;
+                if (readMoreElement is null) continue;
                 var readMoreHref = readMoreElement.GetAttributeValue("href", "");
                 var (dubType, language, rating) = await GetShowTimeDetails(readMoreHref);
                 var movie = await ProcessMovie(eventJson, rating);
