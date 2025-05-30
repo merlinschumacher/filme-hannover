@@ -65,7 +65,7 @@ namespace backend.Scrapers.Koki
                 }
 
                 var readMoreElement = eventElement.SelectSingleNode(_readMoreSelector);
-                if (readMoreElement is null) return;
+                if (readMoreElement is null) continue;
                 var readMoreHref = readMoreElement.GetAttributeValue("href", "");
                 var (dubType, language, rating) = await GetShowTimeDetails(readMoreHref);
                 var movie = await ProcessMovie(eventJson, rating);
@@ -173,7 +173,7 @@ namespace backend.Scrapers.Koki
         {
             var pageHtml = await HttpHelper.GetHtmlDocumentAsync(new Uri(_shopLink));
 
-            var moreButton = pageHtml.DocumentNode.SelectNodes(_moreButtonSelector).FirstOrDefault() ?? throw new InvalidOperationException("Could not find the more button to get the view id");
+            var moreButton = pageHtml.DocumentNode.SelectNodes(_moreButtonSelector)?.FirstOrDefault() ?? throw new InvalidOperationException("Could not find the more button to get the view id");
             var viewQuery = moreButton.GetAttributeValue("data-tile_query", "");
 
             return _viewIdRegex.Match(viewQuery).Groups[1].Value;
