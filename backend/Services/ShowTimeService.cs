@@ -10,9 +10,11 @@ namespace backend.Services
     {
         public override async Task<ShowTime> CreateAsync(ShowTime showTime)
         {
-            // Don't add showtimes that have already passed more than an hour ago
+            // Check if the showtime has already expired (more than an hour ago).
+            // Returning the original showTime is intentional to avoid adding outdated entries to the database.
             if (showTime.StartTime < DateTime.Now.AddHours(-1))
             {
+                _logger.LogWarning("Attempted to process an expired ShowTime for '{Movie}' at {Time}. Returning the original entry.", showTime.Movie.DisplayName, showTime.StartTime);
                 return showTime;
             }
 
