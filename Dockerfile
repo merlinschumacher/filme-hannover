@@ -1,5 +1,5 @@
 # Stage 1: Build the backend
-FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS be-build-env
+FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS be-build-env
 WORKDIR /app
 # Copy only the necessary files for restoring dependencies
 COPY ./backend/*.csproj ./backend/
