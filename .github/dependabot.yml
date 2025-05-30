@@ -2,20 +2,35 @@
 # package ecosystems to update and where the package manifests are located.
 # Please see the documentation for all configuration options:
 # https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
-
 version: 2
 updates:
-  - package-ecosystem: "nuget" # See documentation for possible values
-    directory: "/" # Location of package manifests
+  # Check for updates of NuGet packages every week
+  - package-ecosystem: "nuget"
+    directory: "/backend" 
     schedule:
       interval: "weekly"
-  # Maintain dependencies for npm
+  # Check for updates of .NET every week
+  - package-ecosystem: "dotnet-sdk"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+    ignore:
+      - dependency-name: "*"
+        update-types: 
+          - "version-update:semver-major"
+  # Check for updates of NPM packages every week
   - package-ecosystem: "npm"
     directory: "/frontend"
     schedule:
       interval: "weekly"
+  # Check for updates to GitHub Actions every week
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      # Check for updates to GitHub Actions every week
       interval: "weekly"
+  # Check for updates to Docker image dependencies every week
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:    
+      interval: "weekly"
+
