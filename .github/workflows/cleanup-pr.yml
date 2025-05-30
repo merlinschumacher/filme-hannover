@@ -1,4 +1,7 @@
 name: cleanup caches by a branch
+permissions:
+  contents: read
+  pull-requests: read
 on:
   pull_request:
     types:
