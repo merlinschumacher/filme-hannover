@@ -23,7 +23,6 @@ namespace backend.Helpers
         private static async Task<string> GetRandomUserAgentAsync()
         {
             using var client = new HttpClient();
-            client.Timeout = TimeSpan.FromSeconds(30);
             var response = await client.GetAsync("https://cdn.jsdelivr.net/gh/microlinkhq/top-user-agents@master/src/desktop.json");
 
             var json = await response.Content.ReadAsStringAsync();
@@ -61,8 +60,8 @@ namespace backend.Helpers
             // If not in debug mode, add a delay to prevent spamming the server
             if (!System.Diagnostics.Debugger.IsAttached)
             {
-                // Delay to prevent spamming the server
-                var randomDelay = new Random().Next(100, 2000);
+                // Delay to prevent spamming the server, as this may trigger anti-spam measures
+                var randomDelay = new Random().Next(50, 1000);
                 Task.Delay(randomDelay).Wait();
             }
 
