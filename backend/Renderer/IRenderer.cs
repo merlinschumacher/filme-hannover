@@ -1,7 +1,6 @@
-﻿namespace backend.Renderer
+﻿namespace backend.Renderer;
+
+public interface IRenderer
 {
-    public interface IRenderer
-    {
-        public void Render(string path);
-    }
+    public void Render(string path);
 }

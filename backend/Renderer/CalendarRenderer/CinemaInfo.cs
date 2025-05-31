@@ -1,37 +1,36 @@
 ﻿using backend.Models;
 using Ical.Net.DataTypes;
 
-namespace backend.Renderer.CalendarRenderer
+namespace backend.Renderer.CalendarRenderer;
+
+public class CinemaInfo
 {
-    public class CinemaInfo
+    public CinemaInfo(string displayName, string color)
     {
-        public CinemaInfo(string displayName, string color)
-        {
-            DisplayName = displayName;
-            Color = color;
-        }
+        DisplayName = displayName;
+        Color = color;
+    }
 
-        public CinemaInfo(Cinema cinema)
-        {
-            Id = cinema.Id;
-            DisplayName = cinema.DisplayName;
-            Website = cinema.Url;
-            Color = cinema.Color;
-        }
+    public CinemaInfo(Cinema cinema)
+    {
+        Id = cinema.Id;
+        DisplayName = cinema.DisplayName;
+        Website = cinema.Url;
+        Color = cinema.Color;
+    }
 
-        public int Id { get; set; }
+    public int Id { get; set; }
 
-        public string DisplayName { get; set; }
+    public string DisplayName { get; set; }
 
-        Uri? Website { get; }
+    Uri? Website { get; }
 
-        public string CalendarFile => DisplayName.Replace(" ", "_").Replace(":", "_").Replace("/", "_") + ".ics";
+    public string CalendarFile => DisplayName.Replace(" ", "_").Replace(":", "_").Replace("/", "_") + ".ics";
 
-        public string Color { get; set; }
+    public string Color { get; set; }
 
-        public Organizer GetOrganizer()
-        {
-            return new Organizer() { CommonName = DisplayName, Value = Website };
-        }
+    public Organizer GetOrganizer()
+    {
+        return new Organizer() { CommonName = DisplayName, Value = Website };
     }
 }

@@ -1,7 +1,7 @@
 using backend.Data;
 using Microsoft.Extensions.Logging;
 
-namespace kinohannover.Services;
+namespace backend.Services;
 
 public abstract class DataServiceBase<T> : IAsyncDisposable, IDisposable where T : class
 {

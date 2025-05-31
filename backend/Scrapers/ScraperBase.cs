@@ -1,11 +1,10 @@
 
 using backend.Helpers;
 using backend.Models;
-using backend.Scrapers;
 using backend.Services;
 using Microsoft.Extensions.Logging;
 
-namespace kinohannover.Scrapers;
+namespace backend.Scrapers;
 
 public abstract class ScraperBase(ILogger logger, CinemaService cinemaService, ShowTimeService showTimeService, MovieService movieService) : IScraper
 {

@@ -1,28 +1,27 @@
-﻿namespace backend.Models
+﻿namespace backend.Models;
+
+public class Alias
 {
-    public class Alias
+    public int Id { get; set; }
+
+    public required string Value { get; set; }
+
+    public Movie Movie { get; set; } = null!;
+
+    public override string ToString() => Value;
+
+    public override bool Equals(object? obj)
     {
-        public int Id { get; set; }
-
-        public required string Value { get; set; }
-
-        public Movie Movie { get; set; } = null!;
-
-        public override string ToString() => Value;
-
-        public override bool Equals(object? obj)
+        if (obj is not Alias objAsAlias)
         {
-            if (obj is not Alias objAsAlias)
-            {
-                return false;
-            }
-
-            return Value.Equals(objAsAlias.Value, StringComparison.CurrentCultureIgnoreCase);
+            return false;
         }
 
-        public override int GetHashCode()
-        {
-            return Value.GetHashCode();
-        }
+        return Value.Equals(objAsAlias.Value, StringComparison.CurrentCultureIgnoreCase);
+    }
+
+    public override int GetHashCode()
+    {
+        return Value.GetHashCode();
     }
 }

@@ -2,184 +2,182 @@
 using backend.Extensions;
 using backend.Models;
 using kinohannover.Helpers;
-using kinohannover.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Text.RegularExpressions;
 using TMDbLib.Client;
 
-namespace backend.Services
+namespace backend.Services;
+
+public sealed partial class MovieService(DatabaseContext context, ILogger<MovieService> logger, IOptions<AppOptions> appOptions) : DataServiceBase<Movie>(context, logger)
 {
-    public sealed partial class MovieService(DatabaseContext context, ILogger<MovieService> logger, IOptions<AppOptions> appOptions) : DataServiceBase<Movie>(context, logger)
+    private readonly TMDbClient _tmdbClient = new(appOptions.Value.TmdbApiKey);
+    private static readonly Uri _tmdbPosterBaseUrl = new("https://image.tmdb.org/t/p/w500");
+    private const string _tmdbSearchLanguageDE = "de-DE";
+    private static readonly Uri _youtubeVideoBaseUrl = new("https://www.youtube.com/watch?v=");
+    private const string _tmdbVideoTypeConst = "Trailer";
+    private const string _tmdbVideoPlatformConst = "YouTube";
+
+    public override async Task<Movie> CreateAsync(Movie movie)
     {
-        private readonly TMDbClient _tmdbClient = new(appOptions.Value.TmdbApiKey);
-        private static readonly Uri _tmdbPosterBaseUrl = new("https://image.tmdb.org/t/p/w500");
-        private const string _tmdbSearchLanguageDE = "de-DE";
-        private static readonly Uri _youtubeVideoBaseUrl = new("https://www.youtube.com/watch?v=");
-        private const string _tmdbVideoTypeConst = "Trailer";
-        private const string _tmdbVideoPlatformConst = "YouTube";
-
-        public override async Task<Movie> CreateAsync(Movie movie)
+        movie.DisplayName = movie.DisplayName.Trim();
+        movie.DisplayName = ReplaceLineBreakRegex().Replace(movie.DisplayName, " ");
+        movie.DisplayName = DuplicateSpaceRegex().Replace(movie.DisplayName, " ");
+        // Check if the movie is already in the database
+        var existingMovie = await FindMovieAsync(movie);
+        if (existingMovie is not null)
         {
-            movie.DisplayName = movie.DisplayName.Trim();
-            movie.DisplayName = ReplaceLineBreakRegex().Replace(movie.DisplayName, " ");
-            movie.DisplayName = DuplicateSpaceRegex().Replace(movie.DisplayName, " ");
-            // Check if the movie is already in the database
-            var existingMovie = await FindMovieAsync(movie);
-            if (existingMovie is not null)
+            if (existingMovie.Rating is MovieRating.Unknown && movie.Rating is not MovieRating.Unknown)
             {
-                if (existingMovie.Rating is MovieRating.Unknown && movie.Rating is not MovieRating.Unknown)
-                {
-                    existingMovie.Rating = movie.Rating;
-                }
-                if (existingMovie.Runtime == Constants.AverageMovieRuntime && movie.Runtime != Constants.AverageMovieRuntime)
-                {
-                    existingMovie.Runtime = movie.Runtime;
-                }
-
-                return existingMovie;
+                existingMovie.Rating = movie.Rating;
             }
-            // If it's not in the database, query TMDb
-            movie = await QueryTmdbAsync(movie);
-
-            // If we found a match in TMDb, check again if the movie is in the database
-            existingMovie = await FindMovieAsync(movie);
-            if (existingMovie is not null)
+            if (existingMovie.Runtime == Constants.AverageMovieRuntime && movie.Runtime != Constants.AverageMovieRuntime)
             {
-                return existingMovie;
+                existingMovie.Runtime = movie.Runtime;
             }
 
-            // If the movie is still not in the database, create it
-            await AddMovieAsync(movie);
-            return movie;
+            return existingMovie;
+        }
+        // If it's not in the database, query TMDb
+        movie = await QueryTmdbAsync(movie);
+
+        // If we found a match in TMDb, check again if the movie is in the database
+        existingMovie = await FindMovieAsync(movie);
+        if (existingMovie is not null)
+        {
+            return existingMovie;
         }
 
-        private async Task<Movie> AddMovieAsync(Movie movie)
+        // If the movie is still not in the database, create it
+        await AddMovieAsync(movie);
+        return movie;
+    }
+
+    private async Task<Movie> AddMovieAsync(Movie movie)
+    {
+        _logger.LogInformation("Creating movie {Title}", movie.DisplayName);
+        await _context.Movies.AddAsync(movie);
+        return movie;
+    }
+
+    private async Task<Movie?> FindMovieAsync(Movie movie)
+    {
+        var query = _context.Movies.Include(m => m.Cinemas).Include(e => e.Aliases).AsQueryable();
+
+        if (movie.TmdbId.HasValue)
         {
-            _logger.LogInformation("Creating movie {Title}", movie.DisplayName);
-            await _context.Movies.AddAsync(movie);
-            return movie;
+            return await query.FirstOrDefaultAsync(m => m.TmdbId == movie.TmdbId);
         }
 
-        private async Task<Movie?> FindMovieAsync(Movie movie)
+        foreach (var alias in movie.Aliases)
         {
-            var query = _context.Movies.Include(m => m.Cinemas).Include(e => e.Aliases).AsQueryable();
-
-            if (movie.TmdbId.HasValue)
-            {
-                return await query.FirstOrDefaultAsync(m => m.TmdbId == movie.TmdbId);
-            }
-
-            foreach (var alias in movie.Aliases)
-            {
-                query = query.Where(m => m.Aliases.Any(a => a.Equals(alias)));
-            }
-
-            if (movie.ReleaseDate.HasValue)
-            {
-                query = query.Where(m => m.ReleaseDate == movie.ReleaseDate);
-            }
-
-            var result = await query.FirstOrDefaultAsync();
-            if (result is not null)
-            {
-                return result;
-            }
-
-            List<KeyValuePair<Movie, double>> similiarMovies = [];
-
-            foreach (var alias in movie.Aliases)
-            {
-                var movies = _context.Aliases.Include(e => e.Movie).AsEnumerable().Select(a => new KeyValuePair<Movie, double>(a.Movie, a.Value.DistancePercentageFrom(movie.DisplayName, true))).Where(e => e.Value > 0.9);
-                similiarMovies.AddRange(movies);
-            }
-
-            return similiarMovies.OrderByDescending(e => e.Value).FirstOrDefault().Key;
+            query = query.Where(m => m.Aliases.Any(a => a.Equals(alias)));
         }
 
-        private async Task<Movie> QueryTmdbAsync(Movie movie, bool guessHarder = true)
+        if (movie.ReleaseDate.HasValue)
         {
-            try
-            {
-                var tmdbResult = (await _tmdbClient.SearchMovieAsync(movie.DisplayName,
-                                                                    language: _tmdbSearchLanguageDE,
-                                                                    primaryReleaseYear: movie.ReleaseDate?.Year ?? 0)).Results.FirstOrDefault();
-
-                if (tmdbResult is not null)
-                {
-                    var tmdbMovieDetails = await _tmdbClient.GetMovieAsync(tmdbResult.Id,
-                                                                           language: _tmdbSearchLanguageDE,
-                                                                           extraMethods: TMDbLib.Objects.Movies.MovieMethods.Videos | TMDbLib.Objects.Movies.MovieMethods.AlternativeTitles);
-
-                    movie.TmdbId = tmdbResult.Id;
-                    movie.DisplayName = MovieTitleHelper.DetermineMovieTitle(movie.DisplayName, tmdbMovieDetails, guessHarder);
-                    movie.PosterUrl = _tmdbPosterBaseUrl + tmdbResult.PosterPath;
-                    movie.ReleaseDate = tmdbMovieDetails.ReleaseDate;
-                    movie.Runtime = DetermineMovieLength(originalRuntime: movie.Runtime, tmdbRuntime: tmdbMovieDetails.Runtime);
-                    movie.TrailerUrl = SelectTrailer(tmdbMovieDetails);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error querying TMDb for movie {Movie}", movie);
-            }
-            return movie;
+            query = query.Where(m => m.ReleaseDate == movie.ReleaseDate);
         }
 
-        /// <summary>
-        /// Determines the length of the movie.
-        /// </summary>
-        /// <param name="originalRuntime">The original runtime.</param>
-        /// <param name="tmdbRuntime">The TMDB runtime.</param>
-        /// <returns></returns>
-        private static TimeSpan DetermineMovieLength(TimeSpan? originalRuntime, int? tmdbRuntime)
+        var result = await query.FirstOrDefaultAsync();
+        if (result is not null)
         {
-            // If both runtimes are available, we check if they are similar and use the tmdb runtime if they are.
-            if (originalRuntime.HasValue && tmdbRuntime.HasValue)
-            {
-                var difference = Math.Abs(originalRuntime.Value.TotalMinutes - tmdbRuntime.Value);
-                if (difference < 10)
-                {
-                    return TimeSpan.FromMinutes(tmdbRuntime.Value);
-                }
-                else
-                {
-                    return originalRuntime.Value;
-                }
-            }
+            return result;
+        }
 
-            // If we have runtime information from the TMDb but no original runtime, we use that.
-            if (originalRuntime == null && tmdbRuntime.HasValue)
+        List<KeyValuePair<Movie, double>> similiarMovies = [];
+
+        foreach (var alias in movie.Aliases)
+        {
+            var movies = _context.Aliases.Include(e => e.Movie).AsEnumerable().Select(a => new KeyValuePair<Movie, double>(a.Movie, a.Value.DistancePercentageFrom(movie.DisplayName, true))).Where(e => e.Value > 0.9);
+            similiarMovies.AddRange(movies);
+        }
+
+        return similiarMovies.OrderByDescending(e => e.Value).FirstOrDefault().Key;
+    }
+
+    private async Task<Movie> QueryTmdbAsync(Movie movie, bool guessHarder = true)
+    {
+        try
+        {
+            var tmdbResult = (await _tmdbClient.SearchMovieAsync(movie.DisplayName,
+                                                                language: _tmdbSearchLanguageDE,
+                                                                primaryReleaseYear: movie.ReleaseDate?.Year ?? 0)).Results.FirstOrDefault();
+
+            if (tmdbResult is not null)
+            {
+                var tmdbMovieDetails = await _tmdbClient.GetMovieAsync(tmdbResult.Id,
+                                                                       language: _tmdbSearchLanguageDE,
+                                                                       extraMethods: TMDbLib.Objects.Movies.MovieMethods.Videos | TMDbLib.Objects.Movies.MovieMethods.AlternativeTitles);
+
+                movie.TmdbId = tmdbResult.Id;
+                movie.DisplayName = MovieTitleHelper.DetermineMovieTitle(movie.DisplayName, tmdbMovieDetails, guessHarder);
+                movie.PosterUrl = _tmdbPosterBaseUrl + tmdbResult.PosterPath;
+                movie.ReleaseDate = tmdbMovieDetails.ReleaseDate;
+                movie.Runtime = DetermineMovieLength(originalRuntime: movie.Runtime, tmdbRuntime: tmdbMovieDetails.Runtime);
+                movie.TrailerUrl = SelectTrailer(tmdbMovieDetails);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error querying TMDb for movie {Movie}", movie);
+        }
+        return movie;
+    }
+
+    /// <summary>
+    /// Determines the length of the movie.
+    /// </summary>
+    /// <param name="originalRuntime">The original runtime.</param>
+    /// <param name="tmdbRuntime">The TMDB runtime.</param>
+    /// <returns></returns>
+    private static TimeSpan DetermineMovieLength(TimeSpan? originalRuntime, int? tmdbRuntime)
+    {
+        // If both runtimes are available, we check if they are similar and use the tmdb runtime if they are.
+        if (originalRuntime.HasValue && tmdbRuntime.HasValue)
+        {
+            var difference = Math.Abs(originalRuntime.Value.TotalMinutes - tmdbRuntime.Value);
+            if (difference < 10)
             {
                 return TimeSpan.FromMinutes(tmdbRuntime.Value);
             }
-
-            // If we have runtime information from the original source, we use that.
-            if (originalRuntime.HasValue)
+            else
             {
                 return originalRuntime.Value;
             }
-
-            // Otherwise we use a default runtime.
-            return Constants.AverageMovieRuntime;
         }
 
-        private static Uri? SelectTrailer(TMDbLib.Objects.Movies.Movie tmdbResult)
+        // If we have runtime information from the TMDb but no original runtime, we use that.
+        if (originalRuntime == null && tmdbRuntime.HasValue)
         {
-            var trailer = tmdbResult.Videos.Results.Find(v => v.Type.Equals(_tmdbVideoTypeConst, StringComparison.OrdinalIgnoreCase) && v.Site.Equals(_tmdbVideoPlatformConst, StringComparison.OrdinalIgnoreCase));
-
-            if (trailer is not null)
-            {
-                return new Uri(_youtubeVideoBaseUrl, trailer.Key);
-            }
-            return null;
+            return TimeSpan.FromMinutes(tmdbRuntime.Value);
         }
 
-        [GeneratedRegex(@"\s+")]
-        private static partial Regex DuplicateSpaceRegex();
+        // If we have runtime information from the original source, we use that.
+        if (originalRuntime.HasValue)
+        {
+            return originalRuntime.Value;
+        }
 
-        [GeneratedRegex(@"\r\n?|\n")]
-        private static partial Regex ReplaceLineBreakRegex();
+        // Otherwise we use a default runtime.
+        return Constants.AverageMovieRuntime;
     }
+
+    private static Uri? SelectTrailer(TMDbLib.Objects.Movies.Movie tmdbResult)
+    {
+        var trailer = tmdbResult.Videos.Results.Find(v => v.Type.Equals(_tmdbVideoTypeConst, StringComparison.OrdinalIgnoreCase) && v.Site.Equals(_tmdbVideoPlatformConst, StringComparison.OrdinalIgnoreCase));
+
+        if (trailer is not null)
+        {
+            return new Uri(_youtubeVideoBaseUrl, trailer.Key);
+        }
+        return null;
+    }
+
+    [GeneratedRegex(@"\s+")]
+    private static partial Regex DuplicateSpaceRegex();
+
+    [GeneratedRegex(@"\r\n?|\n")]
+    private static partial Regex ReplaceLineBreakRegex();
 }
