@@ -3,12 +3,8 @@ using backend.Helpers;
 using backend.Models;
 using backend.Scrapers;
 using backend.Services;
-using CsvHelper.TypeConversion;
 using HtmlAgilityPack;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 using System.Globalization;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace kinohannover.Scrapers.FilmkunstKinos;

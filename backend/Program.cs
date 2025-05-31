@@ -4,7 +4,6 @@ using backend.Extensions;
 using backend.Renderer;
 using backend.Scrapers;
 using backend.Services;
-using kinohannover.Scrapers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
