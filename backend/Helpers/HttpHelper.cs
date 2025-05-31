@@ -6,9 +6,7 @@ namespace backend.Helpers;
 
 public static class HttpHelper
 {
-#pragma warning disable S1075 // URIs should not be hardcoded
 	private const string _uaListUrl = "https://cdn.jsdelivr.net/gh/microlinkhq/top-user-agents@master/src/desktop.json";
-#pragma warning restore S1075 // URIs should not be hardcoded
 	private static readonly HttpClient _httpClient = new()
 	{
 		Timeout = TimeSpan.FromSeconds(30),
