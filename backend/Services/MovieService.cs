@@ -90,7 +90,7 @@ public sealed partial class MovieService(DatabaseContext context, ILogger<MovieS
 
 		foreach (var alias in movie.Aliases)
 		{
-			var movies = Context.Aliases.Include(e => e.Movie).AsEnumerable().Select(a => new KeyValuePair<Movie, double>(a.Movie, a.Value.DistancePercentageFrom(movie.DisplayName, true))).Where(e => e.Value > 0.9);
+			var movies = Context.Aliases.Include(e => e.Movie).AsEnumerable().Select(a => new KeyValuePair<Movie, double>(a.Movie, a.Value.MatchPercentage(movie.DisplayName, true))).Where(e => e.Value > 0.9);
 			similiarMovies.AddRange(movies);
 		}
 

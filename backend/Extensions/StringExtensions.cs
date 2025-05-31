@@ -39,10 +39,10 @@ public static class StringExtensions
 	/// <param name="c">The second string.</param>
 	/// <param name="caseInsensitive">A value indicating whether the comparison should be case-insensitive.</param>
 	/// <returns>The distance percentage between the two strings.</returns>
-	public static double MatchPercentageFrom(this string s, string c, bool caseInsensitive = false)
+	public static double MatchPercentage(this string s, string c, bool caseInsensitive = false)
 	{
 		if (s == null || c == null)
-	{
+		{
 			return 0;
 		}
 

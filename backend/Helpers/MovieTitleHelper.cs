@@ -59,18 +59,18 @@ internal static partial class MovieTitleHelper
 		}
 
 		tmdbTitle = tmdbMovieDetails.Title.NormalizeDashes().NormalizeQuotes();
-		if (tmdbTitle.DistancePercentageFrom(title, true) > 0.9)
+		if (tmdbTitle.MatchPercentage(title, true) > 0.9)
 		{
 			return tmdbTitle;
 		}
 
 		tmdbTitle = tmdbMovieDetails.OriginalTitle.NormalizeDashes().NormalizeQuotes();
-		if (tmdbTitle.DistancePercentageFrom(title, true) > 0.9)
+		if (tmdbTitle.MatchPercentage(title, true) > 0.9)
 		{
 			return tmdbTitle;
 		}
 
-		tmdbTitle = tmdbMovieDetails.AlternativeTitles.Titles.Find(e => e.Title.NormalizeDashes().NormalizeQuotes().DistancePercentageFrom(title) > 0.9)?.Title;
+		tmdbTitle = tmdbMovieDetails.AlternativeTitles.Titles.Find(e => e.Title.NormalizeDashes().NormalizeQuotes().MatchPercentage(title) > 0.9)?.Title;
 		return tmdbTitle ?? GetAlternativeTitle(tmdbMovieDetails, "EN");
 	}
 
@@ -142,7 +142,7 @@ internal static partial class MovieTitleHelper
 
 	public static string? GetMostSimilarTitle(IEnumerable<string> haystack, string needle)
 	{
-		var mostSimilarList = haystack.Select(e => (altTitle: e, index: needle.DistancePercentageFrom(e)));
+		var mostSimilarList = haystack.Select(e => (altTitle: e, index: needle.MatchPercentage(e)));
 		return mostSimilarList.FirstOrDefault(e => e.index > 0.7).altTitle;
 	}
 
