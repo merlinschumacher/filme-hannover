@@ -12,7 +12,7 @@ public class SehFestScraper : CsvScraper, IScraper
     public SehFestScraper(ILogger<SehFestScraper> logger, MovieService movieService, ShowTimeService showTimeService, CinemaService cinemaService) :
         base("sehfest.csv", logger, movieService, showTimeService, cinemaService)
     {
-        _cinema = new()
+        Cinema = new()
         {
             DisplayName = "Seh-Fest",
             HasShop = false,

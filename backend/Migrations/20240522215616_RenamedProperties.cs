@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace kinohannover.Migrations
+namespace backend.Migrations
 {
     /// <inheritdoc />
     public partial class RenamedProperties : Migration

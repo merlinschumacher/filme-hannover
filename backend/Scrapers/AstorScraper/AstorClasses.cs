@@ -1,7 +1,7 @@
 ﻿using backend.Models;
 using Newtonsoft.Json;
 
-namespace kinohannover.Scrapers.AstorScraper;
+namespace backend.Scrapers.AstorScraper;
 
 public class Events
 {

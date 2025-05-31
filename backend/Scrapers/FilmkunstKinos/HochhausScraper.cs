@@ -1,6 +1,6 @@
 ﻿using backend.Models;
 using backend.Services;
-using kinohannover.Scrapers.FilmkunstKinos;
+using backend.Scrapers.FilmkunstKinos;
 
 namespace backend.Scrapers.FilmkunstKinos;
 

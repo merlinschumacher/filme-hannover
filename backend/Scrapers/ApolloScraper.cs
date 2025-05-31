@@ -7,7 +7,7 @@ using HtmlAgilityPack;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
-namespace kinohannover.Scrapers.FilmkunstKinos;
+namespace backend.Scrapers.FilmkunstKinos;
 
 public partial class ApolloScraper : IScraper
 {

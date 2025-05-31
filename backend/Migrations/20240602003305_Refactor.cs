@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace kinohannover.Migrations
+namespace backend.Migrations
 {
     /// <inheritdoc />
     public partial class Refactor : Migration

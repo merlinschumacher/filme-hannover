@@ -1,4 +1,4 @@
-﻿using kinohannover.Helpers;
+﻿using backend.Helpers;
 
 namespace backend.Models;
 

@@ -16,6 +16,7 @@
 		<SelfContained>true</SelfContained>
 		<RunWorkingDirectory>$(MSBuildProjectDirectory)</RunWorkingDirectory>
 		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+		<AnalysisLevel>latest-recommended</AnalysisLevel>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -59,11 +60,14 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Update="csv\kircheundkino.csv">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </None>
-	  <None Update="csv\sehfest.csv">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </None>
+		<None Update="csv\kircheundkino.csv">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="csv\sehfest.csv">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+	<ItemGroup>
+		<None Include="C:\Users\Merlin Schumacher\Source\Repos\merlinschumacher\kinohannover\backend\.editorconfig" />
 	</ItemGroup>
 </Project>

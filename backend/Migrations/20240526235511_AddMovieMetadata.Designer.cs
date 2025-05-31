@@ -8,7 +8,7 @@ using backend.Data;
 
 #nullable disable
 
-namespace kinohannover.Migrations
+namespace backend.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
     [Migration("20240526235511_AddMovieMetadata")]

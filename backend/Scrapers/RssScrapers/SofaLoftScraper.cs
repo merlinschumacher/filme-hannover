@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
-namespace kinohannover.Scrapers;
+namespace backend.Scrapers;
 
 public partial class SofaLoftScraper : RssScraper
 {
