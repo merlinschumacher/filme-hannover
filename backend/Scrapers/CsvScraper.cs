@@ -67,7 +67,7 @@ namespace backend.Scrapers
                 return;
             }
 
-            _cinema = cinemaService.Create(_cinema);
+            _cinema = await cinemaService.CreateAsync(_cinema);
 
             foreach (var record in records)
             {

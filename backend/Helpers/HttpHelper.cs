@@ -6,6 +6,9 @@ namespace backend.Helpers
 {
     public static class HttpHelper
     {
+#pragma warning disable S1075 // URIs should not be hardcoded
+        private const string _uaListUrl = "https://cdn.jsdelivr.net/gh/microlinkhq/top-user-agents@master/src/desktop.json";
+#pragma warning restore S1075 // URIs should not be hardcoded
         private static readonly HttpClient _httpClient = new()
         {
             Timeout = TimeSpan.FromSeconds(30),
@@ -23,12 +26,15 @@ namespace backend.Helpers
         private static async Task<string> GetRandomUserAgentAsync()
         {
             using var client = new HttpClient();
-            var response = await client.GetAsync("https://cdn.jsdelivr.net/gh/microlinkhq/top-user-agents@master/src/desktop.json");
+            var response = await client.GetAsync(_uaListUrl);
 
             var json = await response.Content.ReadAsStringAsync();
             var userAgents = JsonConvert.DeserializeObject<List<string>>(json);
             if (userAgents is null || userAgents.Count == 0)
+            {
                 throw new OperationCanceledException("Failed to load user agents");
+            }
+
             var random = new Random();
             var randomIndex = random.Next(userAgents.Count);
             return userAgents[randomIndex];

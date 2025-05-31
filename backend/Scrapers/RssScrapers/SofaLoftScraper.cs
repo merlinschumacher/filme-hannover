@@ -26,6 +26,7 @@ namespace kinohannover.Scrapers
                 Color = "#aa62ff",
                 IconClass = "hourglass",
             };
+            Cinema = _cinemaService.Create(Cinema);
         }
         public override async Task ScrapeAsync()
         {
@@ -33,15 +34,6 @@ namespace kinohannover.Scrapers
             var items = await ParseRssFeedAsync(_rssFeedUrl.ToString(),
                 item => item.Categories.Contains("Kino", StringComparer.OrdinalIgnoreCase));
 
-            if (!items.Any())
-            {
-                _logger.LogWarning("No relevant items found in RSS feed: {RssFeedUrl}", _rssFeedUrl);
-                return;
-            }
-
-            _logger.LogInformation("Found {Count} items in RSS feed: {RssFeedUrl}", items.Count(), _rssFeedUrl);
-
-            Cinema = _cinemaService.Create(Cinema);
             foreach (var item in items)
             {
                 string title = item.Title;
@@ -83,12 +75,20 @@ namespace kinohannover.Scrapers
         {
             var normalizedTitle = titleNode.NormalizeDashes().NormalizeQuotes();
             var titleMatch = TitleMatchRegex().Match(normalizedTitle);
-            if (!titleMatch.Success || titleMatch.Groups.Count < 4) throw new InvalidOperationException("Title regex failed.");
+            if (!titleMatch.Success || titleMatch.Groups.Count < 4)
+            {
+                throw new InvalidOperationException("Title regex failed.");
+            }
 
             if (!DateOnly.TryParse(titleMatch.Groups[2].Value, CultureInfo.CreateSpecificCulture("de-DE"), out var date))
+            {
                 throw new InvalidOperationException("Date parsing failed.");
+            }
+
             if (!int.TryParse(titleMatch.Groups[3].Value, out var hour))
+            {
                 throw new InvalidOperationException("Hour parsing failed.");
+            }
 
             var title = titleMatch.Groups[1].Value;
             var startTime = date.ToDateTime(new TimeOnly(hour, 0));

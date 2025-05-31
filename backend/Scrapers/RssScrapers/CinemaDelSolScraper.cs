@@ -22,7 +22,6 @@ namespace kinohannover.Scrapers
         , RegexOptions.IgnoreCase | RegexOptions.Compiled, "de-DE")]
         private static partial Regex TitleRegex();
 
-
         public CinemaDelSolScraper(ILogger<CinemaDelSolScraper> logger, MovieService movieService, CinemaService cinemaService, ShowTimeService showTimeService) : base(logger, cinemaService, showTimeService, movieService)
         {
             Cinema = new()
@@ -33,6 +32,7 @@ namespace kinohannover.Scrapers
                 Color = "#f0a500",
                 IconClass = "sun",
             };
+            Cinema = _cinemaService.Create(Cinema);
         }
 
         public override async Task ScrapeAsync()
@@ -42,23 +42,14 @@ namespace kinohannover.Scrapers
                 item =>
                 !item.Title.Contains("Archiv", StringComparison.OrdinalIgnoreCase));
 
-            if (!items.Any())
-            {
-                _logger.LogWarning("No relevant items found in RSS feed: {RssFeedUrl}", _rssFeedUrl);
-                return;
-            }
-            _logger.LogInformation("Found {Count} items in RSS feed: {RssFeedUrl}", items.Count(), _rssFeedUrl);
-
-            Cinema = _cinemaService.Create(Cinema);
             foreach (var item in items)
             {
                 var match = _titleRegex.Match(item.Title);
-                if (!match.Success
-
-                )
+                if (!match.Success)
                 {
                     continue;
                 }
+
                 var dateStr = match.Groups[1].Value.Trim();
                 var title = match.Groups[2].Value.Trim();
 

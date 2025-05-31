@@ -28,12 +28,20 @@ public abstract class ScraperBase(ILogger logger, CinemaService cinemaService, S
 
     public virtual bool ReliableMetadata => false;
 
-    public required Cinema Cinema { get; set; }
+    protected Cinema Cinema { get; set; } = null!;
 
     protected static string GetDisplayName(string? title, string? subtitle)
     {
-        if (string.IsNullOrWhiteSpace(title)) return subtitle ?? string.Empty;
-        if (string.IsNullOrWhiteSpace(subtitle)) return title;
+        if (string.IsNullOrWhiteSpace(title))
+        {
+            return subtitle ?? string.Empty;
+        }
+
+        if (string.IsNullOrWhiteSpace(subtitle))
+        {
+            return title;
+        }
+
         return $"{title} - {subtitle}";
     }
 }
