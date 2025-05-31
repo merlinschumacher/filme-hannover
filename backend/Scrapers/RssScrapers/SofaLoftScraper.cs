@@ -81,7 +81,7 @@ public partial class SofaLoftScraper : RssScraper
             throw new InvalidOperationException("Title regex failed.");
         }
 
-        if (!DateOnly.TryParse(titleMatch.Groups[2].Value, CultureInfo.CreateSpecificCulture("de-DE"), out var date))
+		if (!DateOnly.TryParse(titleMatch.Groups[2].Value, CultureInfo.CurrentCulture, out var date))
         {
             throw new InvalidOperationException("Date parsing failed.");
         }

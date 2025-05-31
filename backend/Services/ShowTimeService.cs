@@ -48,8 +48,8 @@ public sealed class ShowTimeService(DatabaseContext context, ILogger<ShowTimeSer
 		ShowTime? result = await query.FirstOrDefaultAsync(s => s.Cinema == cinema
 			&& s.StartTime >= lowerBound
 			&& s.StartTime <= upperBound
-			&& (s.Movie.DisplayName.Equals(movieTitle, StringComparison.Ordinal)
-				|| s.Movie.Aliases.Any(a => a.Value.Equals(movieTitle, StringComparison.Ordinal))
+			&& (s.Movie.DisplayName.Equals(movieTitle)
+				|| s.Movie.Aliases.Any(a => a.Value.Equals(movieTitle))
 				|| s.Movie.DisplayName.Contains(movieTitle)
 				|| s.Movie.Aliases.Any(a => movieTitle.Contains(a.Value))
 				));

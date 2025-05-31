@@ -31,8 +31,21 @@ public static class StringExtensions
 		return s;
 	}
 
-	public static double DistancePercentageFrom(this string s, string c, bool caseInsensitive = false)
+	/// <summary>
+	/// Calculates the distance percentage between two strings using the Levenshtein distance algorithm.
+	/// The higher the percentage, the more similar the strings are.
+	/// </summary>
+	/// <param name="s">The first string.</param>
+	/// <param name="c">The second string.</param>
+	/// <param name="caseInsensitive">A value indicating whether the comparison should be case-insensitive.</param>
+	/// <returns>The distance percentage between the two strings.</returns>
+	public static double MatchPercentageFrom(this string s, string c, bool caseInsensitive = false)
 	{
+		if (s == null || c == null)
+	{
+			return 0;
+		}
+
 		if (caseInsensitive)
 		{
 			s = s.ToLower(System.Globalization.CultureInfo.CurrentCulture);
