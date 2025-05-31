@@ -1,0 +1,6 @@
+# Remove the line below if you want to inherit .editorconfig settings from higher directories
+root = true
+[*]
+spelling_languages = en-US,en-GB,de-DE
+spelling_exclusion_path = .\exclusion.dic
+

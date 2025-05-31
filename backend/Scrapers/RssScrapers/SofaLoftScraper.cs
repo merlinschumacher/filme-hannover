@@ -27,7 +27,7 @@ public partial class SofaLoftScraper : RssScraper
             Color = "#aa62ff",
             IconClass = "hourglass",
         };
-        Cinema = _cinemaService.Create(Cinema);
+        Cinema = CinemaSrv.Create(Cinema);
     }
     public override async Task ScrapeAsync()
     {
@@ -45,13 +45,13 @@ public partial class SofaLoftScraper : RssScraper
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Failed to parse item: {Title}", item.Title);
+                Log.LogWarning(ex, "Failed to parse item: {Title}", item.Title);
                 continue;
             }
             var rating = GetRating(item.Body);
             var runtime = GetRuntime(item.Body);
 
-            var movie = await _movieService.CreateAsync(new()
+            var movie = await MovieSrv.CreateAsync(new()
             {
                 DisplayName = title,
                 Rating = rating,
@@ -69,7 +69,7 @@ public partial class SofaLoftScraper : RssScraper
                 Language = ShowTimeLanguage.German,
                 Url = item.Url,
             };
-            await _showTimeService.CreateAsync(showTime);
+            await SowTimeSrv.CreateAsync(showTime);
         }
     }
     private static (string title, DateTime startTime) ParseTitleNode(string titleNode)

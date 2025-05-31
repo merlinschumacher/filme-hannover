@@ -56,14 +56,14 @@ public sealed partial class MovieService(DatabaseContext context, ILogger<MovieS
 
 	private async Task<Movie> AddMovieAsync(Movie movie)
 	{
-		logger.LogInformation("Creating movie {Title}", movie.DisplayName);
-		await context.Movies.AddAsync(movie);
+		Log.LogInformation("Creating movie {Title}", movie.DisplayName);
+		await Context.Movies.AddAsync(movie);
 		return movie;
 	}
 
 	private async Task<Movie?> FindMovieAsync(Movie movie)
 	{
-		var query = context.Movies.Include(m => m.Cinemas).Include(e => e.Aliases).AsQueryable();
+		var query = Context.Movies.Include(m => m.Cinemas).Include(e => e.Aliases).AsQueryable();
 
 		if (movie.TmdbId.HasValue)
 		{
@@ -90,7 +90,7 @@ public sealed partial class MovieService(DatabaseContext context, ILogger<MovieS
 
 		foreach (var alias in movie.Aliases)
 		{
-			var movies = context.Aliases.Include(e => e.Movie).AsEnumerable().Select(a => new KeyValuePair<Movie, double>(a.Movie, a.Value.DistancePercentageFrom(movie.DisplayName, true))).Where(e => e.Value > 0.9);
+			var movies = Context.Aliases.Include(e => e.Movie).AsEnumerable().Select(a => new KeyValuePair<Movie, double>(a.Movie, a.Value.DistancePercentageFrom(movie.DisplayName, true))).Where(e => e.Value > 0.9);
 			similiarMovies.AddRange(movies);
 		}
 
@@ -121,7 +121,7 @@ public sealed partial class MovieService(DatabaseContext context, ILogger<MovieS
 		}
 		catch (Exception ex)
 		{
-			logger.LogError(ex, "Error querying TMDb for movie {Movie}", movie);
+			Log.LogError(ex, "Error querying TMDb for movie {Movie}", movie);
 		}
 		return movie;
 	}

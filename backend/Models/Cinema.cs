@@ -16,18 +16,18 @@ public class Cinema
 
     required public string IconClass { get; set; }
 
-    /// <summary>
-    /// Gets or sets a value indicating whether the showtime entries should link to the shop
-    /// </summary>
-    public bool HasShop { get; set; } = false;
+	/// <summary>
+	/// Gets or sets a value indicating whether the showtime entries should link to the shop
+	/// </summary>
+	public bool HasShop { get; set; }
 
-    /// <summary>
-    /// Gets or sets a value indicating whether this cinema has reliable movie titles.
-    /// </summary>
-    public bool ReliableMetadata { get; set; } = false;
+	/// <summary>
+	/// Gets or sets a value indicating whether this cinema has reliable movie titles.
+	/// </summary>
+	public bool ReliableMetadata { get; set; }
 
-    /// <inheritdoc/>
-    public override string ToString()
+	/// <inheritdoc/>
+	public override string ToString()
     {
         return DisplayName;
     }

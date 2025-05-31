@@ -33,7 +33,7 @@ public partial class CinemaDelSolScraper : RssScraper
             Color = "#f0a500",
             IconClass = "sun",
         };
-        Cinema = _cinemaService.Create(Cinema);
+        Cinema = CinemaSrv.Create(Cinema);
     }
 
     public override async Task ScrapeAsync()
@@ -65,7 +65,7 @@ public partial class CinemaDelSolScraper : RssScraper
             var rating = MovieHelper.GetRating(item.Body);
             var runtime = MovieHelper.GetRuntime(item.Body);
 
-            var movie = await _movieService.CreateAsync(new Movie
+            var movie = await MovieSrv.CreateAsync(new Movie
             {
                 DisplayName = title,
                 Url = item.Url,
@@ -74,7 +74,7 @@ public partial class CinemaDelSolScraper : RssScraper
                 Cinemas = [Cinema],
             });
 
-            await _cinemaService.AddMovieToCinemaAsync(movie, Cinema);
+            await CinemaSrv.AddMovieToCinemaAsync(movie, Cinema);
 
             var showTime = new ShowTime
             {
@@ -85,7 +85,7 @@ public partial class CinemaDelSolScraper : RssScraper
                 Language = ShowTimeHelper.GetLanguage(item.Body),
                 Url = item.Url,
             };
-            await _showTimeService.CreateAsync(showTime);
+            await SowTimeSrv.CreateAsync(showTime);
         }
     }
 

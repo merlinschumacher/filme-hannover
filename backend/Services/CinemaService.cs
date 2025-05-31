@@ -4,15 +4,15 @@ using Microsoft.Extensions.Logging;
 
 namespace backend.Services;
 
-public class CinemaService(DatabaseContext context, ILogger<CinemaService> logger) : DataServiceBase<Cinema>(context, logger)
+public class CinemaService(DatabaseContext dbcontext, ILogger<CinemaService> logger) : DataServiceBase<Cinema>(dbcontext, logger)
 {
 	public async Task<bool> AddMovieToCinemaAsync(Movie movie, Cinema cinema)
 	{
-		await context.Entry(cinema).Collection(c => c.Movies).LoadAsync();
+		await Context.Entry(cinema).Collection(c => c.Movies).LoadAsync();
 
 		if (!cinema.Movies.Contains(movie))
 		{
-			logger.LogDebug("Adding movie {Movie} to cinema {Cinema}", movie, cinema);
+			Log.LogDebug("Adding movie {Movie} to cinema {Cinema}", movie, cinema);
 			cinema.Movies.Add(movie);
 			return true;
 		}
@@ -21,7 +21,7 @@ public class CinemaService(DatabaseContext context, ILogger<CinemaService> logge
 
 	public Cinema Create(Cinema cinema)
 	{
-		var existingCinema = context.Cinema.FirstOrDefault(c => c.DisplayName == cinema.DisplayName);
+		var existingCinema = Context.Cinema.FirstOrDefault(c => c.DisplayName == cinema.DisplayName);
 
 		if (existingCinema is not null)
 		{
@@ -29,8 +29,8 @@ public class CinemaService(DatabaseContext context, ILogger<CinemaService> logge
 		}
 		else
 		{
-			logger.LogInformation("Creating cinema {Cinema}", cinema);
-			context.Cinema.Add(cinema);
+			Log.LogInformation("Creating cinema {Cinema}", cinema);
+			Context.Cinema.Add(cinema);
 		}
 
 		return cinema;

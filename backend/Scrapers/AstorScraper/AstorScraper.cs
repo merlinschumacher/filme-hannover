@@ -42,7 +42,7 @@ public partial class AstorScraper : IScraper
 	private string SanitizeTitle(string title, string? eventTitle)
 	{
 		// If the event title is "Events", return the title as is, as it is a generic title and not part of the movie title
-		if (eventTitle?.Equals("Events", StringComparison.CurrentCultureIgnoreCase) != false)
+		if (eventTitle?.Equals("Events", StringComparison.OrdinalIgnoreCase) != false)
 		{
 			_logger.LogDebug("Event title is null or 'Events', returning title as is.");
 			return title;

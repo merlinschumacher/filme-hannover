@@ -30,8 +30,11 @@ static void ConfigureServices(HostApplicationBuilder builder)
 
 	builder.Services.AddServicesByInterface<IScraper>();
 	// Use the following line to register scrapers manually for debugging or specific configurations
+
+#pragma warning disable S125 // Sections of code should not be commented out
 	// builder.Services.AddScoped<IScraper, CinemaDelSolScraper>();
 	builder.Services.AddServicesByInterface<IRenderer>();
+#pragma warning restore S125 // Sections of code should not be commented out
 
 	builder.Services.AddSingleton<DatabaseMigrationService>();
 	builder.Services.AddSingleton<ScrapingService>();
@@ -39,7 +42,7 @@ static void ConfigureServices(HostApplicationBuilder builder)
 	builder.Services.AddSingleton<CleanupService>();
 }
 
-var culture = new CultureInfo("de-DE", true);
+var culture = new CultureInfo("de-DE");
 CultureInfo.CurrentCulture = culture;
 CultureInfo.DefaultThreadCurrentCulture = culture;
 

@@ -8,39 +8,39 @@ namespace backend.Scrapers;
 
 public abstract class ScraperBase(ILogger logger, CinemaService cinemaService, ShowTimeService showTimeService, MovieService movieService) : IScraper
 {
-    protected MovieService _movieService = movieService;
-    protected CinemaService _cinemaService = cinemaService;
-    protected ShowTimeService _showTimeService = showTimeService;
-    protected ILogger _logger = logger;
+	protected MovieService MovieSrv { get; } = movieService;
+	protected CinemaService CinemaSrv { get; } = cinemaService;
+	protected ShowTimeService SowTimeSrv { get; } = showTimeService;
+	protected ILogger Log { get; } = logger;
 
-    public abstract Task ScrapeAsync();
+	public abstract Task ScrapeAsync();
 
-    protected static MovieRating GetRating(string haystack)
-    {
-        return MovieHelper.GetRating(haystack);
-    }
+	protected static MovieRating GetRating(string haystack)
+	{
+		return MovieHelper.GetRating(haystack);
+	}
 
-    protected static TimeSpan GetRuntime(string haystack)
-    {
-        return MovieHelper.GetRuntime(haystack);
-    }
+	protected static TimeSpan GetRuntime(string haystack)
+	{
+		return MovieHelper.GetRuntime(haystack);
+	}
 
-    public virtual bool ReliableMetadata => false;
+	public virtual bool ReliableMetadata => false;
 
-    protected Cinema Cinema { get; set; } = null!;
+	protected Cinema Cinema { get; set; } = null!;
 
-    protected static string GetDisplayName(string? title, string? subtitle)
-    {
-        if (string.IsNullOrWhiteSpace(title))
-        {
-            return subtitle ?? string.Empty;
-        }
+	protected static string GetDisplayName(string? title, string? subtitle)
+	{
+		if (string.IsNullOrWhiteSpace(title))
+		{
+			return subtitle ?? string.Empty;
+		}
 
-        if (string.IsNullOrWhiteSpace(subtitle))
-        {
-            return title;
-        }
+		if (string.IsNullOrWhiteSpace(subtitle))
+		{
+			return title;
+		}
 
-        return $"{title} - {subtitle}";
-    }
+		return $"{title} - {subtitle}";
+	}
 }

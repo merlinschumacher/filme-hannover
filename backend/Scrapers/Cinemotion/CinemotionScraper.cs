@@ -62,7 +62,7 @@ public class CinemotionScraper : IScraper
         }
     }
 
-    private async Task ProcessShowTimeAsync(Movie movie, Performance performance)
+    private async Task ProcessShowTimeAsync(Movie movie, CinemotionPerformance performance)
     {
         var dubType = GetShowTimeDubType(performance);
         var language = dubType != ShowTimeDubType.Regular ? ShowTimeLanguage.Unknown : ShowTimeLanguage.German;
@@ -79,7 +79,7 @@ public class CinemotionScraper : IScraper
         await _showTimeService.CreateAsync(showTime);
     }
 
-    private static ShowTimeDubType GetShowTimeDubType(Performance performance)
+    private static ShowTimeDubType GetShowTimeDubType(CinemotionPerformance performance)
     {
         if (performance.Attributes.Exists(e => e.Name.Contains("OmU", StringComparison.CurrentCultureIgnoreCase)
                                             || e.Name.Contains("OmdU", StringComparison.CurrentCultureIgnoreCase)

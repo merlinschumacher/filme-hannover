@@ -138,7 +138,7 @@ public partial class KoKiHannoverDeScraper(MovieService movieService, ShowTimeSe
 			// Sanitize the string
 			detailString = detailString.ReplaceLineEndings().Replace("\t", "").Trim();
 
-			// Replace the uncommon dt. OV with nothing as we assume german by default and OV is the exception
+			// Replace the uncommon dt. OV with nothing as we assume German by default and OV is the exception
 			detailString = detailString.Replace("dt. OV", "");
 
 			var dubType = ShowTimeHelper.GetDubType(detailString);
@@ -207,7 +207,7 @@ public partial class KoKiHannoverDeScraper(MovieService movieService, ShowTimeSe
 	{
 		public required string[] Items { get; set; } = [];
 		public bool Success { get; set; }
-		public required int TotalItems { get; set; } = 0;
+		public required int TotalItems { get; set; }
 	}
 
 	[GeneratedRegex(@"view/(\d*)")]
