@@ -30,6 +30,7 @@ namespace backend.Helpers
             { ShowTimeLanguage.Other, ["Andere", "Verschiedene", "versch.", "div.", "Malayalam", "Filipino", "Georgisch", "georg." ]},
             { ShowTimeLanguage.Unknown, ["Unbekannt"] },
         };
+
         private static readonly Dictionary<ShowTimeLanguage, string[]> _showTimeLanguageCountryCodeMap = new()
         {
             { ShowTimeLanguage.Danish, ["DK"] },
@@ -45,6 +46,8 @@ namespace backend.Helpers
             { ShowTimeLanguage.Arabic, ["AR", "ARA"] },
             { ShowTimeLanguage.Hindi, ["HI", "HIN"] },
             { ShowTimeLanguage.German, ["DE", "AT", "CH"] },
+            { ShowTimeLanguage.Other, ["XX"] },
+            { ShowTimeLanguage.Unknown, ["??"] },
         };
 
         public static readonly int _longestShowTimeLanguageString = _showTimeLanguageMap.Values.Max(e => e.Length);
@@ -159,6 +162,7 @@ namespace backend.Helpers
 
             return matches;
         }
+
         private static T FindMatchingDictionaryKey<T>(string needle, Dictionary<T, string[]> dictionary, T defaultValue, string? padding = "", StringComparison stringComparison = StringComparison.OrdinalIgnoreCase) where T : notnull
         {
             foreach (var (key, value) in dictionary)
