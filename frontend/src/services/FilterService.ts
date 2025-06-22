@@ -65,7 +65,8 @@ export default class FilterService {
     this.db.cinemas
       .toArray()
       .then((cinemas) => {
-        this.availableCinemas = cinemas;
+        this.availableCinemas = cinemas.sort((a, b) =>
+          a.displayName.localeCompare(b.displayName));
         this.selectedCinemaIds = cinemas.map((c) => c.id);
         this.emitter.emit('cinemaDataReady', cinemas);
       })
