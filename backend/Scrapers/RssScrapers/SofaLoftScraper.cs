@@ -9,28 +9,22 @@ using System.Text.RegularExpressions;
 
 namespace backend.Scrapers;
 
-public partial class SofaLoftScraper : RssScraper
+public partial class SofaLoftScraper(ILogger<SofaLoftScraper> logger,
+						   MovieService movieService,
+						   CinemaService cinemaService,
+						   ShowTimeService showTimeService) : RssScraper(logger, _cinema, cinemaService, showTimeService, movieService)
 {
 	private const string _blogPostTitleRegexString = @"(.*) [–-] (\d{1,2}.\d{1,2}.\d{2,4})\s*,?\s*(\d{1,2})\s?Uhr";
 	private readonly Uri _rssFeedUrl = new("https://www.sofaloft.de/feed/");
-	private readonly ILogger<SofaLoftScraper> _logger;
-
-	public SofaLoftScraper(ILogger<SofaLoftScraper> logger,
-						   MovieService movieService,
-						   CinemaService cinemaService,
-						   ShowTimeService showTimeService) : base(logger, cinemaService, showTimeService, movieService)
+	private static readonly Cinema _cinema = new()
 	{
-		Cinema = new()
-		{
-			DisplayName = "SofaLOFT",
-			Url = new("https://www.sofaloft.de/"),
-			ShopUrl = new("https://www.sofaloft.de/category/alle-beitraege/kino/"),
-			Color = "#aa62ff",
-			IconClass = "hourglass",
-		};
-		Cinema = CinemaSrv.Create(Cinema);
-		_logger = logger;
-	}
+		DisplayName = "SofaLOFT",
+		Url = new("https://www.sofaloft.de/"),
+		ShopUrl = new("https://www.sofaloft.de/category/alle-beitraege/kino/"),
+		Color = "#aa62ff",
+		IconClass = "hourglass",
+	};
+
 	public override async Task ScrapeAsync()
 	{
 		// Filter items to only include those with "Kino" in the categories
@@ -47,13 +41,13 @@ public partial class SofaLoftScraper : RssScraper
 			}
 			catch (Exception ex)
 			{
-				_logger.LogWarning(ex, "Failed to parse item: {Title}", item.Title);
+				Logger.LogWarning(ex, "Failed to parse item: {Title}", item.Title);
 				continue;
 			}
 			var rating = GetRating(item.Body);
 			var runtime = GetRuntime(item.Body);
 
-			var movie = await MovieSrv.CreateAsync(new()
+			var movie = await MovieService.CreateAsync(new Movie()
 			{
 				DisplayName = title,
 				Rating = rating,
@@ -71,7 +65,7 @@ public partial class SofaLoftScraper : RssScraper
 				Language = ShowTimeLanguage.German,
 				Url = item.Url,
 			};
-			await SowTimeSrv.CreateAsync(showTime);
+			await ShowTimeService.CreateAsync(showTime);
 		}
 	}
 	private static (string title, DateTime startTime) ParseTitleNode(string titleNode)

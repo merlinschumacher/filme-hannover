@@ -1,10 +1,8 @@
 ﻿namespace backend;
 
-public static class Constants
+public static partial class Constants
 {
-    public static readonly TimeSpan AverageMovieRuntime = TimeSpan.FromMinutes(100);
-
-    public enum ExitCodes
+	public enum ExitCodes
     {
         Success = 0,
         Error = 1,

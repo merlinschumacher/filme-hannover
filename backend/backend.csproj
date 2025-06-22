@@ -51,6 +51,7 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
+		<PackageReference Include="Schema.NET" Version="13.0.0" />
 		<PackageReference Include="SolarCalculator" Version="3.5.0" />
 		<PackageReference Include="SonarAnalyzer.CSharp" Version="10.11.0.117924">
 			<PrivateAssets>all</PrivateAssets>
@@ -61,9 +62,6 @@
 
 	<ItemGroup>
 		<None Update="csv\kircheundkino.csv">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="csv\sehfest.csv">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>

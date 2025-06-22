@@ -1,110 +1,127 @@
-﻿using backend.Helpers;
+﻿using backend.Extensions;
+using backend.Helpers;
 using backend.Models;
 using backend.Services;
-using Ical.Net;
+using HtmlAgilityPack;
+using Microsoft.Extensions.Logging;
+using Schema.NET;
 
 namespace backend.Scrapers;
 
-internal sealed class NdrRadiophilarmonieScraper : IcalScraper, IScraper
+internal sealed class NdrRadiophilarmonieScraper(ILogger<NdrRadiophilarmonieScraper> logger, MovieService movieService, ShowTimeService showTimeService, CinemaService cinemaService)
+	: SchemaOrgScraper(logger, _cinema, cinemaService, movieService, showTimeService), IScraper
 {
-	public bool ReliableMetadata => false;
 
-	private readonly Uri _dataUrl = new("https://www.ndr.de/orchester_chor/kalender480_brand-ndrradiophilharmonie.jsp?selectdate=&query=live+to+projection");
-	private readonly Uri _baseUrl = new("https://www.ndr.de");
+	/// <summary>
+	/// These are strings that should be present in the event title to consider it relevant.
+	/// </summary>
+	private readonly string[] _relevantEventText = ["Filmkonzert", "Live to Projection"];
+	/// <summary>
+	/// THe class name for event elements in the HTML document.
+	/// </summary>
+	private const string _eventElementClass = "ele";
+	/// <summary>
+	/// The class name for the event list element in the HTML document.
+	/// </summary>
+	private const string _evenListElementClass = "event-list";
+	/// <summary>
+	/// The XPath selector for the pagination element in the HTML document.
+	/// </summary>
+	private const string _paginationElementSelector = "//ul[@class='pagination']";
 
-	private readonly Cinema _cinema = new()
+	/// <summary>
+	/// The base URL for the data source, which contains the event listings.
+	/// </summary>
+	private static readonly Uri _shopUrl = new("https://www.ndrticketshop.de/suche?area_ids=2&city=Hannover&page=");
+
+	/// <summary>
+	/// The cinema information for NDR Radiophilharmonie.
+	/// </summary>
+	private static readonly Cinema _cinema = new()
 	{
 		DisplayName = "NDR Radiophilharmonie",
 		Url = new("https://www.ndr.de/orchester_chor/radiophilharmonie/konzerte/index.html"),
-		ShopUrl = new("https://www.ndrticketshop.de/ndr-radiophilharmonie"),
+		ShopUrl = _shopUrl,
 		Color = "#4363d8",
 		IconClass = "note",
 		HasShop = false,
 	};
 
-	private readonly CinemaService _cinemaService;
-	private readonly ShowTimeService _showTimeService;
-	private readonly MovieService _movieService;
+	public override bool ReliableMetadata => false;
 
-	public NdrRadiophilarmonieScraper(MovieService movieService, ShowTimeService showTimeService, CinemaService cinemaService)
+
+	public override async Task ScrapeAsync()
 	{
-		_cinemaService = cinemaService;
-		_showTimeService = showTimeService;
-		_movieService = movieService;
-		_cinema = cinemaService.Create(_cinema);
+		var eventUriList = await BuildEventUrlList();
+		var events = await GetEvents<MusicEvent>(eventUriList);
+
+		if (!events.Any())
+		{
+			return;
+		}
+		await ProcessEvents(events);
 	}
 
-	public async Task ScrapeAsync()
-	{
-		HashSet<string> eventUrls = await GetEventUrls();
 
-		foreach (var eventUrl in eventUrls)
+	private async Task<HashSet<Uri>> BuildEventUrlList()
+	{
+		var result = new HashSet<Uri>();
+		var lastPage = 1;
+		for (var currentPage = 1; currentPage <= lastPage; currentPage++)
 		{
-			var icalDocument = await GetCalendar(eventUrl);
-			if (icalDocument is null)
+			var url = new Uri(_shopUrl.AbsoluteUri + currentPage.ToString());
+			var htmlDocument = await HttpHelper.GetHtmlDocumentAsync(url);
+
+			// If we are on the first page, we need to find the last page index
+			if (currentPage == 1)
 			{
-				continue;
+				lastPage = GetLastPageIndex(lastPage, htmlDocument);
 			}
 
-			foreach (var calendarEvent in icalDocument.Events)
+			var eventUrls = GetEventUrls(htmlDocument.DocumentNode);
+
+			result.UnionWith(eventUrls);
+		}
+		return result;
+	}
+
+	private static int GetLastPageIndex(int lastPage, HtmlDocument htmlDocument)
+	{
+		var paginationNode = htmlDocument.DocumentNode.SelectSingleNode(_paginationElementSelector);
+		if (paginationNode is not null)
+		{
+			var lastPageNode = paginationNode.Descendants("li").LastOrDefault();
+			if (lastPageNode is not null && int.TryParse(lastPageNode.InnerText.Trim(), out var parsedLastPage))
 			{
-				var movie = GetMovieFromCalendarEvent(calendarEvent);
-				movie.DisplayName = movie.DisplayName.Replace("Konzert", string.Empty).Trim();
-
-				movie = await _movieService.CreateAsync(movie);
-				await _cinemaService.AddMovieToCinemaAsync(movie, _cinema);
-
-				var showTime = GetShowTimeFromCalendarEvent(calendarEvent, movie, _cinema);
-				await _showTimeService.CreateAsync(showTime);
+				lastPage = parsedLastPage;
 			}
 		}
+
+		return lastPage;
 	}
 
-	private async Task<Calendar?> GetCalendar(string eventUrl)
+	private HashSet<Uri> GetEventUrls(HtmlNode parentNode)
 	{
-		var htmlDocument = await HttpHelper.GetHtmlDocumentAsync(new Uri(_baseUrl, eventUrl));
-		var icalLink = htmlDocument.DocumentNode.SelectSingleNode("//a[contains(@class,'epg_reminder')]");
-		if (icalLink is null)
-		{
-			return null;
-		}
+		var eventListNode = parentNode.Descendants("div").FirstOrDefault(n => n.HasClass(_evenListElementClass));
+		var eventNodes = eventListNode?.ChildNodes.Where(n =>
+					n.InnerText.ContainsAny(_relevantEventText)
+					&& n.HasClass(_eventElementClass)
+				);
 
-		var icalHref = icalLink.GetAttributeValue("href", string.Empty);
-		if (icalHref is null)
+		var eventUris = new HashSet<Uri>();
+		foreach (var eventNode in eventNodes ?? [])
 		{
-			return null;
-		}
-
-		var icalUri = new Uri(_baseUrl, icalHref);
-		return await HttpHelper.GetCalendarAsync(icalUri);
-	}
-
-	private async Task<HashSet<string>> GetEventUrls()
-	{
-		var htmlDocument = await HttpHelper.GetHtmlDocumentAsync(_dataUrl);
-		var calendar = htmlDocument.DocumentNode.SelectSingleNode("//div[@class='kk_kalender']");
-		if (calendar is null)
-		{
-			return [];
-		}
-
-		var events = calendar.SelectNodes("//a[@title='Veranstaltungsdetails']");
-		if (events is null)
-		{
-			return [];
-		}
-
-		var eventUrls = new HashSet<string>();
-		foreach (var eventNode in events)
-		{
-			var eventUrl = eventNode.GetAttributeValue("href", string.Empty);
+			var eventUrl = eventNode.GetHref();
 			if (string.IsNullOrEmpty(eventUrl))
 			{
 				continue;
 			}
-			eventUrls.Add(eventUrl);
+			if (!Uri.TryCreate(_shopUrl, eventUrl, out var eventUri))
+			{
+				continue;
+			}
+			eventUris.Add(eventUri);
 		}
-
-		return eventUrls;
+		return eventUris;
 	}
 }

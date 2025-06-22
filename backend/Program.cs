@@ -31,7 +31,7 @@ static void ConfigureServices(HostApplicationBuilder builder)
 	builder.Services.AddServicesByInterface<IScraper>();
 	// Use the following line to register scrapers manually for debugging or specific configurations
 
-	// builder.Services.AddScoped<IScraper, CinemaDelSolScraper>();
+	//builder.Services.AddScoped<IScraper, SehFestScraper>();
 	builder.Services.AddServicesByInterface<IRenderer>();
 
 	builder.Services.AddSingleton<DatabaseMigrationService>();

@@ -72,13 +72,30 @@ public static class HttpHelper
 		// If content is null, send a GET request, otherwise send a POST request
 		if (content is null)
 		{
-			return await _httpClient.GetStringAsync(uri);
+			try
+			{
+				return await _httpClient.GetStringAsync(uri);
+			}
+			catch (HttpRequestException ex)
+			{
+				// Log the exception and return null
+				Console.WriteLine($"Error fetching data from {uri}: {ex.Message}");
+				return null;
+			}
 		}
 		else
 		{
-			ArgumentNullException.ThrowIfNull(content);
-			var response = await _httpClient.PostAsync(uri, content);
-			return await response.Content.ReadAsStringAsync();
+			try
+			{
+				var response = await _httpClient.PostAsync(uri, content);
+				return await response.Content.ReadAsStringAsync();
+			}
+			catch (HttpRequestException ex)
+			{
+				// Log the exception and return null
+				Console.WriteLine($"Error fetching data from {uri}: {ex.Message}");
+				return null;
+			}
 		}
 	}
 

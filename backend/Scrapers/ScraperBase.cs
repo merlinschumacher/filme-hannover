@@ -6,12 +6,12 @@ using Microsoft.Extensions.Logging;
 
 namespace backend.Scrapers;
 
-public abstract class ScraperBase(ILogger logger, CinemaService cinemaService, ShowTimeService showTimeService, MovieService movieService) : IScraper
+public abstract class ScraperBase(ILogger logger, Cinema cinema, CinemaService cinemaService, ShowTimeService showTimeService, MovieService movieService) : IScraper
 {
-	protected MovieService MovieSrv { get; } = movieService;
-	protected CinemaService CinemaSrv { get; } = cinemaService;
-	protected ShowTimeService SowTimeSrv { get; } = showTimeService;
-	protected ILogger Log { get; } = logger;
+	protected MovieService MovieService { get; } = movieService;
+	protected CinemaService CinemaService { get; } = cinemaService;
+	protected ShowTimeService ShowTimeService { get; } = showTimeService;
+	protected ILogger Logger { get; } = logger;
 
 	public abstract Task ScrapeAsync();
 
@@ -27,20 +27,5 @@ public abstract class ScraperBase(ILogger logger, CinemaService cinemaService, S
 
 	public virtual bool ReliableMetadata => false;
 
-	protected Cinema Cinema { get; set; } = null!;
-
-	protected static string GetDisplayName(string? title, string? subtitle)
-	{
-		if (string.IsNullOrWhiteSpace(title))
-		{
-			return subtitle ?? string.Empty;
-		}
-
-		if (string.IsNullOrWhiteSpace(subtitle))
-		{
-			return title;
-		}
-
-		return $"{title} - {subtitle}";
-	}
+	protected Cinema Cinema { get; } = cinemaService.Create(cinema);
 }

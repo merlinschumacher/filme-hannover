@@ -54,6 +54,20 @@ public sealed partial class MovieService(DatabaseContext context, ILogger<MovieS
 		return movie;
 	}
 
+	public async Task<Movie> CreateAsync(string displayName)
+	{
+		if (string.IsNullOrWhiteSpace(displayName))
+		{
+			throw new ArgumentException("Display name cannot be null or empty.", nameof(displayName));
+		}
+
+		var movie = new Movie
+		{
+			DisplayName = displayName,
+		};
+		return await CreateAsync(movie);
+	}
+
 	private async Task<Movie> AddMovieAsync(Movie movie)
 	{
 		logger.LogInformation("Creating movie {Title}", movie.DisplayName);

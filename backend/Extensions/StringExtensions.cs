@@ -58,4 +58,14 @@ public static class StringExtensions
 		var bigger = Math.Max(needleLength, s.Length);
 		return (double)(bigger - dist) / bigger;
 	}
+
+	public static bool ContainsAny(this string s, string[] values)
+	{
+		if (s == null || values == null || values.Length == 0)
+		{
+			return false;
+		}
+
+		return values.Any(value => s.Contains(value, StringComparison.OrdinalIgnoreCase));
+	}
 }
