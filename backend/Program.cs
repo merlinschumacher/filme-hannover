@@ -35,7 +35,7 @@ static void ConfigureServices(HostApplicationBuilder builder)
 	builder.Services.AddServicesByInterface<IRenderer>();
 
 	builder.Services.AddSingleton<DatabaseMigrationService>();
-	builder.Services.AddSingleton<ScrapingService>();
+	builder.Services.AddSingleton<ScraperManager>();
 	builder.Services.AddSingleton<RenderingService>();
 	builder.Services.AddSingleton<CleanupService>();
 }
@@ -54,7 +54,7 @@ var applicationLifetime = app.Services.GetRequiredService<IHostApplicationLifeti
 applicationLifetime.ApplicationStarted.Register(async () =>
 {
 	await app.Services.GetRequiredService<DatabaseMigrationService>().ExecuteAsync(applicationLifetime.ApplicationStopping);
-	await app.Services.GetRequiredService<ScrapingService>().ExecuteAsync(applicationLifetime.ApplicationStopping);
+	await app.Services.GetRequiredService<ScraperManager>().ExecuteAsync(applicationLifetime.ApplicationStopping);
 	await app.Services.GetRequiredService<RenderingService>().ExecuteAsync();
 	await app.Services.GetRequiredService<CleanupService>().ExecuteAsync(applicationLifetime.ApplicationStopping);
 	applicationLifetime.StopApplication();

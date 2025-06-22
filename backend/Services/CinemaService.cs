@@ -12,7 +12,7 @@ public class CinemaService(DatabaseContext dbcontext, ILogger<CinemaService> log
 
 		if (!cinema.Movies.Contains(movie))
 		{
-			Log.LogDebug("Adding movie {Movie} to cinema {Cinema}", movie, cinema);
+			logger.LogDebug("Adding movie {Movie} to cinema {Cinema}", movie, cinema);
 			cinema.Movies.Add(movie);
 			return true;
 		}
@@ -29,7 +29,7 @@ public class CinemaService(DatabaseContext dbcontext, ILogger<CinemaService> log
 		}
 		else
 		{
-			Log.LogInformation("Creating cinema {Cinema}", cinema);
+			logger.LogInformation("Creating cinema {Cinema}", cinema);
 			Context.Cinema.Add(cinema);
 		}
 

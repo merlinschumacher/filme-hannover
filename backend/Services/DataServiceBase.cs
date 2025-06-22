@@ -29,7 +29,7 @@ public abstract class DataServiceBase<T>(DatabaseContext context, ILogger<DataSe
 			}
 			catch (Exception ex)
 			{
-				Log.LogError(ex, "Error disposing asynchronously {ClassName}", typeof(T).Name);
+				logger.LogError(ex, "Error disposing asynchronously {ClassName}", typeof(T).Name);
 			}
 			_disposed = true;
 		}
@@ -54,7 +54,7 @@ public abstract class DataServiceBase<T>(DatabaseContext context, ILogger<DataSe
 				}
 				catch (Exception ex)
 				{
-					Log.LogError(ex, "Error disposing {ClassName}", typeof(T).Name);
+					logger.LogError(ex, "Error disposing {ClassName}", typeof(T).Name);
 				}
 			}
 			_disposed = true;

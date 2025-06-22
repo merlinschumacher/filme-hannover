@@ -36,7 +36,7 @@ public abstract class RssScraper(ILogger logger, CinemaService cinemaService,
         }
         catch (Exception ex)
         {
-            Log.LogError(ex, "Error reading RSS feed from {RssFeedUrl}", rssFeedUrl);
+            logger.LogError(ex, "Error reading RSS feed from {RssFeedUrl}", rssFeedUrl);
             return [];
         }
 
@@ -44,11 +44,11 @@ public abstract class RssScraper(ILogger logger, CinemaService cinemaService,
 
         if (feed?.Items == null || feed.Items.Count == 0)
         {
-            Log.LogWarning("No relevant items found in RSS feed: {RssFeedUrl}", rssFeedUrl);
+            logger.LogWarning("No relevant items found in RSS feed: {RssFeedUrl}", rssFeedUrl);
             return [];
         }
 
-        Log.LogDebug("Found {Count} items in RSS feed: {RssFeedUrl}", feed.Items.Count, rssFeedUrl);
+        logger.LogDebug("Found {Count} items in RSS feed: {RssFeedUrl}", feed.Items.Count, rssFeedUrl);
         var items = new List<RssFeedItem>();
 
         foreach (var item in feed.Items)

@@ -13,7 +13,7 @@ public sealed class ShowTimeService(DatabaseContext context, ILogger<ShowTimeSer
 		// Returning the original showTime is intentional to avoid adding outdated entries to the database.
 		if (showTime.StartTime < DateTime.Now.AddHours(-1))
 		{
-			Log.LogWarning("Attempted to process an expired ShowTime for '{Movie}' at {Time}. Returning the original entry.", showTime.Movie.DisplayName, showTime.StartTime);
+			logger.LogWarning("Attempted to process an expired ShowTime for '{Movie}' at {Time}. Returning the original entry.", showTime.Movie.DisplayName, showTime.StartTime);
 			return showTime;
 		}
 
@@ -26,7 +26,7 @@ public sealed class ShowTimeService(DatabaseContext context, ILogger<ShowTimeSer
 
 		if (existingShowTime is null)
 		{
-			Log.LogDebug("Adding ShowTime for '{Movie}' at {Time} at '{Cinema}'", showTime.Movie.DisplayName, showTime.StartTime, showTime.Cinema);
+			logger.LogDebug("Adding ShowTime for '{Movie}' at {Time} at '{Cinema}'", showTime.Movie.DisplayName, showTime.StartTime, showTime.Cinema);
 			await Context.ShowTime.AddAsync(showTime);
 			await Context.SaveChangesAsync();
 		}
@@ -56,7 +56,7 @@ public sealed class ShowTimeService(DatabaseContext context, ILogger<ShowTimeSer
 
 		if (result is not null)
 		{
-			Log.LogDebug("Found similar ShowTime for {Movie} at {Time} at {Cinema}", result.Movie, result.StartTime, result.Cinema);
+			logger.LogDebug("Found similar ShowTime for {Movie} at {Time} at {Cinema}", result.Movie, result.StartTime, result.Cinema);
 		}
 
 		return result;

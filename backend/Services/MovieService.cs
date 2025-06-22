@@ -56,7 +56,7 @@ public sealed partial class MovieService(DatabaseContext context, ILogger<MovieS
 
 	private async Task<Movie> AddMovieAsync(Movie movie)
 	{
-		Log.LogInformation("Creating movie {Title}", movie.DisplayName);
+		logger.LogInformation("Creating movie {Title}", movie.DisplayName);
 		await Context.Movies.AddAsync(movie);
 		return movie;
 	}
@@ -121,7 +121,7 @@ public sealed partial class MovieService(DatabaseContext context, ILogger<MovieS
 		}
 		catch (Exception ex)
 		{
-			Log.LogError(ex, "Error querying TMDb for movie {Movie}", movie);
+			logger.LogError(ex, "Error querying TMDb for movie {Movie}", movie);
 		}
 		return movie;
 	}
