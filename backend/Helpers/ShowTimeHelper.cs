@@ -1,185 +1,192 @@
 ﻿using backend.Models;
 
-namespace backend.Helpers;
-
-public static class ShowTimeHelper
+namespace backend.Helpers
 {
-	private static readonly Dictionary<ShowTimeDubType, string[]> _showTimeDubTypeMap = new()
-	{
-		{ ShowTimeDubType.OriginalVersion, [" OV ", "Original Version", "Originalversion", "Originalfassung", "Original Fassung"] },
-		{ ShowTimeDubType.Subtitled, ["OmU","OmdU", "Untertitel"] },
-		{ ShowTimeDubType.SubtitledEnglish, ["OmeU", "OmenglU", "OmU engl. UT"] },
-		{ ShowTimeDubType.Regular, [""] },
-	};
+    public static class ShowTimeHelper
+    {
+        private static readonly Dictionary<ShowTimeDubType, string[]> _showTimeDubTypeMap = new()
+        {
+            { ShowTimeDubType.OriginalVersion, [" OV ", "Original Version", "Originalversion", "Originalfassung", "Original Fassung"] },
+            { ShowTimeDubType.Subtitled, ["OmU","OmdU", "Untertitel"] },
+            { ShowTimeDubType.SubtitledEnglish, ["OmeU", "OmenglU", "OmU engl. UT"] },
+            { ShowTimeDubType.Regular, [""] },
+        };
 
-	private static readonly Dictionary<ShowTimeLanguage, string[]> _showTimeLanguageMap = new()
-	{
-		{ ShowTimeLanguage.Danish, ["Dänisch", "dän."] },
-		{ ShowTimeLanguage.English, ["Englisch","English"," eng."," engl."] },
-		{ ShowTimeLanguage.French, ["Französisch","franz.","frnz","frz."] },
-		{ ShowTimeLanguage.Spanish, ["Spanisch"," span."] },
-		{ ShowTimeLanguage.Italian, ["Italienisch","ital."] },
-		{ ShowTimeLanguage.Turkish, ["Türkisch", "türk","trk"] },
-		{ ShowTimeLanguage.Russian, ["Russisch", "russ"] },
-		{ ShowTimeLanguage.Japanese, ["Japanisch", "jap."] },
-		{ ShowTimeLanguage.Korean, ["Koreanisch", "kor."] },
-		{ ShowTimeLanguage.Hindi, ["Hindi", " hind.", " hin." ] },
-		{ ShowTimeLanguage.Polish, ["Polnisch", "poln.", "pol."] },
-		{ ShowTimeLanguage.Arabic, ["Arabisch", "arab."]},
-		{ ShowTimeLanguage.German, ["Deutsch"," de."," deu.", "dt.", "Deutsch mit englischen Liedern"] },
-		{ ShowTimeLanguage.Other, ["Andere", "Verschiedene", "versch.", "div.", "Malayalam", "Filipino", "Georgisch", "georg." ]},
-		{ ShowTimeLanguage.Unknown, ["Unbekannt"] },
-	};
-	private static readonly Dictionary<ShowTimeLanguage, string[]> _showTimeLanguageCountryCodeMap = new()
-	{
-		{ ShowTimeLanguage.Danish, ["DK"] },
-		{ ShowTimeLanguage.English, ["EN","GB","UK","US", "USA"] },
-		{ ShowTimeLanguage.French, ["FR"] },
-		{ ShowTimeLanguage.Spanish, ["SP"," ES"] },
-		{ ShowTimeLanguage.Italian, ["IT"] },
-		{ ShowTimeLanguage.Turkish, ["TR"] },
-		{ ShowTimeLanguage.Russian, ["RUS", "RUSS", "SU"] },
-		{ ShowTimeLanguage.Japanese, ["JP", "JA", "JAP"] },
-		{ ShowTimeLanguage.Korean, ["KO", "KOR"] },
-		{ ShowTimeLanguage.Polish, ["PL", "POL"] },
-		{ ShowTimeLanguage.Arabic, ["AR", "ARA"] },
-		{ ShowTimeLanguage.Hindi, ["HI", "HIN"] },
-		{ ShowTimeLanguage.German, ["DE", "AT", "CH"] },
-	};
+        private static readonly Dictionary<ShowTimeLanguage, string[]> _showTimeLanguageMap = new()
+        {
+            { ShowTimeLanguage.Danish, ["Dänisch", "dän."] },
+            { ShowTimeLanguage.English, ["Englisch","English"," eng."," engl."] },
+            { ShowTimeLanguage.French, ["Französisch","franz.","frnz","frz."] },
+            { ShowTimeLanguage.Spanish, ["Spanisch"," span."] },
+            { ShowTimeLanguage.Italian, ["Italienisch","ital."] },
+            { ShowTimeLanguage.Turkish, ["Türkisch", "türk","trk"] },
+            { ShowTimeLanguage.Russian, ["Russisch", "russ"] },
+            { ShowTimeLanguage.Japanese, ["Japanisch", "jap."] },
+            { ShowTimeLanguage.Korean, ["Koreanisch", "kor."] },
+            { ShowTimeLanguage.Hindi, ["Hindi", " hind.", " hin." ] },
+            { ShowTimeLanguage.Polish, ["Polnisch", "poln.", "pol."] },
+            { ShowTimeLanguage.Arabic, ["Arabisch", "arab."]},
+            { ShowTimeLanguage.German, ["Deutsch"," de."," deu.", "dt.", "Deutsch mit englischen Liedern"] },
+            { ShowTimeLanguage.Other, ["Andere", "Verschiedene", "versch.", "div.", "Malayalam", "Filipino", "Georgisch", "georg." ]},
+            { ShowTimeLanguage.Unknown, ["Unbekannt"] },
+        };
 
-	public static string GetLanguageName(ShowTimeLanguage language)
-	{
-		var values = _showTimeLanguageMap[language];
-		return values[0];
-	}
+        private static readonly Dictionary<ShowTimeLanguage, string[]> _showTimeLanguageCountryCodeMap = new()
+        {
+            { ShowTimeLanguage.Danish, ["DK"] },
+            { ShowTimeLanguage.English, ["EN","GB","UK","US", "USA"] },
+            { ShowTimeLanguage.French, ["FR"] },
+            { ShowTimeLanguage.Spanish, ["SP"," ES"] },
+            { ShowTimeLanguage.Italian, ["IT"] },
+            { ShowTimeLanguage.Turkish, ["TR"] },
+            { ShowTimeLanguage.Russian, ["RUS", "RUSS", "SU"] },
+            { ShowTimeLanguage.Japanese, ["JP", "JA", "JAP"] },
+            { ShowTimeLanguage.Korean, ["KO", "KOR"] },
+            { ShowTimeLanguage.Polish, ["PL", "POL"] },
+            { ShowTimeLanguage.Arabic, ["AR", "ARA"] },
+            { ShowTimeLanguage.Hindi, ["HI", "HIN"] },
+            { ShowTimeLanguage.German, ["DE", "AT", "CH"] },
+            { ShowTimeLanguage.Other, ["XX"] },
+            { ShowTimeLanguage.Unknown, ["??"] },
+        };
 
-	public static string GetTypeName(ShowTimeDubType type)
-	{
-		return type switch
-		{
-			ShowTimeDubType.OriginalVersion => "OV",
-			ShowTimeDubType.Subtitled => "OmU",
-			ShowTimeDubType.SubtitledEnglish => "OmeU",
-			_ => string.Empty,
-		};
-	}
+        public static readonly int _longestShowTimeLanguageString = _showTimeLanguageMap.Values.Max(e => e.Length);
 
-	public static ShowTimeLanguage? TryGetLanguage(string language, ShowTimeLanguage? def)
-	{
-		var result = FindMatchingDictionaryKey(language, _showTimeLanguageMap, ShowTimeLanguage.Unknown);
-		if (result == ShowTimeLanguage.Unknown)
-		{
-			result = FindMatchingDictionaryKey(language, _showTimeLanguageCountryCodeMap, ShowTimeLanguage.Unknown, padding: " ");
-		}
-		if (result == ShowTimeLanguage.Unknown)
-		{
-			return def;
-		}
-		return result;
-	}
+        public static string GetLanguageName(ShowTimeLanguage language)
+        {
+            var values = _showTimeLanguageMap[language];
+            return values[0];
+        }
 
-	public static ShowTimeLanguage GetLanguage(string language)
-	{
-		return FindMatchingDictionaryKey(language, _showTimeLanguageMap, ShowTimeLanguage.German);
-	}
+        public static string GetTypeName(ShowTimeDubType type)
+        {
+            return type switch
+            {
+                ShowTimeDubType.OriginalVersion => "OV",
+                ShowTimeDubType.Subtitled => "OmU",
+                ShowTimeDubType.SubtitledEnglish => "OmeU",
+                _ => string.Empty,
+            };
+        }
 
-	public static ShowTimeDubType GetDubType(string type)
-	{
-		type = type.Trim().Replace(".", " ").Replace("(", " ").Replace(")", " ");
+        public static ShowTimeLanguage? TryGetLanguage(string language, ShowTimeLanguage? def)
+        {
+            var result = FindMatchingDictionaryKey(language, _showTimeLanguageMap, ShowTimeLanguage.Unknown);
+            if (result == ShowTimeLanguage.Unknown)
+            {
+                result = FindMatchingDictionaryKey(language, _showTimeLanguageCountryCodeMap, ShowTimeLanguage.Unknown, padding: " ");
+            }
+            if (result == ShowTimeLanguage.Unknown)
+            {
+                return def;
+            }
+            return result;
+        }
 
-		var results = FindMatchingDictionaryKeys(type, _showTimeDubTypeMap);
+        public static ShowTimeLanguage GetLanguage(string language)
+        {
+            return FindMatchingDictionaryKey(language, _showTimeLanguageMap, ShowTimeLanguage.German);
+        }
 
-		CheckForOF(type, results);
+        public static ShowTimeDubType GetDubType(string type)
+        {
+            type = type.Trim().Replace(".", " ").Replace("(", " ").Replace(")", " ");
 
-		// If both OV and OmU/OmeU are found, remove OV as it is less specific
-		if ((results.Contains(ShowTimeDubType.Subtitled)
-			|| results.Contains(ShowTimeDubType.SubtitledEnglish)) && results.Contains(ShowTimeDubType.OriginalVersion))
-		{
-			results.Remove(ShowTimeDubType.OriginalVersion);
-		}
+            var results = FindMatchingDictionaryKeys(type, _showTimeDubTypeMap);
 
-		// If both OmU and OmeU are found, remove OmU as it is less specific
-		if (results.Contains(ShowTimeDubType.Subtitled) && results.Contains(ShowTimeDubType.SubtitledEnglish))
-		{
-			results.Remove(ShowTimeDubType.Subtitled);
-		}
+            CheckForOF(type, results);
 
-		// If no type is found, add Regular as default
-		if (results.Count == 0)
-		{
-			results.Add(ShowTimeDubType.Regular);
-		}
+            // If both OV and OmU/OmeU are found, remove OV as it is less specific
+            if ((results.Contains(ShowTimeDubType.Subtitled)
+                || results.Contains(ShowTimeDubType.SubtitledEnglish)) && results.Contains(ShowTimeDubType.OriginalVersion))
+            {
+                results.Remove(ShowTimeDubType.OriginalVersion);
+            }
 
-		// Otherwise return the first result
-		return results[0];
-	}
+            // If both OmU and OmeU are found, remove OmU as it is less specific
+            if (results.Contains(ShowTimeDubType.Subtitled) && results.Contains(ShowTimeDubType.SubtitledEnglish))
+            {
+                results.Remove(ShowTimeDubType.Subtitled);
+            }
 
-	/// <summary>
-	/// OF is a common abbreviation for OriginalFassung in German cinemas
-	/// but in many English movie titles OF appears in the title itself.
-	/// And sometimes the movie title is in English, uppercase and contains OF.
-	/// We'll check if string is uppercase and contains OF,
-	/// This is a simple heuristic to determine if it is used as OriginalVersion indicator.
-	/// Check if the ratio of uppercase letters is higher than 70%.
-	/// If so, we'll check if OF is in the last third of the string, as OF is usually at the end of the title
-	/// </summary>
-	private static void CheckForOF(string type, List<ShowTimeDubType> results)
-	{
-		var upperCaseRatio = type.Count(c => char.IsLetter(c) && char.IsUpper(c)) / (double)type.Length;
-		if (upperCaseRatio > .7)
-		{
-			var ofPosition = type.IndexOf(" OF ", StringComparison.CurrentCulture);
-			var lastSixth = type.Length * .85;
-			if (ofPosition < lastSixth)
-			{
-				results.Add(ShowTimeDubType.OriginalVersion);
-			}
-		}
-	}
+            // If no type is found, add Regular as default
+            if (results.Count == 0)
+            {
+                results.Add(ShowTimeDubType.Regular);
+            }
 
-	private static List<T> FindMatchingDictionaryKeys<T>(string haystack, Dictionary<T, string[]> dictionary) where T : notnull
-	{
-		var matches = new List<T>();
+            // Otherwise return the first result
+            return results[0];
+        }
 
-		foreach (var (key, needle) in dictionary)
-		{
-			// If the needle is an exact match for the haystack, return the key
-			if (Array.Exists(needle, n => !string.IsNullOrWhiteSpace(n) && haystack.Equals(n, StringComparison.OrdinalIgnoreCase)))
-			{
-				return [key];
-			}
-			// If the needle is contained in the haystack, add the key to the matches
-			if (Array.Exists(needle, n => !string.IsNullOrWhiteSpace(n) && haystack.Contains(n, StringComparison.OrdinalIgnoreCase)))
-			{
-				matches.Add(key);
-			}
-		}
+        /// <summary>
+        /// OF is a common abbreviation for OriginalFassung in German cinemas
+        /// but in many English movie titles OF appears in the title itself.
+        /// And sometimes the movie title is in English, uppercase and contains OF.
+        /// We'll check if string is uppercase and contains OF,
+        /// This is a simple heuristic to determine if it is used as OriginalVersion indicator.
+        /// Check if the ratio of uppercase letters is higher than 70%.
+        /// If so, we'll check if OF is in the last third of the string, as OF is usually at the end of the title
+        /// </summary>
+        private static void CheckForOF(string type, List<ShowTimeDubType> results)
+        {
+            var upperCaseRatio = type.Count(c => char.IsLetter(c) && char.IsUpper(c)) / (double)type.Length;
+            if (upperCaseRatio > .7)
+            {
+                var ofPosition = type.IndexOf(" OF ", StringComparison.CurrentCulture);
+                var lastSixth = type.Length * .85;
+                if (ofPosition < lastSixth)
+                {
+                    results.Add(ShowTimeDubType.OriginalVersion);
+                }
+            }
+        }
 
-		return matches;
-	}
-	private static T FindMatchingDictionaryKey<T>(string needle, Dictionary<T, string[]> dictionary, T defaultValue, string? padding = "", StringComparison stringComparison = StringComparison.OrdinalIgnoreCase) where T : notnull
-	{
-		foreach (var (key, value) in dictionary)
-		{
-			// If the needle is an exact match for the haystack, return the key
-			if (Array.Exists(value, v => !string.IsNullOrWhiteSpace(v) && needle.Equals(
-				padding + v + padding, stringComparison
-				)))
-			{
-				return key;
-			}
-		}
-		// If no exact match is found, check if the haystack contains one of the values
-		foreach (var (key, value) in dictionary)
-		{
-			if (Array.Exists(value, v => !string.IsNullOrWhiteSpace(v) && needle.Contains(
-				padding + v + padding, stringComparison
-				)))
-			{
-				return key;
-			}
-		}
+        private static List<T> FindMatchingDictionaryKeys<T>(string haystack, Dictionary<T, string[]> dictionary) where T : notnull
+        {
+            var matches = new List<T>();
 
-		return defaultValue;
-	}
+            foreach (var (key, needle) in dictionary)
+            {
+                // If the needle is an exact match for the haystack, return the key
+                if (Array.Exists(needle, n => !string.IsNullOrWhiteSpace(n) && haystack.Equals(n, StringComparison.OrdinalIgnoreCase)))
+                {
+                    return [key];
+                }
+                // If the needle is contained in the haystack, add the key to the matches
+                if (Array.Exists(needle, n => !string.IsNullOrWhiteSpace(n) && haystack.Contains(n, StringComparison.OrdinalIgnoreCase)))
+                {
+                    matches.Add(key);
+                }
+            }
+
+            return matches;
+        }
+
+        private static T FindMatchingDictionaryKey<T>(string needle, Dictionary<T, string[]> dictionary, T defaultValue, string? padding = "", StringComparison stringComparison = StringComparison.OrdinalIgnoreCase) where T : notnull
+        {
+            foreach (var (key, value) in dictionary)
+            {
+                // If the needle is an exact match for the haystack, return the key
+                if (Array.Exists(value, v => !string.IsNullOrWhiteSpace(v) && needle.Equals(
+                    padding + v + padding, stringComparison
+                    )))
+                {
+                    return key;
+                }
+            }
+            // If no exact match is found, check if the haystack contains one of the values
+            foreach (var (key, value) in dictionary)
+            {
+                if (Array.Exists(value, v => !string.IsNullOrWhiteSpace(v) && needle.Contains(
+                    padding + v + padding, stringComparison
+                    )))
+                {
+                    return key;
+                }
+            }
+
+            return defaultValue;
+        }
+    }
 }
