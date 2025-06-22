@@ -16,6 +16,7 @@
 		<SelfContained>true</SelfContained>
 		<RunWorkingDirectory>$(MSBuildProjectDirectory)</RunWorkingDirectory>
 		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+		<AnalysisLevel>latest-recommended</AnalysisLevel>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -50,6 +51,7 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
+		<PackageReference Include="Schema.NET" Version="13.0.0" />
 		<PackageReference Include="SolarCalculator" Version="3.5.0" />
 		<PackageReference Include="SonarAnalyzer.CSharp" Version="10.11.0.117924">
 			<PrivateAssets>all</PrivateAssets>
@@ -59,11 +61,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Update="csv\kircheundkino.csv">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </None>
-	  <None Update="csv\sehfest.csv">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </None>
+		<None Update="csv\kircheundkino.csv">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+	<ItemGroup>
+		<None Include="C:\Users\Merlin Schumacher\Source\Repos\merlinschumacher\kinohannover\backend\.editorconfig" />
 	</ItemGroup>
 </Project>

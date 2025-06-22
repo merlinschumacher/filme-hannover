@@ -1,49 +1,71 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace backend.Extensions
+namespace backend.Extensions;
+
+public static class StringExtensions
 {
-    public static class StringExtensions
-    {
-        private static readonly string[] _quotationCharacters = ["❛", "❜", "❝", "❞", "🙶", "🙷", "🙸", "'", "\"", "«", "»", "‘", "’", "‚", "‛", "“", "”", "„", "‟", "‹", "›", "⹂"];
+	private static readonly string[] _quotationCharacters = ["❛", "❜", "❝", "❞", "🙶", "🙷", "🙸", "'", "\"", "«", "»", "‘", "’", "‚", "‛", "“", "”", "„", "‟", "‹", "›", "⹂"];
 
-        private static readonly char[] _dashCharacters = ['-', '֊', '־', '᠆', '‐', '‑', '‒', '–', '—', '―', '⸗', '⸚', '⸺', '⸻', '⹀', '⹝', '', '︲', '﹘', '﹣', '－'];
+	private static readonly char[] _dashCharacters = ['-', '֊', '־', '᠆', '‐', '‑', '‒', '–', '—', '―', '⸗', '⸚', '⸺', '⸻', '⹀', '⹝', '', '︲', '﹘', '﹣', '－'];
 
-        public static string NormalizeQuotes(this string s)
-        {
-            foreach (var quote in _quotationCharacters)
-            {
-                s = s.Trim();
-                Regex.Replace(s, $"\\s{quote}", "–");
-            }
+	public static string NormalizeQuotes(this string s)
+	{
+		foreach (var quote in _quotationCharacters)
+		{
+			s = s.Trim();
+			Regex.Replace(s, $"\\s{quote}", "–");
+		}
 
-            return s;
-        }
+		return s;
+	}
 
-        public static string NormalizeDashes(this string s)
+	public static string NormalizeDashes(this string s)
 
-        {
-            foreach (var dash in _dashCharacters)
-            {
-                s = s.Trim(dash);
-                Regex.Replace(s, $"\\s{dash}\\s?", "–");
-            }
+	{
+		foreach (var dash in _dashCharacters)
+		{
+			s = s.Trim(dash);
+			Regex.Replace(s, $"\\s{dash}\\s?", "–");
+		}
 
-            return s;
-        }
+		return s;
+	}
 
-        public static double DistancePercentageFrom(this string s, string c, bool caseInsensitive = false)
-        {
-            if (caseInsensitive)
-            {
-                s = s.ToLower();
-                c = c.ToLower();
-            }
-            Fastenshtein.Levenshtein lev = new(c);
-            var needleLength = c.Length;
+	/// <summary>
+	/// Calculates the distance percentage between two strings using the Levenshtein distance algorithm.
+	/// The higher the percentage, the more similar the strings are.
+	/// </summary>
+	/// <param name="s">The first string.</param>
+	/// <param name="c">The second string.</param>
+	/// <param name="caseInsensitive">A value indicating whether the comparison should be case-insensitive.</param>
+	/// <returns>The distance percentage between the two strings.</returns>
+	public static double MatchPercentage(this string s, string c, bool caseInsensitive = false)
+	{
+		if (s == null || c == null)
+		{
+			return 0;
+		}
 
-            var dist = lev.DistanceFrom(s);
-            var bigger = Math.Max(needleLength, s.Length);
-            return (double)(bigger - dist) / bigger;
-        }
-    }
+		if (caseInsensitive)
+		{
+			s = s.ToLower(System.Globalization.CultureInfo.CurrentCulture);
+			c = c.ToLower(System.Globalization.CultureInfo.CurrentCulture);
+		}
+		Fastenshtein.Levenshtein lev = new(c);
+		var needleLength = c.Length;
+
+		var dist = lev.DistanceFrom(s);
+		var bigger = Math.Max(needleLength, s.Length);
+		return (double)(bigger - dist) / bigger;
+	}
+
+	public static bool ContainsAny(this string s, string[] values)
+	{
+		if (s == null || values == null || values.Length == 0)
+		{
+			return false;
+		}
+
+		return values.Any(value => s.Contains(value, StringComparison.OrdinalIgnoreCase));
+	}
 }

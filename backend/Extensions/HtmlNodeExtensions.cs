@@ -1,12 +1,11 @@
 ﻿using HtmlAgilityPack;
 
-namespace backend.Extensions
+namespace backend.Extensions;
+
+public static class HtmlNodeExtensions
 {
-    public static class HtmlNodeExtensions
+    public static string GetHref(this HtmlNode node)
     {
-        public static string GetHref(this HtmlNode node)
-        {
-            return node.GetAttributeValue("href", "");
-        }
+        return node.GetAttributeValue("href", "");
     }
 }
