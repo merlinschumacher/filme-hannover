@@ -24,7 +24,7 @@
 		<PackageReference Include="CsvHelper" Version="33.1.0" />
 		<PackageReference Include="Fastenshtein" Version="1.0.10" />
 		<PackageReference Include="HtmlAgilityPack" Version="1.12.1" />
-		<PackageReference Include="Ical.Net" Version="4.3.1" />
+		<PackageReference Include="Ical.Net" Version="5.0.0" />
 		<PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="8.0.17" />
 		<PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0">
 			<PrivateAssets>all</PrivateAssets>
@@ -42,7 +42,7 @@
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3">
 			<TreatAsUsed>true</TreatAsUsed>
 		</PackageReference>
-		<PackageReference Include="Polly" Version="8.6.0" />
+		<PackageReference Include="Polly" Version="8.6.1" />
 		<PackageReference Include="Roslynator.Analyzers" Version="4.13.1">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -53,7 +53,7 @@
 		</PackageReference>
 		<PackageReference Include="Schema.NET" Version="13.0.0" />
 		<PackageReference Include="SolarCalculator" Version="3.5.0" />
-		<PackageReference Include="SonarAnalyzer.CSharp" Version="10.11.0.117924">
+		<PackageReference Include="SonarAnalyzer.CSharp" Version="10.12.0.118525">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
