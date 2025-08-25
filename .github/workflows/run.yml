@@ -41,7 +41,7 @@ jobs:
         run: docker run --rm -v ${{ github.workspace }}/public:/output -e APPOPTIONS__TMDBAPIKEY=${{ secrets.APPOPTIONS__TMDBAPIKEY}} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           # Upload the output
           path: "public"
