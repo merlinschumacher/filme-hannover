@@ -30,7 +30,7 @@
     "sharp": "^0.34.3",
     "svgo": "^4.0.0",
     "typescript": "~5.9.2",
-    "typescript-eslint": "^8.39.1",
+    "typescript-eslint": "^8.41.0",
     "vite": "^7.1.3",
     "vite-plugin-eslint": "^1.8.1",
     "vite-plugin-html-minifier": "^1.0.5",
