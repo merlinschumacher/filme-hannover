@@ -5,40 +5,68 @@ namespace backend.Scrapers;
 
 public abstract class IcalScraper
 {
-    private static TimeSpan GetRuntimeFromCalendarEvent(CalendarEvent calendarEvent)
-    {
-        var duration = calendarEvent.Duration;
-        if (duration.TotalSeconds > 0 && duration.TotalHours < 12) return duration;
+	private static TimeSpan GetRuntimeFromCalendarEvent(CalendarEvent calendarEvent)
+	{
+		if (calendarEvent.Duration is not null)
+		{
+			var duration = calendarEvent.Duration.Value.ToTimeSpanUnspecified();
+			if (duration.TotalSeconds > 0 && duration.TotalHours < 12) return duration;
+		}
 
-        if (calendarEvent.End is null) return Constants.AverageMovieRuntime;
-        if (calendarEvent.End.AsSystemLocal <= calendarEvent.Start.AsSystemLocal) return Constants.AverageMovieRuntime;
-        duration = calendarEvent.End.AsSystemLocal - calendarEvent.Start.AsSystemLocal;
-        if (duration.TotalSeconds > 0 && duration.TotalHours < 12) return duration;
-        return Constants.AverageMovieRuntime;
-    }
+		if (calendarEvent.End is null
+			|| calendarEvent.Start is null
+			|| calendarEvent.End <= calendarEvent.Start
+			)
+		{
+			return Constants.AverageMovieRuntime;
+		}
 
-    protected static Movie GetMovieFromCalendarEvent(CalendarEvent calendarEvent) => new()
-    {
-        DisplayName = string.IsNullOrWhiteSpace(calendarEvent.Summary) ? calendarEvent.Description : calendarEvent.Summary,
-        Url = calendarEvent.Url,
-        Runtime = GetRuntimeFromCalendarEvent(calendarEvent),
-    };
+		var startTime = calendarEvent.Start.Value;
+		var endTime = calendarEvent.End.Value;
+		var durationTimeSpan = endTime - startTime;
 
-    protected static ShowTime GetShowTimeFromCalendarEvent(CalendarEvent calendarEvent, Movie movie, Cinema cinema)
-    {
-        var endTime = calendarEvent.End?.AsSystemLocal;
-        if (endTime == null || endTime <= calendarEvent.Start.AsSystemLocal)
-        {
-            endTime = calendarEvent.Start.AsSystemLocal + movie.Runtime;
-        }
+		if (durationTimeSpan.TotalSeconds > 0 && durationTimeSpan.TotalHours < 12) return durationTimeSpan;
+		return Constants.AverageMovieRuntime;
+	}
 
-        return new()
-        {
-            Movie = movie,
-            StartTime = calendarEvent.Start.AsSystemLocal,
-            EndTime = endTime,
-            Url = calendarEvent.Url,
-            Cinema = cinema,
-        };
-    }
+	protected static Movie? GetMovieFromCalendarEvent(CalendarEvent calendarEvent)
+	{
+		var displayName = string.IsNullOrWhiteSpace(calendarEvent.Summary) ? calendarEvent.Description : calendarEvent.Summary;
+		if (string.IsNullOrWhiteSpace(displayName))
+		{
+			return null;
+		}
+		displayName = displayName.Trim();
+
+		return new()
+		{
+			DisplayName = displayName,
+			Url = calendarEvent.Url,
+			Runtime = GetRuntimeFromCalendarEvent(calendarEvent),
+		};
+	}
+
+	protected static ShowTime? GetShowTimeFromCalendarEvent(CalendarEvent calendarEvent, Movie movie, Cinema cinema)
+	{
+		if (calendarEvent.Start is null) return null;
+		DateTime endTime;
+		if (calendarEvent.End?.Value == null || calendarEvent.End.Value <= calendarEvent.Start.Value)
+		{
+			endTime = calendarEvent.Start.AsUtc + movie.Runtime;
+		}
+		else
+		{
+			endTime = DateTime.SpecifyKind(calendarEvent.End.Value, DateTimeKind.Local);
+		}
+		var startTime = DateTime.SpecifyKind(calendarEvent.Start.Value, DateTimeKind.Local);
+
+		return new()
+		{
+			Movie = movie,
+			StartTime = startTime.ToLocalTime(),
+			EndTime = endTime.ToLocalTime(),
+			Url = calendarEvent.Url,
+			Cinema = cinema,
+		};
+	}
 }

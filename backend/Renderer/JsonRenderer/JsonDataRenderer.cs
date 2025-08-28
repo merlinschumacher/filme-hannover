@@ -78,7 +78,7 @@ public class JsonDataRenderer(DatabaseContext context) : IRenderer
 				Id = m.Id,
 				DisplayName = m.DisplayName,
 				ReleaseDate = m.ReleaseDate,
-				Cinemas = m.Cinemas.Select(e => e.Id).ToList(),
+				Cinemas = m.Cinemas.Select(c => c.Id).ToList(),
 				Runtime = m.Runtime.TotalMinutes,
 				Rating = m.Rating,
 			})

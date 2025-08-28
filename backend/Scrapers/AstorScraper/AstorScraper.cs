@@ -3,6 +3,7 @@ using backend.Models;
 using backend.Services;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace backend.Scrapers.AstorScraper;
@@ -22,13 +23,13 @@ public partial class AstorScraper : IScraper
 
 	public bool ReliableMetadata => true;
 
-	private const string _movieListKey = "movie_list";
-	private readonly Uri _apiEndpointUrl = new("https://hannover.premiumkino.de/api/v1/de/config");
+	private readonly Uri _apiEndpointUrl = new("https://backend.premiumkino.de/v1/de/hannover/program");
 	private readonly Uri _showTimeBaseUrl = new("https://hannover.premiumkino.de/vorstellung/");
 	private readonly ILogger<AstorScraper> _logger;
 	private readonly CinemaService _cinemaService;
 	private readonly ShowTimeService _showTimeService;
 	private readonly MovieService _movieService;
+	private readonly Dictionary<string, ShowTimeDubType> _dubTypeMap = [];
 
 	public AstorScraper(ILogger<AstorScraper> logger, MovieService movieService, ShowTimeService showTimeService, CinemaService cinemaService)
 	{
@@ -66,13 +67,26 @@ public partial class AstorScraper : IScraper
 
 	public async Task ScrapeAsync()
 	{
-		var astorMovies = await GetMovieListAsync();
+		var jsonString = await HttpHelper.GetHttpContentAsync(_apiEndpointUrl) ?? string.Empty;
+		var data = JsonSerializer.Deserialize<AstorData>(jsonString)
+			?? throw new OperationCanceledException("Failed to deserialize JSON data.");
+
+		var filterItems = data.movieFilterGroups.FirstOrDefault(e => e.label.Equals("filterVersionGroup", StringComparison.OrdinalIgnoreCase))?.items;
+		foreach (var filterGroup in filterItems)
+		{
+			_dubTypeMap[filterGroup.value] = ShowTimeHelper.GetDubType(filterGroup.label);
+		}
+
+		var astorMovies = await GetMovieListAsync(data);
 
 		foreach (var astorMovie in astorMovies)
 		{
 			var movie = await ProcessMovieAsync(astorMovie);
-			foreach (var performance in astorMovie.performances)
+			foreach (var performanceId in astorMovie.performanceIds)
 			{
+
+				var performance = data.performances.FirstOrDefault(p => p.id == performanceId);
+
 				// Skip performances that are not bookable and not reservable
 				if (performance is null || (!performance.bookable && !performance.reservable))
 				{
@@ -88,17 +102,13 @@ public partial class AstorScraper : IScraper
 	{
 		var releaseYear = astorMovie.year;
 		var title = astorMovie.name;
-		var eventTitle = astorMovie.events?.type_1?.FirstOrDefault()?.name;
-		if (eventTitle is not null)
-		{
-			title = SanitizeTitle(title, eventTitle);
-		}
+		title = SanitizeTitle(title, null);
 
 		var movie = new Movie()
 		{
 			DisplayName = title,
 			Runtime = GetRuntime(astorMovie.minutes),
-			Rating = astorMovie.fsk,
+			Rating = MovieHelper.GetRatingMatch(astorMovie.rating),
 		};
 
 		movie.SetReleaseDateFromYear(releaseYear);
@@ -122,7 +132,7 @@ public partial class AstorScraper : IScraper
 		var type = GetShowTimeDubType(performance);
 		var language = GetShowTimeLanguage(performance.language);
 
-		var performanceUrl = new Uri(_showTimeBaseUrl + $"{performance.slug}/0/0/{performance.crypt_id}");
+		var performanceUrl = new Uri(_showTimeBaseUrl + $"{performance.slug}/0/0/{performance.id}");
 
 		var showTime = new ShowTime()
 		{
@@ -152,39 +162,31 @@ public partial class AstorScraper : IScraper
 		return ShowTimeLanguage.Unknown;
 	}
 
-	private static ShowTimeDubType GetShowTimeDubType(Performance performance)
-	{
-		if (performance?.is_ov == true)
-		{
-			return ShowTimeDubType.OriginalVersion;
-		}
-		else if (performance?.is_omu == true)
-		{
-			return ShowTimeDubType.Subtitled;
-		}
 
+	private ShowTimeDubType GetShowTimeDubType(Performance performance)
+	{
+		foreach (var filter in performance.filterIds)
+		{
+			if (_dubTypeMap.TryGetValue(filter, out var dubType))
+			{
+				return dubType;
+			}
+		}
 		return ShowTimeDubType.Regular;
 	}
 
-	private async Task<IEnumerable<AstorMovie>> GetMovieListAsync()
+	private async Task<IEnumerable<AstorMovie>> GetMovieListAsync(AstorData data)
 	{
 		IList<AstorMovie> astorMovies = [];
 		try
 		{
-			var jsonString = await HttpHelper.GetHttpContentAsync(_apiEndpointUrl) ?? string.Empty;
-			var json = JObject.Parse(jsonString)[_movieListKey];
-			if (json == null)
+			if (data?.movies == null)
 			{
 				return astorMovies;
 			}
 
-			foreach (var movie in json.Children().Select(e => e.ToObject<AstorMovie>()))
+			foreach (var movie in data.movies)
 			{
-				if (movie?.show != true)
-				{
-					continue;
-				}
-
 				astorMovies.Add(movie);
 			}
 			return astorMovies;

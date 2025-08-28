@@ -7,7 +7,6 @@ public abstract class DataServiceBase<T>(DatabaseContext context, ILogger<DataSe
 {
 	private bool _disposed;
 	protected DatabaseContext Context { get; } = context;
-	protected ILogger<DataServiceBase<T>> Log { get; } = logger;
 
 	public abstract Task<T> CreateAsync(T entity);
 

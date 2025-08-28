@@ -95,7 +95,7 @@ internal sealed class CinestarScraper : IScraper
 		var dateTimeString = cinestarShowtime.Datetime.Replace("UTC", string.Empty).Trim();
 		var dateTime = DateTime.Parse(dateTimeString, CultureInfo.CurrentCulture);
 
-		var showTimeUrl = QueryHelpers.AddQueryString(_shopUrlTemplate.ToString(), "movieSessionId", cinestarShowtime.SystemId.ToString());
+		var showTimeUrl = QueryHelpers.AddQueryString(_shopUrlTemplate.ToString(), "movieSessionId", cinestarShowtime.SystemId);
 
 		var showTime = new ShowTime()
 		{

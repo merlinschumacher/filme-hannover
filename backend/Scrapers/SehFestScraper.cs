@@ -29,8 +29,18 @@ public class SehFestScraper(ILogger<SehFestScraper> logger, MovieService movieSe
 	{
 		var htmlDocument = await HttpHelper.GetHtmlDocumentAsync(_dataUri);
 		var eventListNode = htmlDocument.DocumentNode.SelectSingleNode(_eventListSelector);
+		if (eventListNode == null)
+		{
+			Logger.LogWarning("No event list found at {Url}", _dataUri);
+			return;
+		}
 
 		var eventNodes = eventListNode.SelectNodes(_eventListElementSelector);
+		if (eventNodes == null)
+		{
+			Logger.LogWarning("No events found at {Url}", _dataUri);
+			return;
+		}
 
 		foreach (var eventNode in eventNodes)
 		{

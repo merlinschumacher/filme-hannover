@@ -65,10 +65,12 @@ internal sealed class HoelderlinEinsScraper : IcalScraper, IScraper
 			foreach (var calendarEvent in icalDocument.Events)
 			{
 				var movie = GetMovieFromCalendarEvent(icalDocument.Events.First());
+				if (movie is null) continue;
 				movie = await _movieService.CreateAsync(movie);
 				await _cinemaService.AddMovieToCinemaAsync(movie, _cinema);
 
 				var showTime = GetShowTimeFromCalendarEvent(calendarEvent, movie, _cinema);
+				if (showTime is null) return;
 				await _showTimeService.CreateAsync(showTime);
 			}
 		}
