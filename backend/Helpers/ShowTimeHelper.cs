@@ -7,7 +7,7 @@ namespace backend.Helpers
 		private static readonly Dictionary<ShowTimeDubType, string[]> _showTimeDubTypeMap = new()
 		{
 			{ ShowTimeDubType.OriginalVersion, [" OV ", "Original Version", "Originalversion", "Originalfassung", "Original Fassung"] },
-			{ ShowTimeDubType.Subtitled, ["OmU","OmdU", "Untertitel"] },
+			{ ShowTimeDubType.Subtitled, ["OmU","OmdU", "Untertitel", "Original mit Untertitel"] },
 			{ ShowTimeDubType.SubtitledEnglish, ["OmeU", "OmenglU", "OmU engl. UT"] },
 			{ ShowTimeDubType.Regular, [""] },
 		};

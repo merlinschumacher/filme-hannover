@@ -3,7 +3,6 @@ import { defineConfig } from 'vite';
 import htmlMinifier from 'vite-plugin-html-minifier';
 import { ViteImageOptimizer } from 'vite-plugin-image-optimizer';
 import htmlTemplatePlugin from './plugins/vite-plugin-html-template';
-import { optimizeCssModules } from 'vite-plugin-optimize-css-modules';
 
 export default defineConfig({
   plugins: [
@@ -19,7 +18,6 @@ export default defineConfig({
       },
     },
     ViteImageOptimizer({}),
-    optimizeCssModules(),
     htmlTemplatePlugin(),
     htmlMinifier({
       minify: true,

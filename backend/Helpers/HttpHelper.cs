@@ -116,6 +116,10 @@ public static class HttpHelper
 		try
 		{
 			var icalText = await GetHttpContentAsync(icalUri);
+			if (icalText is null)
+			{
+				return null;
+			}
 			return Calendar.Load(icalText);
 		}
 		catch (Exception)
