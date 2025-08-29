@@ -1,11 +1,18 @@
-name: Generate pages and deploy
+# =============================
+# Static Site Deployment Workflow
+# =============================
+# This workflow deploys the static site to GitHub Pages.
+# - Runs on schedule (daily at 4am UTC) and manual trigger.
+# - Only one deployment runs at a time; queued runs are skipped.
+# =============================
+
+name: Deploy Static Site to GitHub Pages
+
 on:
   schedule:
     - cron: "0 4 * * *"
   workflow_dispatch:
 
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
 concurrency:
   group: "pages"
   cancel-in-progress: false
@@ -16,13 +23,12 @@ permissions:
   id-token: write
 
 env:
-  # Use docker.io for Docker Hub if empty
   REGISTRY: ghcr.io
-  # github.repository as <account>/<repo>
   IMAGE_NAME: ${{ github.repository }}:latest
 
 jobs:
-  build:
+  deploy:
+    name: Build and Deploy Static Site
     runs-on: ubuntu-latest
     steps:
       - name: Setup Pages
@@ -33,19 +39,14 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Pull image
         run: docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-
-      - name: Run image
+      - name: Run image to generate static site
         run: docker run --rm -v ${{ github.workspace }}/public:/output -e APPOPTIONS__TMDBAPIKEY=${{ secrets.APPOPTIONS__TMDBAPIKEY}} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          # Upload the output
           path: "public"
-
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

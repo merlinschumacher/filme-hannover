@@ -1,15 +1,27 @@
-name: Cleanup old caches and container images
+# =============================
+# Manual Cache and Image Cleanup Workflow
+# =============================
+# This workflow deletes ALL caches and old container images.
+# Triggered manually for maintenance.
+# =============================
+
+name: Manual Cache and Image Cleanup
+
 permissions:
   contents: write
   packages: write
+
 on:
   workflow_dispatch:
+
+jobs:
   cleanup:
+    name: Delete All Caches and Old Images
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
         uses: actions/checkout@v4
-      - name: Cleanup
+      - name: Cleanup all caches
         run: |
           gh cache delete --all -R $GH_REPO
         env:
