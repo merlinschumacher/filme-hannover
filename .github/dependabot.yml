@@ -1,40 +1,42 @@
-# To get started with Dependabot version updates, you'll need to specify which
-# package ecosystems to update and where the package manifests are located.
-# Please see the documentation for all configuration options:
-# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+# =============================
+# Dependabot Configuration
+# =============================
+# This config enables weekly updates for NuGet, dotnet-sdk, npm, GitHub Actions, and Docker dependencies.
+# Major version updates for dotnet-sdk and Docker images are ignored for stability.
+# =============================
+
 version: 2
 updates:
-  # Check for updates of NuGet packages every week
+  # NuGet packages (backend)
   - package-ecosystem: "nuget"
-    directory: "/backend" 
+    directory: "/backend"
     schedule:
       interval: "weekly"
-  # Check for updates of .NET every week
+  # .NET SDK (backend)
   - package-ecosystem: "dotnet-sdk"
     directory: "/backend"
     schedule:
       interval: "weekly"
     ignore:
       - dependency-name: "*"
-        update-types: 
+        update-types:
           - "version-update:semver-major"
-  # Check for updates of NPM packages every week
+  # NPM packages (frontend)
   - package-ecosystem: "npm"
     directory: "/frontend"
     schedule:
       interval: "weekly"
-  # Check for updates to GitHub Actions every week
+  # GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
-  # Check for updates to Docker image dependencies every week
+  # Docker image dependencies
   - package-ecosystem: "docker"
     directory: "/"
-    schedule:    
+    schedule:
       interval: "weekly"
     ignore:
-  - dependency-name: "dotnet/*"
-    update-types: 
-      - "version-update:semver-major"
-
+      - dependency-name: "dotnet/*"
+        update-types:
+          - "version-update:semver-major"
