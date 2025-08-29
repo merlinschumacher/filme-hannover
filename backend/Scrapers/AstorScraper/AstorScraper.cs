@@ -67,15 +67,9 @@ public partial class AstorScraper : IScraper
 
 	public async Task ScrapeAsync()
 	{
-		var jsonString = await HttpHelper.GetHttpContentAsync(_apiEndpointUrl) ?? string.Empty;
-		var data = JsonSerializer.Deserialize<AstorData>(jsonString)
-			?? throw new OperationCanceledException("Failed to deserialize JSON data.");
+		var data = await GetData();
 
-		var filterItems = data.movieFilterGroups.FirstOrDefault(e => e.label.Equals("filterVersionGroup", StringComparison.OrdinalIgnoreCase))?.items;
-		foreach (var filterGroup in filterItems)
-		{
-			_dubTypeMap[filterGroup.value] = ShowTimeHelper.GetDubType(filterGroup.label);
-		}
+		BuildDubMap(data);
 
 		var astorMovies = await GetMovieListAsync(data);
 
@@ -94,6 +88,32 @@ public partial class AstorScraper : IScraper
 				}
 
 				await ProcessShowTimeAsync(movie, performance);
+			}
+		}
+	}
+
+	private async Task<AstorData> GetData()
+	{
+		var jsonString = await HttpHelper.GetHttpContentAsync(_apiEndpointUrl) ?? string.Empty;
+		return (AstorData?)(JsonSerializer.Deserialize<AstorData>(jsonString)
+			?? throw new OperationCanceledException("Failed to deserialize JSON data."));
+	}
+
+	private void BuildDubMap(AstorData data)
+	{
+		var filterItems = data.movieFilterGroups.FirstOrDefault(e => e.label.Equals("filterVersionGroup", StringComparison.OrdinalIgnoreCase))?.items;
+		foreach (var filterGroup in filterItems)
+		{
+			if (filterGroup.value.Contains("Originalversion", StringComparison.OrdinalIgnoreCase)
+				|| filterGroup.value.Contains("OV", StringComparison.OrdinalIgnoreCase)
+				)
+			{
+				_dubTypeMap[filterGroup.value] = ShowTimeDubType.OriginalVersion;
+			}
+			else if (filterGroup.value.Contains("Untertitel", StringComparison.OrdinalIgnoreCase)
+				|| filterGroup.value.Contains("mU", StringComparison.Ordinal))
+			{
+				_dubTypeMap[filterGroup.value] = ShowTimeDubType.Subtitled;
 			}
 		}
 	}
