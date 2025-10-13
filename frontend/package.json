@@ -28,7 +28,7 @@
     "prettier": "3.6.2",
     "sharp": "^0.34.4",
     "svgo": "^4.0.0",
-    "typescript": "~5.9.2",
+    "typescript": "~5.9.3",
     "typescript-eslint": "^8.45.0",
     "vite": "^7.1.9",
     "vite-plugin-eslint": "^1.8.1",
