@@ -33,7 +33,7 @@
     "vite": "^7.1.12",
     "vite-plugin-eslint": "^1.8.1",
     "vite-plugin-html-minifier": "^1.0.5",
-    "vite-plugin-image-optimizer": "^2.0.2"
+    "vite-plugin-image-optimizer": "^2.0.3"
   },
   "dependencies": {
     "@material-symbols/svg-400": "^0.39.1",
