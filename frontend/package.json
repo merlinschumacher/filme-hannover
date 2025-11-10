@@ -26,7 +26,7 @@
     "npm-run-all2": "^8.0.4",
     "postcss-nesting": "^13.0.2",
     "prettier": "3.6.2",
-    "sharp": "^0.34.4",
+    "sharp": "^0.34.5",
     "svgo": "^4.0.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.2",
