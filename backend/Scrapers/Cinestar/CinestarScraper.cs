@@ -92,7 +92,7 @@ internal sealed class CinestarScraper : IScraper
 
 		var type = GetShowTimeDubType(cinestarShowtime.Attributes);
 
-		var dateTimeString = cinestarShowtime.Datetime.Replace("UTC", string.Empty).Trim();
+		var dateTimeString = cinestarShowtime.Datetime.Replace("UTC", string.Empty).Replace("CET", "+1").Replace("CEST", "+2").Trim();
 		var dateTime = DateTime.Parse(dateTimeString, CultureInfo.CurrentCulture);
 
 		var showTimeUrl = QueryHelpers.AddQueryString(_shopUrlTemplate.ToString(), "movieSessionId", cinestarShowtime.SystemId);
