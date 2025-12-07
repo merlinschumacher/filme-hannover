@@ -98,7 +98,7 @@ public partial class ApolloScraper : IScraper
         // Skip the first row, it contains the table headers
         foreach (var day in days.Skip(1))
         {
-            var tableData = day.SelectNodes(_tableDataNodesSelector);
+            try {var tableData = day.SelectNodes(_tableDataNodesSelector);
             if (tableData is null || tableData.Count == 0) continue;
 
             var date = GetDate(tableData);
@@ -120,6 +120,7 @@ public partial class ApolloScraper : IScraper
                 var specialEventTitle = GetSpecialEventTitle(movieNode);
                 await ProcessShowTimeAsync(movie, specialEventTitle, showDateTime.Value, type.Value, language.Value, movieUrl);
             }
+} catch {};
         }
     }
 
