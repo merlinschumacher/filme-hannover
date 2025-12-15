@@ -1,7 +1,6 @@
 ﻿using backend.Helpers;
 using backend.Models;
 using backend.Services;
-using System.Globalization;
 
 namespace backend.Scrapers.Cinemaxx;
 
@@ -19,12 +18,10 @@ public class CinemaxxScraper : IScraper
 	};
 
 	public bool ReliableMetadata => true;
-	private const int _cinemaxxId = 1304;
 
 	private readonly Uri _baseUri = new("https://www.cinemaxx.de/");
-	private readonly List<string> _specialEventTitles = ["Maxxi Mornings:", "Mini Mornings:", "Sharkweek:", "Shark Week:"];
-	private readonly Uri _weeklyProgramDataUrl = GetScraperUrl("jetzt-im-kino");
-	private readonly Uri _presaleDataUrl = GetScraperUrl("Vorverkauf");
+	private readonly Uri _weeklyProgramDataUrl = new("https://www.cinemaxx.de/api/microservice/showings/cinemas/1304/films?minEmbargoLevel=0&includesSession=true&includeSessionAttributes=true");
+	private readonly Uri _presaleDataUrl = new("https://www.cinemaxx.de/api/microservice/showings/cinemas/1304/films/comingSoon?minEmbargoLevel=0&includesSession=true&includeSessionAttributes=true");
 	private readonly CinemaService _cinemaService;
 	private readonly ShowTimeService _showTimeService;
 	private readonly MovieService _movieService;
@@ -39,135 +36,117 @@ public class CinemaxxScraper : IScraper
 
 	public async Task ScrapeAsync()
 	{
-		await ProcessJsonResultAsync(_weeklyProgramDataUrl);
-		await ProcessJsonResultAsync(_presaleDataUrl);
-	}
+		var currentWeekRoot = await HttpHelper.GetJsonAsync<CurrentWeekRoot>(_weeklyProgramDataUrl);
 
-	private async Task ProcessJsonResultAsync(Uri dataUri)
-	{
-		var json = await HttpHelper.GetJsonAsync<CinemaxxRoot>(dataUri);
-
-		if (json == null)
+		if (currentWeekRoot != null)
 		{
-			return;
+			await ProcessResultList(currentWeekRoot.result);
 		}
 
-		foreach (var film in json.WhatsOnAlphabeticFilms)
+		var presaleRoot = await HttpHelper.GetJsonAsync<PresaleRoot>(_presaleDataUrl);
+		if (presaleRoot != null)
 		{
-			var (movie, eventTitle) = await ProcessMovieAsync(film);
+			var films = presaleRoot.result.years
+				.SelectMany(year => year.months)
+				.SelectMany(month => month.films);
+			await ProcessResultList(films);
+		}
+	}
+
+	private async Task ProcessResultList(IEnumerable<Film> films)
+	{
+		foreach (var film in films)
+		{
+			var movie = await ProcessMovieAsync(film);
 
 			// Select the schedules from the nested lists
-			var schedules = film.WhatsOnAlphabeticCinemas.SelectMany(e => e.WhatsOnAlphabeticCinemas)
-														 .SelectMany(e => e.WhatsOnAlphabeticShedules);
+			var sessions = film.showingGroups.SelectMany(group => group.sessions);
 
-			foreach (var schedule in schedules)
+			foreach (var session in sessions)
 			{
-				if (schedule?.Time == null)
+				if (!session.isBookingAvailable)
 				{
 					continue;
 				}
-				await ProcessShowTimeAsync(schedule, movie, eventTitle);
+				await ProcessShowTimeAsync(session, movie);
 			}
 		}
 	}
 
-	private async Task ProcessShowTimeAsync(WhatsOnAlphabeticShedule schedule, Movie movie, string? eventTitle)
+	private async Task ProcessShowTimeAsync(Session session, Movie movie)
 	{
-		if (!DateTime.TryParse(schedule.Time, CultureInfo.CurrentCulture, out var time))
-		{
-			return;
-		}
-
-		var language = GetShowTimeLanguage(schedule.VersionTitle);
-		var type = GetShowTimeDubType(schedule.VersionTitle);
-		var performanceUri = new Uri(_cinema.Url, schedule.BookingLink);
+		var language = GetShowTimeLanguage(session.attributes);
+		var type = GetShowTimeDubType(session.attributes);
+		var performanceUri = new Uri(_cinema.Url, session.bookingUrl);
 
 		var showTime = new ShowTime()
 		{
 			Cinema = _cinema,
-			StartTime = time,
-			EndTime = time.Add(movie.Runtime),
+			StartTime = session.startTime,
+			EndTime = session.endTime,
 			DubType = type,
 			Language = language,
 			Url = performanceUri,
 			Movie = movie,
-			SpecialEvent = eventTitle,
 		};
 		await _showTimeService.CreateAsync(showTime);
 	}
 
-	private static ShowTimeLanguage GetShowTimeLanguage(string versionTitle)
+	private static ShowTimeLanguage GetShowTimeLanguage(IEnumerable<Attribute> attributes)
 	{
-		var versionTitleSplit = versionTitle.Split(",");
-		if (versionTitleSplit.Length < 2)
+		var languageAttribute = attributes.FirstOrDefault(attr => attr.attributeType.Equals("Language", StringComparison.OrdinalIgnoreCase));
+		if (languageAttribute == null)
 		{
 			return ShowTimeLanguage.German;
 		}
-		var languageString = versionTitleSplit[1].Trim();
+		var languageString = languageAttribute.value.Trim();
 		return ShowTimeHelper.GetLanguage(languageString);
 	}
 
-	private static ShowTimeDubType GetShowTimeDubType(string versionTitle)
+	private static ShowTimeDubType GetShowTimeDubType(IEnumerable<Attribute> attributes)
 	{
-		var versionTitleSplit = versionTitle.Split(",");
-		if (versionTitleSplit.Length < 3)
+		var omuAttribute = attributes.FirstOrDefault(attr => attr.attributeType.Equals("om-u", StringComparison.OrdinalIgnoreCase));
+		var ovAttribute = attributes.FirstOrDefault(attr => attr.attributeType.Equals("ov", StringComparison.OrdinalIgnoreCase));
+		if (omuAttribute is null && ovAttribute is null)
 		{
 			return ShowTimeDubType.Regular;
 		}
-		var typeString = versionTitleSplit[2].Trim();
-		return ShowTimeHelper.GetDubType(typeString);
+		else if (omuAttribute != null)
+		{
+			return ShowTimeDubType.Subtitled;
+		}
+		else if (ovAttribute != null)
+		{
+			return ShowTimeDubType.OriginalVersion;
+		}
+		else
+		{
+			return ShowTimeDubType.Regular;
+		}
 	}
 
-	private async Task<(Movie, string?)> ProcessMovieAsync(WhatsOnAlphabeticFilm film)
+	private async Task<Movie> ProcessMovieAsync(Film film)
 	{
-		var (title, eventTitle) = SanitizeTitle(film.Title);
-
 		var movie = new Movie()
 		{
-			DisplayName = title,
-			Url = new Uri(_baseUri, film.FilmUrl),
-			Rating = MovieHelper.GetRatingMatch(film.CertificateAge),
+			DisplayName = film.filmTitle,
+			Aliases = new HashSet<MovieTitleAlias>([new MovieTitleAlias() { Value = film.originalTitle }]),
+			Url = Uri.TryCreate(film.filmUrl, UriKind.Absolute, out var filmUri) ? filmUri : _baseUri,
+			Rating = MovieHelper.GetRatingMatch(film.certificate.name),
 			Runtime = GetRuntime(film),
 		};
 		movie = await _movieService.CreateAsync(movie);
 		await _cinemaService.AddMovieToCinemaAsync(movie, _cinema);
 
-		return (movie, eventTitle);
+		return movie;
 	}
 
-	private static TimeSpan GetRuntime(WhatsOnAlphabeticFilm film)
+	private static TimeSpan GetRuntime(Film film)
 	{
-		var runtimeParam = film.FilmParams.FirstOrDefault(p => p.Title.Contains("Minuten", StringComparison.OrdinalIgnoreCase));
-		if (runtimeParam == null)
+		if (!film.isDurationUnknown && film.runningTime > 0)
 		{
-			return Constants.AverageMovieRuntime;
-		}
-
-		var runtimeString = runtimeParam.Title.Split(" ")[0];
-		if (int.TryParse(runtimeString, out var runtime))
-		{
-			return TimeSpan.FromMinutes(runtime);
+			return MovieHelper.ValidateRuntime(film.runningTime);
 		}
 		return Constants.AverageMovieRuntime;
-	}
-
-	private (string title, string? eventTitle) SanitizeTitle(string title)
-	{
-		string? eventTitle = null;
-		foreach (var specialEventTitle in _specialEventTitles.Where(specialEventTitle => title.Contains(specialEventTitle, StringComparison.OrdinalIgnoreCase)))
-		{
-			title = title.Replace(specialEventTitle, "", StringComparison.OrdinalIgnoreCase);
-			eventTitle = specialEventTitle.Replace(":", "").Trim();
-		}
-
-		return (title.Trim(), eventTitle);
-	}
-
-	private static Uri GetScraperUrl(string listType)
-	{
-		var startDate = DateOnly.FromDateTime(DateTime.Now).ToString("dd-MM-yyyy");
-		var endDate = DateOnly.FromDateTime(DateTime.Now.AddDays(28)).ToString("dd-MM-yyyy");
-		var uriString = string.Format("https://www.cinemaxx.de/api/sitecore/WhatsOn/WhatsOnV2Alphabetic?cinemaId={0}&Datum={1},{2}&type={3}", _cinemaxxId, startDate, endDate, listType);
-		return new Uri(uriString);
 	}
 }
