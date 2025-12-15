@@ -36,6 +36,14 @@ public class CinemaxxScraper : IScraper
 
 	public async Task ScrapeAsync()
 	{
+
+
+		// Make an initial request to set cookies
+		await HttpHelper.GetHtmlDocumentAsync(_baseUri);
+
+		var cookies = HttpHelper.GetCookies();
+
+
 		var currentWeekRoot = await HttpHelper.GetJsonAsync<CurrentWeekRoot>(_weeklyProgramDataUrl);
 
 		if (currentWeekRoot != null)
