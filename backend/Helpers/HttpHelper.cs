@@ -1,21 +1,36 @@
 ﻿using HtmlAgilityPack;
 using Ical.Net;
 using Newtonsoft.Json;
+using System.Net;
 
 namespace backend.Helpers;
 
 public static class HttpHelper
 {
 	private const string _uaListUrl = "https://cdn.jsdelivr.net/gh/microlinkhq/top-user-agents@master/src/desktop.json";
-	private static readonly HttpClient _httpClient = new()
+	private static readonly CookieContainer _cookieContainer = new();
+
+	private static readonly HttpClientHandler _httpClientHandler = new()
+	{
+		CookieContainer = _cookieContainer,
+		AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+	};
+
+	private static readonly HttpClient _httpClient = new(_httpClientHandler)
 	{
 		Timeout = TimeSpan.FromSeconds(30),
 	};
 
+	public static CookieCollection GetCookies()
+	{
+		return _cookieContainer.GetAllCookies();
+	}
+
+
 	static HttpHelper()
 	{
 		// Set the default user agent for all HttpClient instances
-		// Some cinemas block requests from unknown user agents or 
+		// Some cinemas block requests from unknown user agents or
 		// break if no user agent is set
 		var userAgent = GetRandomUserAgentAsync().Result;
 		_httpClient.DefaultRequestHeaders.Add("User-Agent", userAgent);
