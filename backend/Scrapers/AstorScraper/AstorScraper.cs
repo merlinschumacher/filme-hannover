@@ -102,16 +102,16 @@ public partial class AstorScraper : IScraper
 	private void BuildDubMap(AstorData data)
 	{
 		var filterItems = data.movieFilterGroups.FirstOrDefault(e => e.label.Equals("filterVersionGroup", StringComparison.OrdinalIgnoreCase))?.items;
-		foreach (var filterGroup in filterItems)
+		foreach (var filterGroup in filterItems ?? [])
 		{
-			if (filterGroup.value.Contains("Originalversion", StringComparison.OrdinalIgnoreCase)
-				|| filterGroup.value.Contains("OV", StringComparison.OrdinalIgnoreCase)
+			if (filterGroup.label.Contains("Originalversion", StringComparison.OrdinalIgnoreCase)
+				|| filterGroup.label.Contains("OV", StringComparison.OrdinalIgnoreCase)
 				)
 			{
 				_dubTypeMap[filterGroup.value] = ShowTimeDubType.OriginalVersion;
 			}
-			else if (filterGroup.value.Contains("Untertitel", StringComparison.OrdinalIgnoreCase)
-				|| filterGroup.value.Contains("mU", StringComparison.Ordinal))
+			else if (filterGroup.label.Contains("Untertitel", StringComparison.OrdinalIgnoreCase)
+				|| filterGroup.label.Contains("mU", StringComparison.Ordinal))
 			{
 				_dubTypeMap[filterGroup.value] = ShowTimeDubType.Subtitled;
 			}
