@@ -21,7 +21,7 @@
     "cssnano": "^7.1.2",
     "eslint": "^9.39.2",
     "eslint-plugin-prettier": "^5.5.4",
-    "globals": "^16.5.0",
+    "globals": "^17.0.0",
     "html-minifier-terser": "^7.2.0",
     "npm-run-all2": "^8.0.4",
     "postcss-nesting": "^13.0.2",
