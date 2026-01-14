@@ -62,11 +62,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Update="csv\kircheundkino.csv">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-	</ItemGroup>
-	<ItemGroup>
 		<None
 			Include=".editorconfig" />
 	</ItemGroup>
