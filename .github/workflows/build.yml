@@ -31,7 +31,7 @@ jobs:
           dotnet-version: "8"
           cache: true
       - name: Restore dependencies
-        run: dotnet restore backend/backend.csproj --locked-mode
+        run: dotnet restore backend/backend.csproj
       - name: Build
         run: dotnet build backend/backend.csproj --configuration Release --no-restore
       - name: Test
