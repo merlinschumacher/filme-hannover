@@ -17,7 +17,6 @@
 		<RunWorkingDirectory>$(MSBuildProjectDirectory)</RunWorkingDirectory>
 		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
 		<AnalysisLevel>latest-recommended</AnalysisLevel>
-		<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
 	</PropertyGroup>
 
 	<ItemGroup>
