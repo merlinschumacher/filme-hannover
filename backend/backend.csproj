@@ -68,6 +68,6 @@
 	</ItemGroup>
 	<ItemGroup>
 		<None
-			Include="C:\Users\Merlin Schumacher\Source\Repos\merlinschumacher\kinohannover\backend\.editorconfig" />
+			Include=".editorconfig" />
 	</ItemGroup>
 </Project>
