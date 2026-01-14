@@ -1,4 +1,7 @@
 name: Cleanup github runner caches on closed pull requests
+
+permissions: write-all
+
 on:
   pull_request:
     types:
@@ -7,8 +10,6 @@ on:
 jobs:
   cleanup:
     runs-on: ubuntu-latest
-    permissions:
-      actions: write
     steps:
       - name: Cleanup
         run: |
