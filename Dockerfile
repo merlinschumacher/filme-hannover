@@ -1,13 +1,9 @@
 # Stage 1: Build the backend
 FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine@sha256:95e1421e741ac2bc9722271c61e0f10d106fe0d5240fcfe6184ec943f2a134e7 AS be-build-env
 WORKDIR /app
-# Copy only the necessary files for restoring dependencies
-COPY ./backend/*.csproj ./backend/
-RUN dotnet restore ./backend/*.csproj
-# Copy the rest of the backend source code and build
+# Copy the backend source code and publish
 COPY ./backend/ ./backend/
-RUN dotnet publish ./backend -c Release -r linux-musl-x64 -o out -p:PublishReadyToRun=true -p:InvariantGlobalization=false
-
+RUN dotnet publish ./backend -c Release -r linux-musl-x64 -o out -p:InvariantGlobalization=false --nologo -v q --property WarningLevel=0 /clp:ErrorsOnly
 # Stage 2: Build the frontend application
 FROM node:lts-alpine@sha256:c921b97d4b74f51744057454b306b418cf693865e73b8100559189605f6955b8 AS fe-build-env
 WORKDIR /app
