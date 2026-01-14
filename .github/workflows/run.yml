@@ -1,12 +1,4 @@
-# =============================
-# Static Site Deployment Workflow
-# =============================
-# This workflow deploys the static site to GitHub Pages.
-# - Runs on schedule (daily at 4am UTC) and manual trigger.
-# - Only one deployment runs at a time; queued runs are skipped.
-# =============================
-
-name: Deploy Static Site to GitHub Pages
+name: Deploy to GitHub Pages
 
 on:
   schedule:

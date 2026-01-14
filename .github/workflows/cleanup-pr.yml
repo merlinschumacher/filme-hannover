@@ -1,16 +1,4 @@
-# =============================
-# PR Cache Cleanup Workflow
-# =============================
-# This workflow deletes caches associated with closed pull requests.
-# Helps keep GitHub Actions cache usage low.
-# =============================
-
-name: Cleanup PR Caches
-
-permissions:
-  contents: read
-  pull-requests: read
-
+name: Cleanup github runner caches on closed pull requests
 on:
   pull_request:
     types:
@@ -18,13 +6,16 @@ on:
 
 jobs:
   cleanup:
-    name: Delete PR Caches
     runs-on: ubuntu-latest
+    permissions:
+      actions: write
     steps:
       - name: Cleanup
         run: |
-          echo "Fetching list of cache keys for PR..."
+          echo "Fetching list of cache keys"
           cacheKeysForPR=$(gh cache list --ref $BRANCH --limit 100 --json id --jq '.[].id')
+
+          ## Setting this to not fail the workflow while deleting cache keys.
           set +e
           echo "Deleting caches..."
           for cacheKey in $cacheKeysForPR
