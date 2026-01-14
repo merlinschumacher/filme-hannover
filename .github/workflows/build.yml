@@ -1,12 +1,4 @@
-# =============================
-# Build, Test, and Publish Workflow
-# =============================
-# This workflow builds, tests, and publishes Docker images for the backend and frontend.
-# - On PRs: runs build and test jobs, but does NOT publish images.
-# - On push to master/tags: builds, tests, and publishes images.
-# =============================
-
-name: CI Build, Test, and Publish
+name: Build, Test, and Publish
 
 on:
   push:
@@ -18,6 +10,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -35,17 +28,19 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: "8.0.x"
+          dotnet-version: "8"
+          cache: true
       - name: Restore dependencies
-        run: dotnet restore backend/backend.csproj
+        run: dotnet restore backend/backend.csproj --locked-mode
       - name: Build
         run: dotnet build backend/backend.csproj --configuration Release --no-restore
       - name: Test
-        run: dotnet test backend/backend.csproj --no-build --verbosity normal
+        run: dotnet test backend/backend.csproj --no-build --verbosity normal --no-restore --logger trx --results-directory "TestResults-${{ matrix.dotnet-version }}
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: "20.x"
+          cache: "npm"
       - name: Install frontend dependencies
         run: |
           cd frontend
@@ -63,6 +58,7 @@ jobs:
       contents: read
       packages: write
       id-token: write
+      attestations: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -101,13 +97,16 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-      - name: Sign the published Docker image
-        if: ${{ github.event_name == 'push' && github.ref_name == 'master' }}
-        env:
-          TAGS: ${{ steps.meta.outputs.tags }}
-          DIGEST: ${{ steps.build-and-push.outputs.digest }}
-        run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
+          subject-digest: ${{ steps.build-and-push.outputs.digest }}
+          push-to-registry: true
       - name: Delete untagged package versions
         uses: dataaxiom/ghcr-cleanup-action@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          exclude-tags: latest
+          delete-orphaned-images: true
+          delete-untagged: true

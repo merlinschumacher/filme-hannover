@@ -7,9 +7,7 @@
 
 name: Manual Cache and Image Cleanup
 
-permissions:
-  contents: write
-  packages: write
+permissions: write-all
 
 on:
   workflow_dispatch:
@@ -31,3 +29,6 @@ jobs:
         uses: dataaxiom/ghcr-cleanup-action@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          exclude-tags: latest
+          delete-orphaned-images: true
+          delete-untagged: true
