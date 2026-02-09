@@ -25,7 +25,7 @@
 		<PackageReference Include="Fastenshtein" Version="1.0.12" />
 		<PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
 		<PackageReference Include="Ical.Net" Version="5.2.0" />
-		<PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="8.0.19" />
+		<PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="8.0.23" />
 		<PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
