@@ -23,7 +23,7 @@
 		<PackageReference Include="CodeHollow.FeedReader" Version="1.2.6" />
 		<PackageReference Include="CsvHelper" Version="33.1.0" />
 		<PackageReference Include="Fastenshtein" Version="1.0.12" />
-		<PackageReference Include="HtmlAgilityPack" Version="1.12.2" />
+		<PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
 		<PackageReference Include="Ical.Net" Version="5.2.0" />
 		<PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="8.0.19" />
 		<PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0">
