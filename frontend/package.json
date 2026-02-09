@@ -40,6 +40,6 @@
     "dexie": "^4.3.0",
     "inter-ui": "^4.1.1",
     "nanoevents": "^9.1.0",
-    "scroll-snap-slider": "^3.3.3"
+    "scroll-snap-slider": "^3.3.4"
   }
 }
