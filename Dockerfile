@@ -1,5 +1,5 @@
 # Stage 1: Build the backend
-FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine@sha256:120576a5b3be31c33790f22a2db1a537a09e1d916bd4e5a564ee63654b73a48e AS be-build-env
+FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine@sha256:66d25094024ae695e91dc9845c2a96f156ef5ad9ee5515ed7f1740fc3284284a AS be-build-env
 WORKDIR /app
 # Copy the backend source code and publish
 COPY ./backend/ ./backend/
