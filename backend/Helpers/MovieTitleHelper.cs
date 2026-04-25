@@ -19,14 +19,20 @@ internal static partial class MovieTitleHelper
 
 		//If the cinema is known to have reliable movie titles, return the original title.
 		// Otherwise we try more desperate measures to find a matching title.
-		if (guessHarder && tmdbMovieDetails.AlternativeTitles.Titles.Count != 0)
+		if (guessHarder && tmdbMovieDetails.AlternativeTitles?.Titles?.Count > 0)
 		{
 			// Try to find a similar title in the alternative titles
-			var altTitles = tmdbMovieDetails.AlternativeTitles.Titles.Select(e => e.Title);
-			matchedTitle = GetMostSimilarTitle(altTitles, title);
-			if (matchedTitle is not null)
+			var altTitles = tmdbMovieDetails.AlternativeTitles
+				.Titles.Where(e => !string.IsNullOrWhiteSpace(e.Title))
+				.Select(e => e.Title);
+
+			if (altTitles?.Any() == true)
 			{
-				return NormalizeTitle(matchedTitle);
+				matchedTitle = GetMostSimilarTitle(altTitles, title);
+				if (matchedTitle is not null)
+				{
+					return NormalizeTitle(matchedTitle);
+				}
 			}
 
 			// Try to find a similar title in the alternative titles with the translation type
