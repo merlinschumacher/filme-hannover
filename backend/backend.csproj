@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
@@ -24,45 +24,43 @@
 		<PackageReference Include="CsvHelper" Version="33.1.0" />
 		<PackageReference Include="Fastenshtein" Version="1.0.12" />
 		<PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
-		<PackageReference Include="Ical.Net" Version="5.2.0" />
+		<PackageReference Include="Ical.Net" Version="5.2.1" />
 		<PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="8.0.23" />
-		<PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0">
+		<PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.203">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Analyzers" Version="9.0.8" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Analyzers" Version="9.0.12" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.12" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.8">
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.12">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.8" />
-		<PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.8" />
-		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets"
-			Version="1.22.1" />
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.3">
+		<PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.7" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.7" />
+		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.23.0" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.4">
 			<TreatAsUsed>true</TreatAsUsed>
 		</PackageReference>
-		<PackageReference Include="Polly" Version="8.6.3" />
+		<PackageReference Include="Polly" Version="8.6.6" />
 		<PackageReference Include="Roslynator.Analyzers" Version="4.15.0">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="Roslynator.Formatting.Analyzers" Version="4.14.0">
+		<PackageReference Include="Roslynator.Formatting.Analyzers" Version="4.15.0">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="Schema.NET" Version="13.0.0" />
-		<PackageReference Include="SolarCalculator" Version="3.6.0" />
-		<PackageReference Include="SonarAnalyzer.CSharp" Version="10.15.0.120848">
+		<PackageReference Include="SolarCalculator" Version="3.6.1" />
+		<PackageReference Include="SonarAnalyzer.CSharp" Version="10.24.0.138807">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="TMDbLib" Version="2.2.0" />
+		<PackageReference Include="TMDbLib" Version="3.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<None
-			Include=".editorconfig" />
+		<None Include=".editorconfig" />
 	</ItemGroup>
 </Project>
