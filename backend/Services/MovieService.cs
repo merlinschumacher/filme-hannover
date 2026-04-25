@@ -117,7 +117,7 @@ public sealed partial class MovieService(DatabaseContext context, ILogger<MovieS
 		{
 			var tmdbResult = (await _tmdbClient.SearchMovieAsync(movie.DisplayName,
 																language: _tmdbSearchLanguageDE,
-																primaryReleaseYear: movie.ReleaseDate?.Year ?? 0)).Results.FirstOrDefault();
+																primaryReleaseYear: movie.ReleaseDate?.Year ?? 0))?.Results?.FirstOrDefault();
 
 			if (tmdbResult is not null)
 			{

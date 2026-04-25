@@ -71,7 +71,7 @@ public partial class AstorScraper : IScraper
 
 		BuildDubMap(data);
 
-		var astorMovies = await GetMovieListAsync(data);
+		var astorMovies = GetMovieList(data);
 
 		foreach (var astorMovie in astorMovies)
 		{
@@ -195,7 +195,7 @@ public partial class AstorScraper : IScraper
 		return ShowTimeDubType.Regular;
 	}
 
-	private async Task<IEnumerable<AstorMovie>> GetMovieListAsync(AstorData data)
+	private IEnumerable<AstorMovie> GetMovieList(AstorData data)
 	{
 		IList<AstorMovie> astorMovies = [];
 		try
