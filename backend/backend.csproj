@@ -30,7 +30,7 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Analyzers" Version="9.0.15" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Analyzers" Version="10.0.7" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.15" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.15">
 			<PrivateAssets>all</PrivateAssets>
