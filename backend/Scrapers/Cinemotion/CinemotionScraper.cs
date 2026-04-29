@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 namespace backend.Scrapers.Cinemotion;
 
-public class CinemotionScraper : IScraper
+public class CinemotionScraper //: IScraper
 {
 	private const string _cdataElementSelector = "//script[@id='pmkino-overview-script-js-extra']/text()";
 
