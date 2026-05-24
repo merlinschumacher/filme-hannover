@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 namespace backend.Scrapers.Cinemotion;
 
-public class CinemotionScraper //: IScraper
+public class CinemotionScraper : IScraper
 {
 	private const string _cdataElementSelector = "//script[@id='pmkino-overview-script-js-extra']/text()";
 
@@ -43,9 +43,10 @@ public class CinemotionScraper //: IScraper
 		cdata = cdata.Replace("/* ]]> */", string.Empty);
 		cdata = cdata.Replace("var pmkinoFrontVars = ", string.Empty);
 		cdata = cdata.Trim().TrimEnd(';').Trim();
-		var json = JsonConvert.DeserializeObject<CinemotionRoot>(cdata);
-		if (json is null) return;
-		var movies = json.ApiData.MovieList.Movies;
+		CinemotionRoot? data = null;
+		data = JsonConvert.DeserializeObject<CinemotionRoot>(cdata);
+		if (data is null) return;
+		var movies = data.ApiData.MovieList.Items;
 		foreach (var (_, cinemotionMovie) in movies)
 		{
 			if (cinemotionMovie is null)
@@ -55,9 +56,10 @@ public class CinemotionScraper //: IScraper
 
 			var movie = await ProcessMovieAsync(cinemotionMovie);
 			await _cinemaService.AddMovieToCinemaAsync(movie, _cinema);
-			foreach (var performance in cinemotionMovie.Performances)
+			var performances = data.ApiData.PerformanceList.Items.Where(p => cinemotionMovie.Performances.Contains(p.Key));
+			foreach (var performance in performances)
 			{
-				await ProcessShowTimeAsync(movie, performance);
+				await ProcessShowTimeAsync(movie, performance.Value);
 			}
 		}
 	}
