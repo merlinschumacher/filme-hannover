@@ -56,7 +56,7 @@
 		</PackageReference>
 		<PackageReference Include="Schema.NET" Version="13.0.0" />
 		<PackageReference Include="SolarCalculator" Version="3.6.1" />
-		<PackageReference Include="SonarAnalyzer.CSharp" Version="10.26.0.140279">
+		<PackageReference Include="SonarAnalyzer.CSharp" Version="10.27.0.140913">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
