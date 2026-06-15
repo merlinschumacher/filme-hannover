@@ -45,7 +45,7 @@
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.4">
 			<TreatAsUsed>true</TreatAsUsed>
 		</PackageReference>
-		<PackageReference Include="Polly" Version="8.6.6" />
+		<PackageReference Include="Polly" Version="8.7.0" />
 		<PackageReference Include="Roslynator.Analyzers" Version="4.15.0">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
