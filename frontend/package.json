@@ -36,7 +36,7 @@
   },
   "dependencies": {
     "@material-symbols/svg-400": "^0.45.1",
-    "dexie": "^4.3.0",
+    "dexie": "^4.4.4",
     "inter-ui": "^4.1.1",
     "nanoevents": "^9.1.0",
     "scroll-snap-slider": "^3.3.4"
