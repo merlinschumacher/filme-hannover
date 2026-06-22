@@ -35,7 +35,7 @@
     "vite-plugin-image-optimizer": "^2.0.3"
   },
   "dependencies": {
-    "@material-symbols/svg-400": "^0.45.1",
+    "@material-symbols/svg-400": "^0.45.2",
     "dexie": "^4.4.4",
     "inter-ui": "^4.1.1",
     "nanoevents": "^9.1.0",
