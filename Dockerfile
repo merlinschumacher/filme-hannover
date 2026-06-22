@@ -5,7 +5,7 @@ WORKDIR /app
 COPY ./backend/ ./backend/
 RUN dotnet publish ./backend -c Release -r linux-musl-x64 -o out -p:InvariantGlobalization=false --nologo -v q --property WarningLevel=0 /clp:ErrorsOnly
 # Stage 2: Build the frontend application
-FROM node:lts-alpine@sha256:fb71d01345f11b708a3553c66e7c74074f2d506400ea81973343d915cb64eef0 AS fe-build-env
+FROM node:lts-alpine@sha256:156b55f92e98ccd5ef49578a8cea0df4679826564bad1c9d4ef04462b9f0ded6 AS fe-build-env
 WORKDIR /app
 # Copy only the necessary files for restoring dependencies
 COPY ./frontend/package.json ./frontend/package-lock.json* ./
