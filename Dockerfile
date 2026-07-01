@@ -5,7 +5,7 @@ WORKDIR /app
 COPY ./backend/ ./backend/
 RUN dotnet publish ./backend -c Release -r linux-musl-x64 -o out -p:InvariantGlobalization=false --nologo -v q --property WarningLevel=0 /clp:ErrorsOnly
 # Stage 2: Build the frontend application
-FROM node:lts-alpine@sha256:156b55f92e98ccd5ef49578a8cea0df4679826564bad1c9d4ef04462b9f0ded6 AS fe-build-env
+FROM node:lts-alpine@sha256:a0b9bf06e4e6193cf7a0f58816cc935ff8c2a908f81e6f1a95432d679c54fbfd AS fe-build-env
 WORKDIR /app
 # Copy only the necessary files for restoring dependencies
 COPY ./frontend/package.json ./frontend/package-lock.json* ./
@@ -24,7 +24,7 @@ COPY --from=be-build-env /app/out .
 COPY --from=fe-build-env /app/dist wwwroot
 
 # Stage 4: Build runtime image to run the application with necessary dependencies
-FROM mcr.microsoft.com/dotnet/runtime:8.0-alpine@sha256:0f908a38bca173445b59705a1d7b211343073e8cc18cb0516f8dda1563fb8882 AS runtime
+FROM mcr.microsoft.com/dotnet/runtime:8.0-alpine@sha256:2c05438b3fd6c3e0e31240c1ae5366a1d7fef2e314a0e40a49a5d385b074a2fc AS runtime
 ENV TZ="Europe/Berlin"
 ENV DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION=1
 ENV TERM=xterm
