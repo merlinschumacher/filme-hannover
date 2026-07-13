@@ -24,7 +24,7 @@
     "html-minifier-terser": "^7.2.0",
     "npm-run-all2": "^9.0.2",
     "postcss-nesting": "^14.0.0",
-    "prettier": "3.9.4",
+    "prettier": "3.9.5",
     "sharp": "^0.35.3",
     "svgo": "^4.0.1",
     "typescript": "~6.0.3",
