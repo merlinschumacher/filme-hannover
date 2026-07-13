@@ -26,7 +26,7 @@
     "postcss-nesting": "^14.0.0",
     "prettier": "3.9.4",
     "sharp": "^0.35.3",
-    "svgo": "^4.0.1",
+    "svgo": "^4.0.2",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.62.1",
     "vite": "^8.1.3",
