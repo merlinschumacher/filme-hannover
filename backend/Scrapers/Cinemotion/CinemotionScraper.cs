@@ -35,6 +35,7 @@ public class CinemotionScraper : IScraper
 
 	public async Task ScrapeAsync()
 	{
+		return;
 		var htmlDocument = await HttpHelper.GetHtmlDocumentAsync(_cinema.ShopUrl);
 		var cdataElement = htmlDocument.DocumentNode.SelectSingleNode(_cdataElementSelector);
 		if (cdataElement is null) return;
