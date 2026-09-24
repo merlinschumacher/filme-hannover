@@ -20,8 +20,12 @@ public static class MovieHelper
 		return GetRatingMatch(rating.ToString());
 	}
 
-	public static MovieRating GetRatingMatch(string ratingString)
+	public static MovieRating GetRatingMatch(string? ratingString)
 	{
+		if (string.IsNullOrWhiteSpace(ratingString))
+		{
+			return MovieRating.Unknown;
+		}
 		foreach (var (key, values) in _movieRatingMap)
 		{
 			if (Array.Exists(values, v => ratingString.Contains(v, StringComparison.CurrentCultureIgnoreCase)))
