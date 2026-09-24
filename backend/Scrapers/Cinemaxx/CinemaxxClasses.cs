@@ -9,13 +9,13 @@ public class Attribute
 
 public class Certificate
 {
-	public string name { get; set; }
+	public string? name { get; set; }
 }
 
 public class Film
 {
 	public List<ShowingGroup> showingGroups { get; set; }
-	public Certificate certificate { get; set; }
+	public Certificate? certificate { get; set; }
 	public string filmUrl { get; set; }
 	public int runningTime { get; set; }
 	public bool isDurationUnknown { get; set; }

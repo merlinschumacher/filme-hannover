@@ -140,7 +140,7 @@ public class CinemaxxScraper : IScraper
 			DisplayName = film.filmTitle,
 			Aliases = new HashSet<MovieTitleAlias>([new MovieTitleAlias() { Value = film.originalTitle }]),
 			Url = Uri.TryCreate(film.filmUrl, UriKind.Absolute, out var filmUri) ? filmUri : _baseUri,
-			Rating = MovieHelper.GetRatingMatch(film.certificate.name),
+			Rating = MovieHelper.GetRatingMatch(film.certificate?.name),
 			Runtime = GetRuntime(film),
 		};
 		movie = await _movieService.CreateAsync(movie);
