@@ -16,7 +16,7 @@
     "@eslint/js": "^10.0.1",
     "@types/html-minifier-terser": "^7.0.2",
     "@types/node": "^26.6.5",
-    "@typescript-eslint/eslint-plugin": "8.71.1",
+    "@typescript-eslint/eslint-plugin": "8.71.2",
     "cssnano": "^9.1.2",
     "eslint": "^10.12.0",
     "eslint-plugin-prettier": "^5.5.7",
