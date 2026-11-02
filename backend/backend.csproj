@@ -61,7 +61,7 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="3.53.3" />
-		<PackageReference Include="TMDbLib" Version="3.0.0" />
+		<PackageReference Include="TMDbLib" Version="4.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
