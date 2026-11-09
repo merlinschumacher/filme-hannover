@@ -24,7 +24,7 @@ COPY --from=be-build-env /app/out .
 COPY --from=fe-build-env /app/dist wwwroot
 
 # Stage 4: Build runtime image to run the application with necessary dependencies
-FROM mcr.microsoft.com/dotnet/runtime:8.0-alpine@sha256:363fa23187036f85d3f77a0119a1d844230d5cab7ae87845b4da028ea4d50deb AS runtime
+FROM mcr.microsoft.com/dotnet/runtime:8.0-alpine@sha256:31fb46f6ac03922a1156bcd9644b6e31a644add2e919bdea94444b4cc0aca21c AS runtime
 ENV TZ="Europe/Berlin"
 ENV DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION=1
 ENV TERM=xterm
