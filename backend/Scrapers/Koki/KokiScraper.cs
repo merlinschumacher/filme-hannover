@@ -56,7 +56,7 @@ public class KokiScraper : IScraper
             exceptions.Add(ex);
         }
 
-        if (exceptions.Count == 3)
+        if (exceptions.Count == 2)
         {
             throw new AggregateException(exceptions);
         }

@@ -2,6 +2,8 @@
 using backend.Models;
 using backend.Services;
 using HtmlAgilityPack;
+using Newtonsoft.Json;
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace backend.Scrapers.Koki;
@@ -15,6 +17,10 @@ public partial class KoKiHannoverDeScraper(MovieService movieService, ShowTimeSe
 	private const string _readMoreSelector = ".//a[contains(@class, 'content__read-more')]";
 
 	private const string _moreButtonSelector = "//button[contains(@class, 'more-items')]";
+
+	private const string _eventPageDateSelector = ".//span[contains(@class, 'react-ical')]/../preceding-sibling::p[1]";
+
+	private const string _eventPageTitleSelector = "//h1";
 
 	private const string _eventPageDetailSelector = ".//p[contains(text(), 'Min.') or contains(text(), 'FSK') or contains(text(), 'OV') or contains(text(), 'OmU') or contains(text(), 'OmenglU')]";
 
@@ -42,15 +48,28 @@ public partial class KoKiHannoverDeScraper(MovieService movieService, ShowTimeSe
 
 		foreach (var eventElement in eventElements)
 		{
-			var eventDetailElement = eventElement?.SelectSingleNode(_eventDetailElementsSelector);
-			if (eventElement is null || eventDetailElement is null)
+			var readMoreElement = eventElement?.SelectSingleNode(_readMoreSelector);
+			if (eventElement is null || readMoreElement is null)
+			{
+				continue;
+			}
+
+			var readMoreHref = readMoreElement.GetAttributeValue("href", "");
+			var eventPage = await HttpHelper.GetHtmlDocumentAsync(new Uri(_baseUrl, readMoreHref));
+
+			// The event location id is only available on the event page, not in the list view.
+			var eventDetailElement = eventPage.DocumentNode.SelectSingleNode(_eventDetailElementsSelector);
+			if (eventDetailElement is null)
 			{
 				continue;
 			}
 
 			var eventLocationId = eventDetailElement.GetAttributeValue("data-location-id", "");
-			var eventUrl = new Uri(string.Format(_jsonApiUrlString, eventLocationId));
-			var eventJson = await HttpHelper.GetJsonAsync<EventDetailJson>(eventUrl);
+			var eventJson = await GetEventJsonAsync(eventLocationId);
+
+			// Events that are not accessible through the JSON API fall back to
+			// the date and title listed on the event page itself.
+			eventJson ??= GetEventJsonFromEventPage(eventPage);
 			if (eventJson is null)
 			{
 				continue;
@@ -67,14 +86,7 @@ public partial class KoKiHannoverDeScraper(MovieService movieService, ShowTimeSe
 				continue;
 			}
 
-			var readMoreElement = eventElement.SelectSingleNode(_readMoreSelector);
-			if (readMoreElement is null)
-			{
-				continue;
-			}
-
-			var readMoreHref = readMoreElement.GetAttributeValue("href", "");
-			var (dubType, language, rating) = await GetShowTimeDetails(readMoreHref);
+			var (dubType, language, rating) = GetShowTimeDetails(eventPage);
 			var movie = await ProcessMovie(eventJson, rating);
 			await ProcessShowTime(eventJson, movie, readMoreHref, dubType, language);
 		}
@@ -119,15 +131,51 @@ public partial class KoKiHannoverDeScraper(MovieService movieService, ShowTimeSe
 		return _titleRegex.Match(eventJson.Name).Groups[1].Value;
 	}
 
-	private async Task<(ShowTimeDubType, ShowTimeLanguage, MovieRating)> GetShowTimeDetails(string? readMoreUrlString)
+	/// <summary>
+	/// Fetches the event details from the JSON-LD API. Events that are not accessible
+	/// through this API respond with a redirect to the login page instead of JSON.
+	/// </summary>
+	private async Task<EventDetailJson?> GetEventJsonAsync(string eventLocationId)
 	{
-		if (string.IsNullOrWhiteSpace(readMoreUrlString))
+		var eventUrl = new Uri(string.Format(_jsonApiUrlString, eventLocationId));
+		try
 		{
-			return (ShowTimeDubType.Regular, ShowTimeLanguage.German, MovieRating.Unknown);
+			return await HttpHelper.GetJsonAsync<EventDetailJson>(eventUrl);
+		}
+		catch (JsonException)
+		{
+			return null;
+		}
+	}
+
+	/// <summary>
+	/// Builds the event details from the event page, based on the title and the
+	/// date and time listed next to the calendar link, e.g. "01.02.2027 ab 19:30 Uhr".
+	/// </summary>
+	private static EventDetailJson? GetEventJsonFromEventPage(HtmlDocument eventPage)
+	{
+		var dateString = eventPage.DocumentNode.SelectSingleNode(_eventPageDateSelector)?.InnerText.Replace(" ab ", " ").Replace("Uhr", "").Trim();
+		var name = eventPage.DocumentNode.SelectSingleNode(_eventPageTitleSelector) is { } titleElement ? HtmlEntity.DeEntitize(titleElement.InnerText).Trim() : null;
+
+		if (string.IsNullOrWhiteSpace(dateString) ||
+			string.IsNullOrWhiteSpace(name) ||
+			!DateTime.TryParse(dateString, CultureInfo.GetCultureInfo("de-DE"), DateTimeStyles.None, out var startDate))
+		{
+			return null;
 		}
 
-		var readMoreUrl = new Uri(_baseUrl, readMoreUrlString).ToString();
-		var detailString = await ProcessReadMorePageAsync(readMoreUrl);
+		return new EventDetailJson
+		{
+			Name = name,
+			StartDate = startDate,
+			EndDate = startDate.Add(Constants.AverageMovieRuntime),
+		};
+	}
+
+	private static (ShowTimeDubType, ShowTimeLanguage, MovieRating) GetShowTimeDetails(HtmlDocument eventPage)
+	{
+		var eventDetailElement = eventPage.DocumentNode.SelectSingleNode(_eventPageDetailSelector);
+		var detailString = eventDetailElement?.InnerText;
 
 		if (!string.IsNullOrWhiteSpace(detailString))
 		{
@@ -144,15 +192,6 @@ public partial class KoKiHannoverDeScraper(MovieService movieService, ShowTimeSe
 			return (dubType, language, rating);
 		}
 		return (ShowTimeDubType.Regular, ShowTimeLanguage.German, MovieRating.Unknown);
-	}
-
-	private static async Task<string?> ProcessReadMorePageAsync(string url)
-	{
-		var htmlBody = await HttpHelper.GetHtmlDocumentAsync(new Uri(url));
-
-		var eventDetailElement = htmlBody.DocumentNode.SelectSingleNode(_eventPageDetailSelector);
-
-		return eventDetailElement?.InnerText;
 	}
 
 	[GeneratedRegex(@"\d{1,2}.\d{2}\s*Uhr:\s*(.*)")]
